@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3b2f73"/><stop offset=".55" stop-color="#d4617d"/><stop offset="1" stop-color="#f0a273"/>
+    </linearGradient>
+    <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff1b8"/><stop offset="1" stop-color="#ffb347"/>
+    </linearGradient>
+    <clipPath id="half"><rect x="0" y="0" width="180" height="112"/></clipPath>
+  </defs>
+  <rect width="180" height="180" fill="url(#sky)"/>
+  <g clip-path="url(#half)">
+    <circle cx="90" cy="112" r="50" fill="url(#sun)"/>
+    <rect x="30" y="86" width="120" height="4" fill="#e0687a"/>
+    <rect x="30" y="96" width="120" height="5" fill="#e0687a"/>
+    <rect x="30" y="105" width="120" height="6" fill="#e0687a"/>
+  </g>
+  <rect y="112" width="180" height="68" fill="#2b1b4a"/>
+  <path d="M84 112 L96 112 L150 180 L30 180 Z" fill="#4b4851"/>
+  <path d="M89 116 L91 116 L94 132 L86 132 Z M85 140 L95 140 L99 162 L81 162 Z" fill="#ffd27a"/>
+  <path d="M30 112 Q24 70 34 44" stroke="#2b1b4a" stroke-width="4" fill="none"/>
+  <path d="M34 44 q-16 -4 -24 6 M34 44 q-4 -14 -18 -14 M34 44 q8 -14 22 -10 M34 44 q16 0 22 12 M34 44 q2 10 -4 20" stroke="#2b1b4a" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
