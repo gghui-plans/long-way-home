@@ -951,6 +951,7 @@ function updateSkyline(cx,cz,dir,clock){
 const carG=new THREE.Group(),body=new THREE.Group();carG.add(body);scene.add(carG);
 const wheels=[],blink={L:[],R:[]},blinkGlow={L:[],R:[]};
 let signal={side:null,on:false}; // shared with the dashboard arrows and the tick sound
+window.__sig=()=>({signal,glow:blinkGlow.R.map(g=>g.visible).concat(blinkGlow.L.map(g=>g.visible)),npc:agents.filter(a=>a.on&&a.piece==='turn'&&a.nd!==a.d).length}); // TEMP
 function smoothNormals(g,deg=50){ // average normals across shared positions, keeping hard edges sharper than deg
   const P=g.attributes.position.array,N=g.attributes.normal.array,n=P.length/3,cos=Math.cos(deg*Math.PI/180),map=new Map(),out=new Float32Array(N.length);
   for(let i=0;i<n;i++){const k=Math.round(P[i*3]*1e4)+','+Math.round(P[i*3+1]*1e4)+','+Math.round(P[i*3+2]*1e4);let a=map.get(k);if(!a)map.set(k,a=[]);a.push(i)}
@@ -1167,6 +1168,81 @@ function blinkerTick(on){ // the relay click of a turn signal: tick when it ligh
   o.type='square';o.frequency.value=on?2100:1500;f.type='bandpass';f.frequency.value=on?2600:1800;f.Q.value=2;
   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.035);
   o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.05);
+}
+// ---------- the coast when the radio is off: surf, gulls, wind over the open top, songbirds in town
+const Amb={bus:null,sea:null,waveG:null,waveLP:null,fizzG:null,windG:null,windBP:null,nextWave:0,nextGull:0,nextBird:0};
+function noiseLoop(kind){ // 4 s of pink or brown noise, looped
+  const n=AC.sampleRate*4,buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
+  let b0=0,b1=0,b2=0,last=0;
+  for(let i=0;i<n;i++){const w=Math.random()*2-1;
+    if(kind==='brown'){last=(last+.02*w)/1.02;d[i]=last*3.5}
+    else{b0=.99765*b0+w*.099046;b1=.963*b1+w*.2965164;b2=.57*b2+w*1.0526913;d[i]=(b0+b1+b2+w*.1848)*.11}}
+  const s=AC.createBufferSource();s.buffer=buf;s.loop=true;s.start();return s;
+}
+const panTo=(node,p)=>{if(AC.createStereoPanner){const sp=AC.createStereoPanner();sp.pan.value=p;node.connect(sp);sp.connect(Amb.bus)}else node.connect(Amb.bus)};
+function initAmbience(){
+  if(Amb.bus||!AC)return;
+  Amb.bus=AC.createGain();Amb.bus.gain.value=0;Amb.bus.connect(master);
+  Amb.sea=AC.createGain();Amb.sea.gain.value=0;Amb.sea.connect(Amb.bus);
+  const bed=noiseLoop('brown'),bedLP=AC.createBiquadFilter(),bedG=AC.createGain();bedLP.type='lowpass';bedLP.frequency.value=380;bedG.gain.value=.35;bed.connect(bedLP);bedLP.connect(bedG);bedG.connect(Amb.sea);
+  const pink=noiseLoop('pink');
+  Amb.waveLP=AC.createBiquadFilter();Amb.waveLP.type='lowpass';Amb.waveLP.frequency.value=500;Amb.waveG=AC.createGain();Amb.waveG.gain.value=.05;
+  pink.connect(Amb.waveLP);Amb.waveLP.connect(Amb.waveG);Amb.waveG.connect(Amb.sea);
+  const fizzHP=AC.createBiquadFilter();fizzHP.type='highpass';fizzHP.frequency.value=2600;Amb.fizzG=AC.createGain();Amb.fizzG.gain.value=0;
+  pink.connect(fizzHP);fizzHP.connect(Amb.fizzG);Amb.fizzG.connect(Amb.sea);
+  const air=noiseLoop('pink');Amb.windBP=AC.createBiquadFilter();Amb.windBP.type='bandpass';Amb.windBP.frequency.value=500;Amb.windBP.Q.value=.6;
+  Amb.windG=AC.createGain();Amb.windG.gain.value=0;air.connect(Amb.windBP);Amb.windBP.connect(Amb.windG);Amb.windG.connect(Amb.bus);
+  Amb.nextWave=Amb.nextGull=Amb.nextBird=AC.currentTime+1;
+}
+function wave(t,a){ // swell, break, then the foam fizzing back out
+  const rise=2+Math.random()*1.5,fall=3+Math.random()*2.5,g=Amb.waveG.gain,f=Amb.waveLP.frequency,z=Amb.fizzG.gain;
+  for(const p of[g,f,z]){p.cancelScheduledValues(t);p.setValueAtTime(p.value,t)}
+  g.linearRampToValueAtTime(.18*a,t+rise*.75);g.linearRampToValueAtTime(.85*a,t+rise);g.exponentialRampToValueAtTime(.04,t+rise+.4+fall);
+  f.linearRampToValueAtTime(800,t+rise*.75);f.linearRampToValueAtTime(2400,t+rise);f.exponentialRampToValueAtTime(450,t+rise+.4+fall);
+  z.linearRampToValueAtTime(.0001,t+rise);z.linearRampToValueAtTime(.22*a,t+rise+.3);z.exponentialRampToValueAtTime(.0001,t+rise+.6+fall);
+  return rise+.4+fall;
+}
+function gull(t,vol){ // a few "kee-ow" calls from somewhere off to the side
+  const pan=(Math.random()*2-1)*.8,n=2+Math.floor(Math.random()*3);let tt=t;
+  for(let i=0;i<n;i++){
+    const d=.26+Math.random()*.16,f0=1450+Math.random()*500,o=AC.createOscillator(),bp=AC.createBiquadFilter(),g=AC.createGain(),lfo=AC.createOscillator(),lg=AC.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(f0*.8,tt);o.frequency.linearRampToValueAtTime(f0*1.15,tt+d*.25);o.frequency.exponentialRampToValueAtTime(f0*.55,tt+d);
+    lfo.frequency.value=28;lg.gain.value=35;lfo.connect(lg);lg.connect(o.frequency);
+    bp.type='bandpass';bp.frequency.value=f0*1.3;bp.Q.value=1.4;
+    g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(vol,tt+.03);g.gain.setValueAtTime(vol,tt+d*.6);g.gain.exponentialRampToValueAtTime(.0001,tt+d);
+    o.connect(bp);bp.connect(g);panTo(g,pan);o.start(tt);lfo.start(tt);o.stop(tt+d+.05);lfo.stop(tt+d+.05);
+    tt+=d+.08+Math.random()*.22;
+  }
+}
+function birdsong(t,vol){ // a quick run of chirps
+  const pan=(Math.random()*2-1)*.7,n=3+Math.floor(Math.random()*6),base=2800+Math.random()*1500;let tt=t;
+  for(let i=0;i<n;i++){
+    const d=.05+Math.random()*.08,o=AC.createOscillator(),g=AC.createGain();o.type='sine';
+    o.frequency.setValueAtTime(base*(1+Math.random()*.3),tt);o.frequency.exponentialRampToValueAtTime(base*(.75+Math.random()*.7),tt+d);
+    g.gain.setValueAtTime(.0001,tt);g.gain.exponentialRampToValueAtTime(vol,tt+.01);g.gain.exponentialRampToValueAtTime(.0001,tt+d);
+    o.connect(g);panTo(g,pan);o.start(tt);o.stop(tt+d+.02);tt+=d+.03+Math.random()*.12;
+  }
+}
+function seaNearness(){ // 1 on the beach, fading to a faint hush a few hundred metres inland
+  const inTownRows=car.piece!=='hwy'&&lotRow(Math.round(car.z/B)),shore=inTownRows?-3*B:roadX(car.z)-60;
+  return Math.max(.06,ss(520,40,car.x-shore));
+}
+function updateAmbience(){
+  if(!AC||!$('start').hidden)return;
+  const want=!Show.on&&AC.state==='running';
+  if(want)initAmbience();
+  if(!Amb.bus)return;
+  const t=AC.currentTime;
+  if(want!==Amb.wanted){Amb.wanted=want;Amb.bus.gain.setTargetAtTime(want?1:0,t,want?1.5:.4)}
+  if(!want||t-(Amb.lastUpd||0)<.25)return; // adjust levels a few times a second, not every frame
+  Amb.lastUpd=t;
+  const near=seaNearness(),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
+  Amb.sea.gain.setTargetAtTime(near,t,1.5);
+  Amb.windG.gain.setTargetAtTime((.03+spd*.16+cliff*.05)*(.75+.25*Math.sin(t*.37)+.1*Math.sin(t*1.3)),t,.6);
+  Amb.windBP.frequency.setTargetAtTime(350+spd*700,t,.8);
+  if(t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
+  if(t>=Amb.nextGull){if(near>.3||Math.random()<.2)gull(t,.035+.05*near*Math.random());Amb.nextGull=t+(near>.3?5:14)+Math.random()*10}
+  if(t>=Amb.nextBird){if(town&&near<.7||Math.random()<.15)birdsong(t,.012+Math.random()*.018);Amb.nextBird=t+(town?2.5:9)+Math.random()*6}
 }
 function tone(type,f,t,dur,g,dest,det=0){
   const o=AC.createOscillator(),a=AC.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
@@ -1387,7 +1463,7 @@ function seek(){
 function power(on){
   Show.on=on;Show.token++;
   if(on)talk('id');
-  else{try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','K-JAM 101.1 · TAP PWR TO TUNE IN')}
+  else{try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','RADIO OFF · LISTENING TO THE COAST')}
 }
 // ---------- HUD & controls
 const $=id=>document.getElementById(id);
@@ -1537,6 +1613,7 @@ function loop(now){
   camera.position.set(car.x+camPos.x,camPos.y,car.z+camPos.z);camera.lookAt(car.x+camLook.x,camLook.y,car.z+camLook.z);
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
+  updateAmbience();
   sunSprite.position.set(car.x-430,62,car.z+40);
   updateSkyline(car.x,car.z,car.d,clock);
   followSun(car.x,car.z);
