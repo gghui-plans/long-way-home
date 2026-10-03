@@ -65,6 +65,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .speedo{display:flex;align-items:baseline;gap:4px;background:var(--glass);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:6px 11px;border-radius:99px;font-family:var(--f-lcd);color:var(--lcd);text-shadow:0 0 6px rgba(255,179,71,.5)}
 .speedo b{font-weight:400;font-size:24px;line-height:1;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
 .speedo span{font-size:15px}
+.speedo .sig{align-self:center;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-right:9px solid #3dff8a;opacity:.15;margin-right:3px}
+.speedo .sig.r{border-right:0;border-left:9px solid #3dff8a;margin:0 0 0 3px}
+.speedo .sig.on{opacity:1;filter:drop-shadow(0 0 4px #3dff8a)}
 .stepper{display:inline-flex;align-items:center;gap:6px;background:#130d16;border-radius:99px;padding:3px}
 .stepper button{width:36px;height:36px;border:0;border-radius:50%;background:#2c222b;color:var(--ink);font-size:20px;font-weight:800;cursor:pointer}
 .stepper output{min-width:78px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
@@ -137,7 +140,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
       <div class="next" id="next"></div>
     </div>
     <div class="right">
-    <div class="speedo" aria-label="Speed"><b id="kmh">0</b><span>km/h</span></div>
+    <div class="speedo" aria-label="Speed"><i class="sig" id="sigL" aria-hidden="true"></i><b id="kmh">0</b><span>km/h</span><i class="sig r" id="sigR" aria-hidden="true"></i></div>
     <button class="iconbtn" id="gear" aria-label="Settings">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
     </button>
@@ -784,6 +787,19 @@ const VTYPES={
 const POOL=36,agents=[],vMesh={};
 for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(b.geo(),MAT,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
 for(let k=0;k<POOL;k++)agents.push({k,on:false,type:'sedan',x:0,z:0,fx:0,fz:1,v:0,hl:2.3});
+// other drivers signal too: front and rear amber lights on the turning side
+const npcBlink=new THREE.InstancedMesh(new THREE.SphereGeometry(.15,8,6),new THREE.MeshBasicMaterial({color:0xffb030}),POOL*2);
+npcBlink.frustumCulled=false;npcBlink.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL*2;i++)npcBlink.setMatrixAt(i,_zero);scene.add(npcBlink);
+function npcSignal(a){
+  let side=null;
+  if(a.on&&a.type!=='bike'){
+    if(a.piece==='turn'){if(a.nd!==a.d)side=a.next}
+    else if(a.next&&a.next!=='S'){const te=a.piece==='hwy'?Math.abs(a.ze-a.hz):a.len-a.s;if(te<Math.max(35,a.v*3.5))side=a.next}
+  }
+  if(!side||Math.floor(clock*2.6+a.k*.37)%2){npcBlink.setMatrixAt(a.k*2,_zero);npcBlink.setMatrixAt(a.k*2+1,_zero);return}
+  const rx=-a.fz,rz=a.fx,sg=side==='R'?1:-1,hw=a.bus?1.22:a.type==='moto'?.22:.92,y=a.bus?1:a.type==='moto'?.95:.72;
+  [a.hl-.05,-(a.hl-.05)].forEach((f,n)=>{_d.position.set(a.x+a.fx*f+rx*hw*sg,y,a.z+a.fz*f+rz*hw*sg);_d.rotation.set(0,0,0);_d.scale.set(1,1,1);_d.updateMatrix();npcBlink.setMatrixAt(a.k*2+n,_d.matrix)});
+}
 function pickType(town,onPCH){
   const tot=Object.entries(VTYPES).reduce((s,[k,t])=>s+(t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w),0);let r=Math.random()*tot;
   for(const [k,t] of Object.entries(VTYPES)){const w=t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w;if((r-=w)<=0)return k}
@@ -893,10 +909,12 @@ function updateTraffic(dt){
   for(const a of agents){
     if(!a.on)continue;
     const dx=a.x-car.x,dz=a.z-car.z,dist=Math.hypot(dx,dz),behind=dx*Math.sin(car.yaw)+dz*Math.cos(car.yaw)<0;
-    if(dist>340||(!inTown&&behind&&dist>70)){a.on=false;vMesh[a.type].setMatrixAt(a.k,_zero);continue} // recycle cars once they're well behind you
+    if(dist>340||(!inTown&&behind&&dist>70)){a.on=false;vMesh[a.type].setMatrixAt(a.k,_zero);npcSignal(a);continue} // recycle cars once they're well behind you
     active++;aUpdate(a,dt);
     _d.position.set(a.x,0,a.z);_d.rotation.set(0,Math.atan2(a.fx,a.fz),0);_d.scale.set(1,1,1);_d.updateMatrix();vMesh[a.type].setMatrixAt(a.k,_d.matrix);
+    npcSignal(a);
   }
+  npcBlink.instanceMatrix.needsUpdate=true;
   if(active<target){const a=agents.find(o=>!o.on);if(a&&spawnAgent(a)){a.on=true}else if(a)vMesh[a.type].setMatrixAt(a.k,_zero)}
   for(const m of Object.values(vMesh)){m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
 }
@@ -956,7 +974,8 @@ function updateSkyline(cx,cz,dir,clock){
 
 // ---------- the convertible (model faces +z; driver on the left, which is +x)
 const carG=new THREE.Group(),body=new THREE.Group();carG.add(body);scene.add(carG);
-const wheels=[],blink={L:[],R:[]};
+const wheels=[],blink={L:[],R:[]},blinkGlow={L:[],R:[]};
+let signal={side:null,on:false}; // shared with the dashboard arrows and the tick sound
 function smoothNormals(g,deg=50){ // average normals across shared positions, keeping hard edges sharper than deg
   const P=g.attributes.position.array,N=g.attributes.normal.array,n=P.length/3,cos=Math.cos(deg*Math.PI/180),map=new Map(),out=new Float32Array(N.length);
   for(let i=0;i<n;i++){const k=Math.round(P[i*3]*1e4)+','+Math.round(P[i*3+1]*1e4)+','+Math.round(P[i*3+2]*1e4);let a=map.get(k);if(!a)map.set(k,a=[]);a.push(i)}
@@ -1012,8 +1031,12 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
     const w=new THREE.Group();w.position.set(sx,.42,sz);carG.add(w);wheels.push(w);
     add(tg,tire,0,0,0,0,0,0,w);add(wg,white,0,0,0,0,0,0,w);add(hg,chrome,0,0,0,0,0,0,w);add(new THREE.BoxGeometry(.31,.05,.2),chrome,0,0,0,0,0,0,w);
   }
-  const bg=new THREE.SphereGeometry(.07,10,8);
-  for(const side of['L','R']){const m=new THREE.MeshBasicMaterial({color:0x5a3a10});blink[side]=m;for(const sz of[2.42,-2.41])add(bg,m,side==='L'?.82:-.82,.6,sz)}
+  // turn signals: amber lenses front and rear, plus a soft glow that shows when lit
+  const bg=new THREE.SphereGeometry(.11,12,10),glowMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gradCanvas(64,64,[[0,'rgba(255,200,90,1)'],[.25,'rgba(255,160,40,.8)'],[1,'rgba(255,140,30,0)']],true)),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+  for(const side of['L','R']){
+    const m=new THREE.MeshBasicMaterial({color:0x5a3a10});blink[side]=m;blinkGlow[side]=[];
+    for(const sz of[2.43,-2.42]){const x=side==='L'?.84:-.84;add(bg,m,x,.62,sz);const g=new THREE.Sprite(glowMat);g.position.set(x,.62,sz+(sz>0?.08:-.08));g.scale.set(1.1,1.1,1);g.visible=false;body.add(g);blinkGlow[side].push(g)}
+  }
   const sh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,5.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gradCanvas(64,64,[[0,'rgba(20,10,25,.4)'],[.6,'rgba(20,10,25,.2)'],[1,'rgba(20,10,25,0)']],true)),transparent:true,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=.03;carG.add(sh);
 })();
@@ -1114,10 +1137,12 @@ function updateCar(dt){
   carG.position.set(x,0,z);carG.rotation.y=car.yaw;
   for(const w of wheels)w.rotation.x+=car.v*dt/.42;
   body.rotation.z+=(clamp(car.yawRate*car.v*.012,-.07,.07)-body.rotation.z)*Math.min(1,dt*5);
-  // turn signals: autopilot signals its own choice too
-  const c=choice()[0],turning=car.piece==='turn',showing=turning?car.final!=='S':(toEndNow()<34&&c!=='S');
-  const side=turning?car.final:c,on=showing&&Math.floor(clock*2.6)%2===0;
-  blink.L.color.setHex(on&&side==='L'?0xffa623:0x5a3a10);blink.R.color.setHex(on&&side==='R'?0xffa623:0x5a3a10);
+  // turn signals: autopilot signals its own choice too, about 4 seconds before the turn
+  const c=choice()[0],turning=car.piece==='turn',showing=turning?car.final!=='S':(c&&c!=='S'&&toEndNow()<Math.max(40,car.v*4));
+  const side=showing?(turning?car.final:c):null,on=!!side&&Math.floor(clock*2.8)%2===0;
+  blink.L.color.setHex(on&&side==='L'?0xffb030:0x5a3a10);blink.R.color.setHex(on&&side==='R'?0xffb030:0x5a3a10);
+  for(const s of['L','R'])for(const g of blinkGlow[s])g.visible=on&&side===s;
+  if(side!==signal.side||on!==signal.on){if(side)blinkerTick(on);signal={side,on}}
 }
 function curStreet(){
   if(car.piece==='turn')return car.nd%2===0?nsName(car.bi):ewName(car.bj);
@@ -1160,6 +1185,13 @@ function initAudio(){
   const lo=AC.createGain();lo.gain.value=.09;const dl=AC.createDelay();dl.delayTime.value=.28;const fb=AC.createGain();fb.gain.value=.3;
   leadIn.connect(ws2);ws2.connect(ll);ll.connect(lo);lo.connect(musicBus);lo.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(musicBus);
   noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+}
+function blinkerTick(on){ // the relay click of a turn signal: tick when it lights, tock when it goes dark
+  if(!AC||AC.state!=='running')return;
+  const t=AC.currentTime,o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
+  o.type='square';o.frequency.value=on?2100:1500;f.type='bandpass';f.frequency.value=on?2600:1800;f.Q.value=2;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.035);
+  o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.05);
 }
 function tone(type,f,t,dur,g,dest,det=0){
   const o=AC.createOscillator(),a=AC.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
@@ -1518,7 +1550,7 @@ addEventListener('resize',resize);resize();
 startLeg();car.hz=(townLen(0)+22)*B;updateCar(0);
 camPos.set(-Math.sin(car.yaw)*11,4.4,-Math.cos(car.yaw)*11);camLook.set(Math.sin(car.yaw)*7,1.6,Math.cos(car.yaw)*7);
 stream(car.x,car.z,true);
-let last=performance.now(),frame=0,lastKmh=-1;const kmhEl=$('kmh');
+let last=performance.now(),frame=0,lastKmh=-1,lastSig='';const kmhEl=$('kmh'),sigLEl=$('sigL'),sigREl=$('sigR');
 function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;frame++;
@@ -1534,7 +1566,8 @@ function loop(now){
   updateSkyline(car.x,car.z,car.d,clock);
   followSun(car.x,car.z);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
-  if(!hudEl.hidden){updateHud();const k=Math.round(car.v*3.6);if(k!==lastKmh){lastKmh=k;kmhEl.textContent=k}}
+  if(!hudEl.hidden){const sg=signal.on?signal.side:'';if(sg!==lastSig){lastSig=sg;sigLEl.classList.toggle('on',sg==='L');sigREl.classList.toggle('on',sg==='R')}
+    updateHud();const k=Math.round(car.v*3.6);if(k!==lastKmh){lastKmh=k;kmhEl.textContent=k}}
   renderer.render(scene,camera);
 }
 requestAnimationFrame(loop);
