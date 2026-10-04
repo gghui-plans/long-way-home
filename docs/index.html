@@ -1209,15 +1209,43 @@ function initAmbience(){
   if(Amb.bus||!AC)return;
   Amb.bus=AC.createGain();Amb.bus.gain.value=0;Amb.bus.connect(master);
   Amb.sea=AC.createGain();Amb.sea.gain.value=0;Amb.sea.connect(Amb.bus);
-  const bed=noiseLoop('brown'),bedLP=AC.createBiquadFilter(),bedG=AC.createGain();bedLP.type='lowpass';bedLP.frequency.value=380;bedG.gain.value=.35;bed.connect(bedLP);bedLP.connect(bedG);bedG.connect(Amb.sea);
+  Amb.synthSea=AC.createGain();Amb.synthSea.connect(Amb.sea); // synthesized surf, muted once the real recording loads
+  const bed=noiseLoop('brown'),bedLP=AC.createBiquadFilter(),bedG=AC.createGain();bedLP.type='lowpass';bedLP.frequency.value=380;bedG.gain.value=.35;bed.connect(bedLP);bedLP.connect(bedG);bedG.connect(Amb.synthSea);
   const pink=noiseLoop('pink');
   Amb.waveLP=AC.createBiquadFilter();Amb.waveLP.type='lowpass';Amb.waveLP.frequency.value=500;Amb.waveG=AC.createGain();Amb.waveG.gain.value=.05;
-  pink.connect(Amb.waveLP);Amb.waveLP.connect(Amb.waveG);Amb.waveG.connect(Amb.sea);
+  pink.connect(Amb.waveLP);Amb.waveLP.connect(Amb.waveG);Amb.waveG.connect(Amb.synthSea);
   const fizzHP=AC.createBiquadFilter();fizzHP.type='highpass';fizzHP.frequency.value=2600;Amb.fizzG=AC.createGain();Amb.fizzG.gain.value=0;
-  pink.connect(fizzHP);fizzHP.connect(Amb.fizzG);Amb.fizzG.connect(Amb.sea);
+  pink.connect(fizzHP);fizzHP.connect(Amb.fizzG);Amb.fizzG.connect(Amb.synthSea);
   const air=noiseLoop('pink');Amb.windBP=AC.createBiquadFilter();Amb.windBP.type='bandpass';Amb.windBP.frequency.value=500;Amb.windBP.Q.value=.6;
   Amb.windG=AC.createGain();Amb.windG.gain.value=0;air.connect(Amb.windBP);Amb.windBP.connect(Amb.windG);Amb.windG.connect(Amb.bus);
   Amb.nextWave=Amb.nextGull=Amb.nextBird=AC.currentTime+1;
+  loadNature();
+}
+// real field recordings (CC0, from Freesound) replace the synthesized layers as they arrive; if a file can't load, the synth stays
+const NATURE=['ocean','ocean-close','wind','birds','gull-1','gull-2','gull-3','gull-4','gull-5','gull-6','gull-7','gull-8'];
+Amb.buf={};Amb.gulls=[];
+function loadNature(){
+  for(const n of NATURE)fetch('audio/nature/'+n+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+    .then(b=>new Promise((res,rej)=>AC.decodeAudioData(b,res,rej))).then(buf=>natureReady(n,buf)).catch(()=>{});
+}
+function loopNode(buf,dest,gain){
+  const s=AC.createBufferSource(),g=AC.createGain();s.buffer=buf;s.loop=true;g.gain.value=gain;s.connect(g);g.connect(dest);s.start(0,Math.random()*buf.duration);return g;
+}
+function natureReady(n,buf){
+  const t=AC.currentTime;
+  if(n.startsWith('gull-')){Amb.gulls.push(buf);return}
+  if(n==='ocean'){Amb.oceanG=loopNode(buf,Amb.sea,1);Amb.synthSea.gain.setTargetAtTime(0,t,1);Amb.realSea=true}
+  if(n==='ocean-close')Amb.closeG=loopNode(buf,Amb.bus,0);
+  if(n==='wind'){Amb.realWindG=loopNode(buf,Amb.bus,0);Amb.realWind=true}
+  if(n==='birds'){Amb.birdsG=loopNode(buf,Amb.bus,0);Amb.realBirds=true}
+}
+function gullRecorded(t,vol){ // one to three recorded calls, slightly varied in pitch, from one side
+  const pan=(Math.random()*2-1)*.8,n=1+Math.floor(Math.random()*3);let tt=t;
+  for(let i=0;i<n;i++){
+    const buf=pick(Amb.gulls),s=AC.createBufferSource(),g=AC.createGain();
+    s.buffer=buf;s.playbackRate.value=.92+Math.random()*.16;g.gain.value=vol;s.connect(g);panTo(g,pan);s.start(tt);
+    tt+=buf.duration/s.playbackRate.value+.12+Math.random()*.35;
+  }
 }
 function wave(t,a){ // swell, break, then the foam fizzing back out
   const rise=2+Math.random()*1.5,fall=3+Math.random()*2.5,g=Amb.waveG.gain,f=Amb.waveLP.frequency,z=Amb.fizzG.gain;
@@ -1263,11 +1291,19 @@ function updateAmbience(){
   Amb.lastUpd=t;
   const near=seaNearness(),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
   Amb.sea.gain.setTargetAtTime(near,t,1.5);
-  Amb.windG.gain.setTargetAtTime((.03+spd*.16+cliff*.05)*(.75+.25*Math.sin(t*.37)+.1*Math.sin(t*1.3)),t,.6);
+  const gust=.75+.25*Math.sin(t*.37)+.1*Math.sin(t*1.3);
+  // with the real wind loaded, the synth only adds the rush of air at speed
+  Amb.windG.gain.setTargetAtTime(Amb.realWind?spd*.08*gust:(.03+spd*.16+cliff*.05)*gust,t,.6);
   Amb.windBP.frequency.setTargetAtTime(350+spd*700,t,.8);
-  if(t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
-  if(t>=Amb.nextGull){if(near>.3||Math.random()<.2)gull(t,.035+.05*near*Math.random());Amb.nextGull=t+(near>.3?5:14)+Math.random()*10}
-  if(t>=Amb.nextBird){if(town&&near<.7||Math.random()<.15)birdsong(t,.012+Math.random()*.018);Amb.nextBird=t+(town?2.5:9)+Math.random()*6}
+  if(Amb.realWindG)Amb.realWindG.gain.setTargetAtTime((.3+spd*.45+cliff*.3)*gust,t,.8);
+  if(Amb.closeG)Amb.closeG.gain.setTargetAtTime(ss(.6,1,near)*.7,t,1.5);
+  if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime(town?(1-near*.5)*.8:.1,t,2);
+  if(!Amb.realSea&&t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
+  if(t>=Amb.nextGull){
+    if(near>.3||Math.random()<.2){if(Amb.gulls.length)gullRecorded(t,(.18+.3*Math.random())*Math.max(near,.3));else gull(t,.035+.05*near*Math.random())}
+    Amb.nextGull=t+(near>.3?5:14)+Math.random()*10;
+  }
+  if(!Amb.realBirds&&t>=Amb.nextBird){if(town&&near<.7||Math.random()<.15)birdsong(t,.012+Math.random()*.018);Amb.nextBird=t+(town?2.5:9)+Math.random()*6}
 }
 function tone(type,f,t,dur,g,dest,det=0){
   const o=AC.createOscillator(),a=AC.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
