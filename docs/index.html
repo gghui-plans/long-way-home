@@ -1565,7 +1565,7 @@ function startSong(tok,song){
   Show.phase='song';
   const show=s=>setLCD('STEREO','♪ '+s.title.toUpperCase()+' · '+s.band.toUpperCase());
   const onEnd=()=>{if(tok===Show.token&&Show.on)talk(nextKind())};
-  const synth=()=>{const fb=makeSong();show(fb);playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
+  const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);playRealSong(song,onEnd,synth)}else synth();
 }
 function talk(kind){
