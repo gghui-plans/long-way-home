@@ -11,14 +11,18 @@ A game by gghui. Built with [three.js](https://threejs.org/).
 Open the GitHub Pages link in a phone or desktop browser and tap **Tap to drive**. Turn the sound on.
 
 - **◀ ↑ ▶** (or the arrow keys) pick your turn at the next intersection. Otherwise the autopilot decides.
-- **Settings** has tilt steering, cruise speed (60 to 160 km/h), radio volume and host voices.
-- For better host voices on iPhone, search Settings for "Voices" and download **Evan** and **Ava** (Premium).
+- **Tap the radio display** to request a song. **VOL** on the radio sets the volume or mutes.
+- **The map button** shows the coast around you, or the town's streets.
+- **Hands-free** counts how long you've stayed in the game without switching apps. Rick and Dana notice.
+- **Settings** has tilt steering, cruise speed (60 to 160 km/h), host voices and calm mode.
+- No sound on iPhone? Check the silent switch.
 
 ## Project layout
 
 - `index.html` is the whole game in one file (it is also published as a Claude artifact).
 - `build.ps1` builds the GitHub Pages site into `docs/`, adding the page head, share-preview tags and icons.
-- `docs/` is the published site. Don't edit it by hand; rebuild instead.
+- `docs/` is the published site, including `docs/audio/` (music, voices, nature sounds). Don't edit it by hand; rebuild instead.
+- `production/` holds the audio scripts, lyrics and the processing scripts that make `docs/audio/`.
 - `share.png` is the link-preview image, and `icon.svg` / `icon-180.png` are the browser and home-screen icons.
 
 To rebuild the site after changing `index.html`:
@@ -27,4 +31,4 @@ To rebuild the site after changing `index.html`:
 powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://<username>.github.io/long-way-home/
 ```
 
-All world, music and voices are generated in the browser. No real songs, maps or brands are used.
+The world is generated in the browser from rules, with no real maps or brands. Songs were made with Suno, voices with ElevenLabs, and nature sounds are CC0 recordings from Freesound (see `production/NATURE-SOURCES.md`).
