@@ -238,6 +238,8 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <p class="note">Turn off to keep just the music, with Rick and Dana as subtitles on the radio display. No sound on iPhone? Check the silent switch.</p>
     <div class="row"><label class="lbl" for="calm">Calm mode</label><input type="checkbox" id="calm"></div>
     <p class="note">Fades the signs and buttons after 10 seconds without touching anything. The hands-free timer stays. Tap anywhere to bring everything back.</p>
+    <div class="row"><label class="lbl" for="hq">High-quality graphics</label><input type="checkbox" id="hq" checked></div>
+    <p class="note">Soft glow and sharper shadows. Turn off to save battery on long drives.</p>
     <div class="row"><button class="pill ghost" id="openFb">Send feedback</button><button class="pill" id="close">Back to the drive</button></div>
   </div>
 </div>
@@ -286,8 +288,13 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.min.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
+import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
+import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
+import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 (()=>{
 'use strict';
 // ---------- constants & helpers
@@ -305,11 +312,58 @@ const canvas=document.getElementById('c');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:devicePixelRatio<2,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
 const scene=new THREE.Scene();
+renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1; // keeps the palette, rolls off bright highlights like film
+// the sky: sunset colours that depend on where you look (gold towards the sun, pink and violet away from it), a glowing sun disc
+const SUN_VIS=new THREE.Vector3(-430,62,40).normalize(); // where the sun disc sits, low over the sea
+const SKYC={zen:'#2f3570',midA:'#7c6c9e',midS:'#d4617d',horA:'#eaa08e',horS:'#ffb46a',glow:'#ffb070',ground:'#6b4a52'};
+const SKYL={};for(const k in SKYC)SKYL[k]=new THREE.Color(SKYC[k]); // linear values for the shader and the haze
+const sunAz=new THREE.Vector2(SUN_VIS.x,SUN_VIS.z).normalize();
+const ss01=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
+function skyAt(dx,dy,dz,out){ // the same colour the shader draws, for matching the haze to the horizon
+  const l=Math.hypot(dx,dz)||1,a=(dx/l*sunAz.x+dz/l*sunAz.y)*.5+.5,h=Math.max(dy,0);
+  const hor=_sc1.copy(SKYL.horA).lerp(SKYL.horS,a*a*a),mid=_sc2.copy(SKYL.midA).lerp(SKYL.midS,a*a);
+  return out.copy(hor).lerp(mid,ss01(0,.25,h)).lerp(SKYL.zen,ss01(.15,.8,h));
+}
+const _sc1=new THREE.Color(),_sc2=new THREE.Color();
+function makeSky(size){
+  const u={sunDir:{value:SUN_VIS.clone()}};for(const k in SKYL)u[k]={value:SKYL[k]};
+  const m=new THREE.ShaderMaterial({uniforms:u,side:THREE.BackSide,depthWrite:false,fog:false,
+    vertexShader:`varying vec3 vDir;void main(){vDir=position;vec4 p=projectionMatrix*modelViewMatrix*vec4(position,1.0);gl_Position=p.xyww;}`,
+    fragmentShader:`uniform vec3 sunDir,zen,midA,midS,horA,horS,glow,ground;varying vec3 vDir;
+      void main(){
+        vec3 d=normalize(vDir);float a=dot(normalize(d.xz+1e-5),normalize(sunDir.xz))*.5+.5,h=max(d.y,0.0);
+        vec3 col=mix(mix(horA,horS,a*a*a),mix(midA,midS,a*a),smoothstep(0.0,.25,h));col=mix(col,zen,smoothstep(.15,.8,h));
+        float c=max(dot(d,sunDir),0.0);
+        col+=glow*(pow(c,8.0)*.35+pow(c,90.0)*1.2)+vec3(1.0,.93,.8)*smoothstep(.99975,.9999,c)*14.0; // halo, then the bright disc
+        if(d.y<0.0)col=mix(col,ground,smoothstep(0.0,.25,-d.y));
+        gl_FragColor=vec4(col,1.0);
+        #include <tonemapping_fragment>
+        #include <colorspace_fragment>
+      }`});
+  const s=new THREE.Mesh(new THREE.BoxGeometry(size,size,size),m);s.renderOrder=-10;s.frustumCulled=false;return s;
+}
+const sky=makeSky(2400);scene.add(sky);
 const FOG=0xf0a273;
 scene.fog=new THREE.Fog(FOG,70,300);
+const _fogDir=new THREE.Vector3();
+function updateHaze(){camera.getWorldDirection(_fogDir);skyAt(_fogDir.x,.03,_fogDir.z,scene.fog.color)} // the haze takes the horizon's colour in the direction you look
 const camera=new THREE.PerspectiveCamera(60,1,0.5,3200);
-scene.add(new THREE.HemisphereLight(0xffe2c0,0x5a4660,0.82));
-const sunLight=new THREE.DirectionalLight(0xffb27a,0.95);
+const hemi=new THREE.HemisphereLight(0xffe2c0,0x5a4660,.6*Math.PI);scene.add(hemi); // ×π: the engine uses physical light units
+const sunLight=new THREE.DirectionalLight(0xffb27a,1.0*Math.PI);
+// reflections and soft fill light come from the same sky, prefiltered once
+{const pm=new THREE.PMREMGenerator(renderer),es=new THREE.Scene();es.add(makeSky(100));scene.environment=pm.fromScene(es).texture;pm.dispose()}
+scene.environmentIntensity=.5;
+const sTex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}; // painted canvases are sRGB colour
+// high quality: soft glow (bloom) and sharper shadows; battery saver skips both
+let composer=null;
+function setQuality(hq){
+  const n=hq?2048:1024;if(sunLight.shadow.mapSize.x!==n){sunLight.shadow.mapSize.set(n,n);if(sunLight.shadow.map){sunLight.shadow.map.dispose();sunLight.shadow.map=null}}
+  if(hq&&!composer){
+    composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}));
+    composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(256,256),.35,.5,.9));composer.addPass(new OutputPass());
+    composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,innerHeight);
+  }
+}
 const SUN_DIR=new THREE.Vector3(-0.8,0.42,0.3).normalize();
 sunLight.position.copy(SUN_DIR);
 scene.add(sunLight,sunLight.target);
@@ -319,7 +373,7 @@ sunLight.castShadow=true;sunLight.shadow.mapSize.set(1024,1024);
 Object.assign(sunLight.shadow.camera,{left:-48,right:48,top:48,bottom:-48,near:1,far:320});
 sunLight.shadow.bias=-.0006;sunLight.shadow.normalBias=.05;
 function followSun(x,z){
-  const t=96/1024,sx=Math.round(x/t)*t,sz=Math.round(z/t)*t; // snap to shadow texels so edges don't shimmer
+  const t=96/sunLight.shadow.mapSize.x,sx=Math.round(x/t)*t,sz=Math.round(z/t)*t; // snap to shadow texels so edges don't shimmer
   sunLight.target.position.set(sx,0,sz);sunLight.position.set(sx+SUN_DIR.x*150,SUN_DIR.y*150,sz+SUN_DIR.z*150);
 }
 
@@ -329,10 +383,6 @@ function gradCanvas(w,h,stops,radial){
   for(const [o,col] of stops)g.addColorStop(o,col);
   x.fillStyle=g;x.fillRect(0,0,w,h);return c;
 }
-scene.background=new THREE.CanvasTexture(gradCanvas(2,256,[[0,'#3b2f73'],[.14,'#6c3f86'],[.27,'#d4617d'],[.38,'#f0a273'],[1,'#f6b77f']]));
-const sunSprite=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gradCanvas(128,128,[[0,'#fff6dc'],[.3,'#ffd88a'],[.55,'rgba(255,170,100,.35)'],[1,'rgba(255,150,90,0)']],true)),fog:false,depthWrite:false,transparent:true}));
-sunSprite.scale.set(150,150,1);
-scene.add(sunSprite);
 
 // ---------- merged low-poly geometry builder (one draw call per city block)
 const ni=g=>g.index?g.toNonIndexed():g;
@@ -345,7 +395,8 @@ const G={
   ball:ni(new THREE.IcosahedronGeometry(1,0)),
   donut:ni(new THREE.TorusGeometry(1,.42,6,14)),
 };
-const MAT=new THREE.MeshLambertMaterial({vertexColors:true});
+const MAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,metalness:0});
+const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_n3=new THREE.Matrix3(),_c=new THREE.Color();
 class Builder{
   constructor(){this.pos=[];this.nor=[];this.col=[]}
@@ -420,7 +471,8 @@ const waveTex=(()=>{ // a small tiling normal map so the sea sparkles in the low
   for(let y=0;y<N;y++)for(let xx=0;xx<N;xx++){const i=y*N+xx,gx=h[y*N+(xx+1)%N]-h[y*N+(xx+N-1)%N],gy=h[((y+1)%N)*N+xx]-h[((y+N-1)%N)*N+xx];let nx=-gx*2,ny=-gy*2,nz=1;const l=Math.hypot(nx,ny,nz);img.data[i*4]=(nx/l*.5+.5)*255;img.data[i*4+1]=(ny/l*.5+.5)*255;img.data[i*4+2]=(nz/l*.5+.5)*255;img.data[i*4+3]=255}
   x.putImageData(img,0,0);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(60,60);return t;
 })();
-const ocean=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),new THREE.MeshPhongMaterial({color:0x2a8198,emissive:0x2c2430,specular:0xffc890,shininess:35,normalMap:waveTex,normalScale:new THREE.Vector2(.7,.7)}));
+// glossy water: it mirrors the sunset sky and lays a glittering path towards the sun
+const ocean=new THREE.Mesh(new THREE.PlaneGeometry(6000,6000),new THREE.MeshStandardMaterial({color:0x0e4a5c,roughness:.1,metalness:0,normalMap:waveTex,normalScale:new THREE.Vector2(.7,.7),envMapIntensity:1.2,fog:false}));
 ocean.receiveShadow=true;
 ocean.rotation.x=-Math.PI/2;ocean.position.y=SEA;scene.add(ocean);
 
@@ -434,7 +486,7 @@ const isSignal=(i,j)=>nodeExists(i,j)&&hash(i,j,11)<.65;
 const lampCanvas=(()=>{const c=document.createElement('canvas');c.width=96;c.height=80;const x=c.getContext('2d');const on=['#ff3b2f','#ffc22e','#3dff8a'];
   for(let s=0;s<3;s++){x.fillStyle='#1b1a1f';x.fillRect(s*32,0,32,80);for(let k=0;k<3;k++){x.fillStyle=s===k?on[k]:'#3a3438';x.beginPath();x.arc(s*32+16,14+k*26,10,0,7);x.fill()}}
   return c})();
-const LAMP_MAT=[0,1,2,3].map(()=>{const t=new THREE.CanvasTexture(lampCanvas);t.repeat.x=1/3;return new THREE.MeshBasicMaterial({map:t})});
+const LAMP_MAT=[0,1,2,3].map(()=>{const t=sTex(lampCanvas);t.repeat.x=1/3;return new THREE.MeshBasicMaterial({map:t})});
 const LAMP_GEO=new THREE.PlaneGeometry(.8,2);
 function updateLamps(t){for(let s=0;s<2;s++)for(let a=0;a<2;a++)LAMP_MAT[s*2+a].map.offset.x=lightState(s,a,t)/3}
 // ---------- street names & districts
@@ -665,7 +717,7 @@ function signTex(top,bottom){
   const c=document.createElement('canvas');c.width=256;c.height=96;const x=c.getContext('2d');
   x.fillStyle='#1f6b46';x.fillRect(0,0,256,96);x.strokeStyle='#f6f3e8';x.lineWidth=4;x.strokeRect(6,6,244,84);
   x.fillStyle='#f6f3e8';x.textAlign='center';x.font='800 30px Figtree, sans-serif';x.fillText(top,128,44);x.font='700 22px Figtree, sans-serif';x.fillText(bottom,128,76);
-  return new THREE.CanvasTexture(c);
+  return sTex(c);
 }
 function buildTerrain(j){
   const b=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
@@ -715,7 +767,7 @@ function buildTerrain(j){
     // exit signs ahead of each town, one per direction
     const t1=townOfRow(j-12),t2=townOfRow(j+12);
     const sign=(t,east)=>{
-      const z=zm,x=roadX(z)+(east?12:-12),m=new THREE.Mesh(new THREE.PlaneGeometry(7,2.6),new THREE.MeshLambertMaterial({map:signTex(townName(t.k),'NEXT EXITS')}));
+      const z=zm,x=roadX(z)+(east?12:-12),m=new THREE.Mesh(new THREE.PlaneGeometry(7,2.6),new THREE.MeshStandardMaterial({roughness:.85,map:signTex(townName(t.k),'NEXT EXITS')}));
       m.position.set(x,6,z);m.rotation.y=east?0:Math.PI;grp.add(m);
       for(const s of[-1,1])b.add(G.box,0x8f8f96,x+s*2.6,3.2,z-(east?.1:-.1),.2,6.4,.2);
     };
@@ -872,7 +924,7 @@ const VTYPES={
   bike:{hl:.9,w:5,pal:SHIRT,bike:true,lane:6.6,slow:true,build(b){for(const z of[.55,-.55])b.add(G.cyl,TI,0,.34,z,.34,.05,.34,0,0,Math.PI/2);b.add(G.box,0x9a9aa2,0,.68,0,.06,.06,1.05);b.add(G.box,0x9a9aa2,0,.55,-.15,.05,.45,.05);b.add(G.box,WH,0,1.28,-.08,.45,.62,.3,0,.25);b.add(BLOB,WH,0,1.78,.05,.21,.21,.23);for(const s of[-1,1])b.add(G.box,0x2f3b5a,s*.12,.78,-.05,.14,.55,.16,0,.3)}},
 };
 const POOL=36,agents=[],vMesh={};
-for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(b.geo(),MAT,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
+for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(b.geo(),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
 for(let k=0;k<POOL;k++)agents.push({k,on:false,type:'sedan',x:0,z:0,fx:0,fz:1,v:0,hl:2.3});
 // other drivers signal too: front and rear amber lights on the turning side
 const npcBlink=new THREE.InstancedMesh(new THREE.SphereGeometry(.15,8,6),new THREE.MeshBasicMaterial({color:0xffb030}),POOL*2);
@@ -1030,15 +1082,15 @@ let towerLight=null;
   x.globalCompositeOperation='destination-out';
   for(let i=0;i<Wd;i++){const e=env(i/Wd*Math.PI*2);if(e<1){x.fillStyle=`rgba(0,0,0,${1-e})`;x.fillRect(i,0,1,Hd)}}
   x.globalCompositeOperation='source-over';
-  const cyl=new THREE.Mesh(new THREE.CylinderGeometry(SKY_R,SKY_R,SKY_H,96,1,true),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),transparent:true,side:THREE.BackSide,fog:false,depthWrite:false}));
+  const cyl=new THREE.Mesh(new THREE.CylinderGeometry(SKY_R,SKY_R,SKY_H,96,1,true),new THREE.MeshBasicMaterial({map:sTex(c),transparent:true,side:THREE.BackSide,fog:false,depthWrite:false}));
   cyl.position.y=SKY_Y0+SKY_H/2;cyl.renderOrder=-2;skyline.add(cyl);
   const th=tower.i/Wd*Math.PI*2,yw=SKY_Y0+(1-(tower.y-30)/Hd)*SKY_H;
-  towerLight=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gradCanvas(32,32,[[0,'#ff6a5a'],[.35,'rgba(255,60,50,.6)'],[1,'rgba(255,40,40,0)']],true)),fog:false,depthWrite:false,transparent:true}));
+  towerLight=new THREE.Sprite(new THREE.SpriteMaterial({map:sTex(gradCanvas(32,32,[[0,'#ff6a5a'],[.35,'rgba(255,60,50,.6)'],[1,'rgba(255,40,40,0)']],true)),fog:false,depthWrite:false,transparent:true}));
   towerLight.position.set(Math.sin(th)*(SKY_R-8),yw,Math.cos(th)*(SKY_R-8));towerLight.scale.set(14,14,1);towerLight.renderOrder=-1;skyline.add(towerLight);
   // a few soft sunset clouds
   const cc=document.createElement('canvas');cc.width=256;cc.height=96;const cx=cc.getContext('2d'),cr=rng(8);
   for(let k=0;k<14;k++){const x0=30+cr()*196,y0=40+cr()*30,rad=18+cr()*26,g=cx.createRadialGradient(x0,y0,0,x0,y0,rad);g.addColorStop(0,'rgba(255,214,190,.55)');g.addColorStop(1,'rgba(255,190,170,0)');cx.fillStyle=g;cx.fillRect(0,0,256,96)}
-  const cloudMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(cc),fog:false,depthWrite:false,transparent:true});
+  const cloudMat=new THREE.SpriteMaterial({map:sTex(cc),fog:false,depthWrite:false,transparent:true});
   for(let k=0;k<8;k++){const a=cr()*Math.PI*2,rr=760+cr()*100,s=new THREE.Sprite(cloudMat);s.position.set(Math.sin(a)*rr,90+cr()*90,Math.cos(a)*rr);s.scale.set(240+cr()*160,80+cr()*40,1);s.renderOrder=-1;skyline.add(s)}
 })();
 // the next town's skyline grows on the horizon as you approach it
@@ -1046,7 +1098,7 @@ const townSprite=(()=>{
   const c=document.createElement('canvas');c.width=512;c.height=160;const x=c.getContext('2d'),r=rng(77);
   for(let i=0;i<26;i++){const w=10+r()*24,h=20+r()*(i%5===2?120:60),cx=20+r()*472;x.fillStyle=r()<.5?'#8a6a8f':'#9c7896';x.fillRect(cx-w/2,160-h,w,h)}
   for(let i=0;i<5;i++){const cx=40+r()*432,top=160-70-r()*30;x.fillStyle='#7a5a7e';x.fillRect(cx-1,top,2,70);x.beginPath();x.arc(cx,top,6,0,7);x.fill()}
-  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),fog:false,transparent:true,depthWrite:false}));
+  const s=new THREE.Sprite(new THREE.SpriteMaterial({map:sTex(c),fog:false,transparent:true,depthWrite:false}));
   s.scale.set(420,131,1);scene.add(s);return s;
 })();
 function updateSkyline(cx,cz,dir,clock){
@@ -1071,10 +1123,10 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
   g.setAttribute('normal',new THREE.BufferAttribute(out,3));return g;
 }
 (()=>{
-  const paint=new THREE.MeshPhongMaterial({color:0xc92a3e,specular:0x775555,shininess:70});
-  const chrome=new THREE.MeshPhongMaterial({color:0xd9d6d0,specular:0xffffff,shininess:140});
-  const cream=new THREE.MeshLambertMaterial({color:0xf1e2c6}),dark=new THREE.MeshLambertMaterial({color:0x2a2228});
-  const skin=new THREE.MeshLambertMaterial({color:0xc68863}),tire=new THREE.MeshLambertMaterial({color:0x1c1a1e}),white=new THREE.MeshLambertMaterial({color:0xf4f1ea});
+  const paint=new THREE.MeshPhysicalMaterial({color:0xc92a3e,roughness:.34,metalness:.05,clearcoat:1,clearcoatRoughness:.06}); // glossy lacquer over the red
+  const chrome=new THREE.MeshStandardMaterial({color:0xeeebe6,roughness:.16,metalness:1});
+  const cream=new THREE.MeshStandardMaterial({roughness:.85,color:0xf1e2c6}),dark=new THREE.MeshStandardMaterial({roughness:.85,color:0x2a2228});
+  const skin=new THREE.MeshStandardMaterial({roughness:.85,color:0xc68863}),tire=new THREE.MeshStandardMaterial({roughness:.85,color:0x1c1a1e}),white=new THREE.MeshStandardMaterial({roughness:.85,color:0xf4f1ea});
   const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0,parent=body)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;parent.add(m);return m};
   // side profile (car length along the shape's x, height along y), extruded across the width
   const profile=notch=>{
@@ -1091,9 +1143,9 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
     const fin=new THREE.Shape();fin.moveTo(-2.36,.98);fin.lineTo(-1.3,.98);fin.quadraticCurveTo(-2,1.02,-2.3,1.22);fin.lineTo(-2.36,.98);
     add(ext(fin,.04,.03),paint,s*.9,0,0);
     add(new THREE.CylinderGeometry(.025,.025,4.2,6).rotateX(Math.PI/2),chrome,s*1.01,.8,0);
-    add(new THREE.CylinderGeometry(.15,.15,.08,18).rotateX(Math.PI/2),new THREE.MeshLambertMaterial({color:0xfff4d0,emissive:0x8a7a50}),s*.68,.74,2.4);
+    add(new THREE.CylinderGeometry(.15,.15,.08,18).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({roughness:.85,color:0xfff4d0,emissive:0x8a7a50}),s*.68,.74,2.4);
     add(new THREE.TorusGeometry(.16,.03,6,18),chrome,s*.68,.74,2.43);
-    add(new THREE.CylinderGeometry(.11,.11,.08,14).rotateX(Math.PI/2),new THREE.MeshLambertMaterial({color:0xc0101e,emissive:0x5a0008}),s*.7,.8,-2.39);
+    add(new THREE.CylinderGeometry(.11,.11,.08,14).rotateX(Math.PI/2),new THREE.MeshStandardMaterial({roughness:.85,color:0xc0101e,emissive:0x5a0008}),s*.7,.8,-2.39);
   }
   for(const z of[2.47,-2.45]){add(new THREE.CylinderGeometry(.09,.09,2,12).rotateZ(Math.PI/2),chrome,0,.47,z);for(const s of[-1,1])add(new THREE.SphereGeometry(.09,10,8),chrome,s,.47,z)}
   add(rbox(.9,.24,.06,.03),chrome,0,.63,2.43);
@@ -1106,12 +1158,12 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
   // windshield frame and glass
   for(const s of[-1,1])add(new THREE.CylinderGeometry(.025,.025,.62,6),chrome,s*.93,1.3,.74,-.45);
   add(new THREE.CylinderGeometry(.025,.025,1.88,6).rotateZ(Math.PI/2),chrome,0,1.58,.6);
-  const glass=add(new THREE.PlaneGeometry(1.84,.58),new THREE.MeshPhongMaterial({color:0xcfeaf5,specular:0xffffff,shininess:120,transparent:true,opacity:.28,side:THREE.DoubleSide}),0,1.3,.73,-.45);glass.castShadow=false;
+  const glass=add(new THREE.PlaneGeometry(1.84,.58),new THREE.MeshStandardMaterial({color:0xcfeaf5,roughness:.04,metalness:0,transparent:true,opacity:.28,side:THREE.DoubleSide}),0,1.3,.73,-.45);glass.castShadow=false;
   // driver
-  add(rbox(.5,.6,.3,.1),new THREE.MeshLambertMaterial({color:0x2fb3a8}),.45,1.26,-.18);
+  add(rbox(.5,.6,.3,.1),new THREE.MeshStandardMaterial({roughness:.85,color:0x2fb3a8}),.45,1.26,-.18);
   add(new THREE.SphereGeometry(.21,14,12),skin,.45,1.8,-.12);
-  add(new THREE.SphereGeometry(.225,14,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshLambertMaterial({color:0x3a2a20}),.45,1.84,-.15);
-  add(rbox(.36,.07,.05,.02),new THREE.MeshPhongMaterial({color:0x111114,specular:0x888888,shininess:90}),.45,1.83,.08);
+  add(new THREE.SphereGeometry(.225,14,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({roughness:.85,color:0x3a2a20}),.45,1.84,-.15);
+  add(rbox(.36,.07,.05,.02),new THREE.MeshStandardMaterial({color:0x111114,roughness:.12,metalness:.3}),.45,1.83,.08);
   for(const s of[-1,1])add(new THREE.CylinderGeometry(.06,.055,.5,8),skin,.45+s*.2,1.3,.12,-1.1);
   // wheels: black tire, whitewall, chrome hubcap
   const tg=new THREE.CylinderGeometry(.42,.42,.28,24).rotateZ(Math.PI/2),wg=new THREE.CylinderGeometry(.31,.31,.29,24).rotateZ(Math.PI/2),hg=new THREE.CylinderGeometry(.17,.17,.3,16).rotateZ(Math.PI/2);
@@ -1120,12 +1172,12 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
     add(tg,tire,0,0,0,0,0,0,w);add(wg,white,0,0,0,0,0,0,w);add(hg,chrome,0,0,0,0,0,0,w);add(new THREE.BoxGeometry(.31,.05,.2),chrome,0,0,0,0,0,0,w);
   }
   // turn signals: amber lenses front and rear, plus a soft glow that shows when lit
-  const bg=new THREE.SphereGeometry(.11,12,10),glowMat=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(gradCanvas(64,64,[[0,'rgba(255,200,90,1)'],[.25,'rgba(255,160,40,.8)'],[1,'rgba(255,140,30,0)']],true)),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
+  const bg=new THREE.SphereGeometry(.11,12,10),glowMat=new THREE.SpriteMaterial({map:sTex(gradCanvas(64,64,[[0,'rgba(255,200,90,1)'],[.25,'rgba(255,160,40,.8)'],[1,'rgba(255,140,30,0)']],true)),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
   for(const side of['L','R']){
     const m=new THREE.MeshBasicMaterial({color:0x5a3a10});blink[side]=m;blinkGlow[side]=[];
     for(const sz of[2.43,-2.42]){const x=side==='L'?.84:-.84;add(bg,m,x,.62,sz);const g=new THREE.Sprite(glowMat);g.position.set(x,.62,sz+(sz>0?.08:-.08));g.scale.set(1.1,1.1,1);g.visible=false;body.add(g);blinkGlow[side].push(g)}
   }
-  const sh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,5.4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(gradCanvas(64,64,[[0,'rgba(20,10,25,.4)'],[.6,'rgba(20,10,25,.2)'],[1,'rgba(20,10,25,0)']],true)),transparent:true,depthWrite:false}));
+  const sh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,5.4),new THREE.MeshBasicMaterial({map:sTex(gradCanvas(64,64,[[0,'rgba(20,10,25,.4)'],[.6,'rgba(20,10,25,.2)'],[1,'rgba(20,10,25,0)']],true)),transparent:true,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=.03;carG.add(sh);
 })();
 
@@ -1249,7 +1301,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
@@ -1997,6 +2049,8 @@ function streakResumed(){
 // ---------- calm mode: fade the extras after 10 s without a touch; the hands-free time stays
 let lastTouch=performance.now();
 $('calm').checked=settings.calm;
+$('hq').checked=settings.hq;setQuality(settings.hq);
+$('hq').addEventListener('change',e=>{settings.hq=e.target.checked;saveSettings();setQuality(settings.hq)});
 $('calm').addEventListener('change',e=>{settings.calm=e.target.checked;saveSettings();lastTouch=performance.now();hudEl.classList.remove('calm')});
 for(const ev of['pointerdown','keydown','wheel'])addEventListener(ev,()=>{lastTouch=performance.now();hudEl.classList.remove('calm')},true);
 for(const ev of['touchend','click'])addEventListener(ev,()=>{if(AC&&AC.state!=='running'&&!document.hidden&&$('start').hidden)unlockAudio()},true); // any tap wakes stalled sound
@@ -2092,7 +2146,7 @@ $('mapTown').addEventListener('click',()=>setMapMode('town'));
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
 let baseFov=56;
 function resize(){
-  const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);
+  const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);if(composer)composer.setSize(w,h);
   camera.aspect=w/h;camera.fov=baseFov=camera.aspect<.8?70:56;camera.updateProjectionMatrix();
 }
 addEventListener('resize',resize);resize();
@@ -2113,13 +2167,14 @@ function loop(now){
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
-  sunSprite.position.set(car.x-430,62,car.z+40);
   updateSkyline(car.x,car.z,car.d,clock);
   followSun(car.x,car.z);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
   if(!hudEl.hidden){const sg=signal.on?signal.side:'';if(sg!==lastSig){lastSig=sg;sigLEl.classList.toggle('on',sg==='L');sigREl.classList.toggle('on',sg==='R')}
     updateHud();const k=Math.round(car.v*3.6);if(k!==lastKmh){lastKmh=k;kmhEl.textContent=k}}
-  renderer.render(scene,camera);
+  updateHaze();
+  sky.position.copy(camera.position);
+  if(composer&&settings.hq)composer.render();else renderer.render(scene,camera);
 }
 requestAnimationFrame(loop);
 

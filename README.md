@@ -14,7 +14,7 @@ Open the GitHub Pages link in a phone or desktop browser and tap **Tap to drive*
 - **Tap the radio display** to request a song. **VOL** on the radio sets the volume or mutes.
 - **The map button** shows the coast around you, or the town's streets.
 - **Hands-free** counts how long you've stayed in the game without switching apps. Rick and Dana notice.
-- **Settings** has tilt steering, cruise speed (60 to 160 km/h), host voices and calm mode.
+- **Settings** has tilt steering, cruise speed (60 to 160 km/h), host voices, calm mode and high-quality graphics (turn off to save battery).
 - No sound on iPhone? Check the silent switch.
 
 ## Project layout
