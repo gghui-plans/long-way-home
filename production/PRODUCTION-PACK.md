@@ -255,6 +255,29 @@ Tips:
 | request-05-2 | RICK | It's one person, Dana. It's always the same person. | flat |
 | request-06-1 | RICK | We were going to play something else. But the people have spoken. | resigned |
 
+**Hands-free streak** (milestones while you don't leave the game, a new personal best, and coming back after leaving)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| milestone-05-1 | DANA | Five minutes hands-free, folks! Somebody's on a roll! | cheerful |
+| milestone-05-2 | RICK | Five minutes. That's a long red light. | dry |
+| milestone-10-1 | DANA | Ten minutes, and somebody out there hasn't touched their phone. Look at you! | delighted |
+| milestone-10-2 | RICK | Ten minutes. I'll believe it at twenty. | suspicious |
+| milestone-30-1 | DANA | Thirty minutes phone-free! A hero! | thrilled |
+| milestone-30-2 | RICK | A suspect. | flat |
+| milestone-60-1 | RICK | One hour. No phone. In thirty years of traffic reports, I have never seen this. | awed, slow |
+| milestone-60-2 | DANA | I'm not crying. It's the sunset. | choked up |
+| milestone-120-1 | DANA | Two hours hands-free! We should name a lane after you! | excited |
+| milestone-120-2 | RICK | They'd just close it for construction. | dry |
+| record-01-1 | DANA | New personal record! Somebody get this driver a trophy! | excited |
+| record-01-2 | RICK | We don't have a trophy. We have a traffic cone. | dry |
+| back-01-1 | RICK | Oh. You're back. We noticed. | deadpan |
+| back-01-2 | DANA | Everybody checks their phone sometimes! New streak starts now! | forgiving |
+| back-02-1 | DANA | Welcome back! The ocean missed you. | cheerful |
+| back-02-2 | RICK | The ocean didn't notice. The ocean never notices. | dry |
+| back-03-1 | RICK | And the streak is over. Like all good things. Like the carpool lane. | weary |
+| back-03-2 | DANA | Clean slate, folks! Eyes on the road! | upbeat |
+
 ---
 
 ## Part 2: Suno songs

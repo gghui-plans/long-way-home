@@ -53,6 +53,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .next{display:inline-flex;gap:6px;align-items:baseline;background:var(--glass);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:5px 11px;border-radius:99px;font-size:13px;max-width:100%}
 .next b{color:var(--sun);font-weight:800}
 .next i{font-style:normal;color:var(--muted);font-size:12px}
+.streak{display:inline-flex;align-items:baseline;gap:7px;background:var(--glass);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:4px 11px 5px;border-radius:99px;max-width:100%;flex-wrap:wrap}
+.streak .lbl{font-size:9px;font-weight:800;letter-spacing:.16em;color:var(--muted)}
+.streak b{font-family:var(--f-lcd);font-weight:400;font-size:20px;line-height:1;color:var(--lcd);text-shadow:0 0 6px rgba(255,179,71,.45);font-variant-numeric:tabular-nums}
+.streak .dist{font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.streak .best{font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
 .iconbtn{pointer-events:auto;flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--glass);color:var(--ink);display:grid;place-items:center;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);cursor:pointer}
 
 .arrows{position:absolute;left:16px;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 30px);display:flex;justify-content:space-between;pointer-events:none}
@@ -150,6 +155,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <div class="left">
       <div class="sign"><small id="blockno">100 N</small><span id="street">Jacaranda St</span></div>
       <div class="next" id="next"></div>
+      <div class="streak" id="streak" aria-label="Hands-free streak"><span class="lbl">HANDS-FREE</span><b id="stTime">0:00</b><span class="dist" id="stDist">0.0 km</span><span class="best" id="stBest"></span></div>
     </div>
     <div class="right">
     <div class="speedo" aria-label="Speed"><i class="sig" id="sigL" aria-hidden="true"></i><b id="kmh">0</b><span>km/h</span><i class="sig r" id="sigR" aria-hidden="true"></i></div>
@@ -1534,6 +1540,19 @@ const VBITS={
     {id:'request-05',lines:[['D',"The request line is on fire tonight!"],['R',"It's one person, Dana. It's always the same person."]]},
     {id:'request-06',lines:[['R',"We were going to play something else. But the people have spoken."]]}
   ],
+  milestone:{
+    5:{id:'milestone-05',lines:[['D',"Five minutes hands-free, folks! Somebody's on a roll!"],['R',"Five minutes. That's a long red light."]]},
+    10:{id:'milestone-10',lines:[['D',"Ten minutes, and somebody out there hasn't touched their phone. Look at you!"],['R',"Ten minutes. I'll believe it at twenty."]]},
+    30:{id:'milestone-30',lines:[['D',"Thirty minutes phone-free! A hero!"],['R',"A suspect."]]},
+    60:{id:'milestone-60',lines:[['R',"One hour. No phone. In thirty years of traffic reports, I have never seen this."],['D',"I'm not crying. It's the sunset."]]},
+    120:{id:'milestone-120',lines:[['D',"Two hours hands-free! We should name a lane after you!"],['R',"They'd just close it for construction."]]}
+  },
+  record:{id:'record-01',lines:[['D',"New personal record! Somebody get this driver a trophy!"],['R',"We don't have a trophy. We have a traffic cone."]]},
+  back:[
+    {id:'back-01',lines:[['R',"Oh. You're back. We noticed."],['D',"Everybody checks their phone sometimes! New streak starts now!"]]},
+    {id:'back-02',lines:[['D',"Welcome back! The ocean missed you."],['R',"The ocean didn't notice. The ocean never notices."]]},
+    {id:'back-03',lines:[['R',"And the streak is over. Like all good things. Like the carpool lane."],['D',"Clean slate, folks! Eyes on the road!"]]}
+  ],
   after:[
     {id:'after-01',lines:[['D',"A classic!"]]},
     {id:'after-02',lines:[['R',"They broke up in traffic, you know. Different lanes."]]},
@@ -1570,7 +1589,13 @@ function pickBit(key,pool){
 }
 
 // ---------- the show: talk, then a song, repeat. Red lights can cue the next bit early.
-const Show={on:false,phase:'off',token:0,lastKind:''};
+const Show={on:false,phase:'off',token:0,lastKind:'',queue:[]};
+// queue a special bit for the next break; if a song has been on a while, fade it now (like a red light)
+function onAirSoon(bit){
+  if(!Show.on)return;
+  Show.queue.push(bit);
+  if(Show.phase==='song'&&AC&&AC.currentTime-M.start>20){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk(nextKind())})}
+}
 const keepAlive=[];
 let setLCD=()=>{};
 function sayLine(line,tok,next){
@@ -1663,8 +1688,9 @@ function talk(kind){
   if(!Show.on)return;
   Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
-  const list=[];
-  if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
+  const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
+  if(special)list.push(special);
+  else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
   else list.push(pickBit(kind,VBITS[kind]));
   list.push({id:'intro-'+song.id,lines:[song.intro]});
@@ -1852,6 +1878,35 @@ function updateHud(){
   $('btnL').classList.toggle('on',car.user==='L');$('btnR').classList.toggle('on',car.user==='R');$('btnS').classList.toggle('on',car.user==='S');
 }
 
+// ---------- hands-free streak: time and distance since you last left the game (leaving or locking the phone resets it)
+const BEST_KEY='la-drive-best',stTime=$('stTime'),stDist=$('stDist'),stBest=$('stBest');
+const best={ms:0,km:0};try{Object.assign(best,JSON.parse(localStorage.getItem(BEST_KEY)||'{}'))}catch(e){}
+const saveBest=()=>{try{localStorage.setItem(BEST_KEY,JSON.stringify(best))}catch(e){}};
+const streak={on:false,t0:0,km:0,fired:{},recordFired:false,bestAtStart:0,lost:0};
+const fmtTime=ms=>{const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor(s/60)%60,ss=String(s%60).padStart(2,'0');return h?h+':'+String(m).padStart(2,'0')+':'+ss:m+':'+ss};
+function startStreak(){Object.assign(streak,{on:true,t0:Date.now(),km:0,fired:{},recordFired:false,bestAtStart:best.ms})}
+function updateStreak(dt,frame){
+  if(!streak.on)return;
+  streak.km+=car.v*dt/1000;
+  const ms=Date.now()-streak.t0;
+  for(const m of[5,10,30,60,120])if(!streak.fired[m]&&ms>=m*60000){
+    streak.fired[m]=true;toast(m<60?m+' minutes hands-free!':m===60?'1 hour hands-free!':'2 hours hands-free!');onAirSoon(VBITS.milestone[m]);
+  }
+  if(ms>best.ms){
+    best.ms=ms;best.km=streak.km;
+    if(!streak.recordFired&&streak.bestAtStart>=5*60000){streak.recordFired=true;toast('New personal best!');onAirSoon(VBITS.record)}
+    if(frame%120===0)saveBest();
+  }
+  if(frame%15===0){stTime.textContent=fmtTime(ms);stDist.textContent=streak.km.toFixed(1)+' km';stBest.textContent=best.ms>=60000&&best.ms>ms+1000?'best '+fmtTime(best.ms):''}
+}
+function streakPaused(){if(!streak.on)return;streak.lost=Date.now()-streak.t0;streak.on=false;saveBest()}
+function streakResumed(){
+  if(streak.on||!$('start').hidden)return;
+  const lost=streak.lost;startStreak();
+  if(lost>=60000)toast('Streak ended at '+fmtTime(lost)+'. New streak started');
+  if(lost>=120000)onAirSoon(pick(VBITS.back));
+}
+
 // ---------- camera, resize, loop
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
 let baseFov=56;
@@ -1868,7 +1923,7 @@ let last=performance.now(),frame=0,lastKmh=-1,lastSig='';const kmhEl=$('kmh'),si
 function loop(now){
   requestAnimationFrame(loop);
   const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;frame++;
-  updateLamps(clock);updateTilt(dt);updateCar(cardShot?0:dt);stream(car.x,car.z,false);updatePeds(dt,car.x,car.z,frame);updateTraffic(dt);
+  updateLamps(clock);updateTilt(dt);updateCar(cardShot?0:dt);updateStreak(dt,frame);stream(car.x,car.z,false);updatePeds(dt,car.x,car.z,frame);updateTraffic(dt);
   // chase cam: locked to the car's position, only the angle is smoothed (so it never falls behind at speed)
   const fx=Math.sin(car.yaw),fz=Math.cos(car.yaw),back=10+car.v*.05;
   camPos.lerp(_t.set(-fx*back,4.4,-fz*back),1-Math.exp(-dt*3));
@@ -1893,11 +1948,11 @@ async function keepAwake(){try{wake=await navigator.wakeLock.request('screen')}c
 $('go').addEventListener('click',()=>{
   $('start').hidden=true;hudEl.hidden=false;applyMode();
   initAudio();if(AC)AC.resume();
-  power(true);keepAwake();
+  power(true);keepAwake();startStreak();
 });
 document.addEventListener('visibilitychange',()=>{
-  if(document.hidden){if(AC)AC.suspend()}
-  else{if(AC&&Show.on)AC.resume();if($('start').hidden)keepAwake()}
+  if(document.hidden){if(AC)AC.suspend();streakPaused()}
+  else if($('start').hidden){if(AC)AC.resume();keepAwake();streakResumed()} // resume sound even with the radio off, so the ocean comes back too
 });
 setLCD('STEREO','CLASSIC ROCK & GRIDLOCK');
 })();
