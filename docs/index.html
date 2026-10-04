@@ -123,7 +123,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .lcd{cursor:pointer}
 .lcdwrap{display:grid;gap:4px;min-width:0}
 .lcdwrap>span{font-size:9px;letter-spacing:.18em;color:#a99aa6;font-weight:800;text-align:center;cursor:pointer}
-.reqtip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 26px);background:var(--sun,#ffc861);color:#2a1a22;font-weight:800;font-size:14px;padding:8px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .4s}
+.reqtip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) - 4px);z-index:1;background:var(--sun,#ffc861);color:#2a1a22;font-weight:800;font-size:14px;padding:8px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .4s}
 .reqtip::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--sun,#ffc861)}
 .reqtip.show{opacity:1}
 .lcd.pulse{animation:lcdPulse 1.2s ease-in-out 2}
