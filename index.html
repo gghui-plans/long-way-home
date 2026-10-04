@@ -2075,6 +2075,7 @@ let wake=null;
 async function keepAwake(){try{wake=await navigator.wakeLock.request('screen')}catch(e){}}
 $('go').addEventListener('click',()=>{
   $('start').hidden=true;hudEl.hidden=false;applyMode();
+  if(settings.muted||settings.vol===0){settings.muted=false;settings.vol=.05;saveSettings();applyVolume()} // muted last time: start quietly instead of silent
   initAudio();unlockAudio();
   for(const ms of[600,1500,3000])setTimeout(()=>{if(AC&&AC.state!=='running'&&!document.hidden)unlockAudio()},ms); // in case the first try didn't take
   Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
