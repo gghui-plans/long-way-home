@@ -1199,7 +1199,7 @@ function initAudio(){
   const lo=AC.createGain();lo.gain.value=.09;const dl=AC.createDelay();dl.delayTime.value=.28;const fb=AC.createGain();fb.gain.value=.3;
   leadIn.connect(ws2);ws2.connect(ll);ll.connect(lo);lo.connect(musicBus);lo.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(musicBus);
   noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
-  initSongEl();
+  initSongEl();initVoices();
 }
 function blinkerTick(on){ // the relay click of a turn signal: tick when it lights, tock when it goes dark
   if(!AC||AC.state!=='running')return;
@@ -1403,7 +1403,6 @@ const SONGS=[
   {id:'pacific-coast-cruise',title:"Pacific Coast Cruise",band:"The Turn Signals",intro:['D',"Something mellow for the coast. The Turn Signals, Pacific Coast Cruise."]},
   {id:'long-way-home',title:"Long Way Home",band:"Rush Hour Rebels",intro:['D',"And this one's for you, out there taking the long way home. Rush Hour Rebels."]},
 ];
-const AFTER=[[['D',"A classic!"]],[['R',"They broke up in traffic, you know. Different lanes."]],[['D',"Windows down, volume up!"],['R',"Dana, it's a convertible. There are no windows."],['D',"Then everything up!"]]];
 let playlist=[],lastSongId='';
 function nextSong(){
   if(!playlist.length){playlist=SONGS.slice().sort(()=>Math.random()-.5);if(playlist[0].id===lastSongId)playlist.push(playlist.shift())}
@@ -1460,77 +1459,84 @@ const SPK={
 const spoken=t=>t.replace(/K-JAM/g,'K Jam').replace(/101\.1/g,'one oh one point one').replace(/\b405\b/g,'four oh five').replace(/\b101\b/g,'one oh one').replace(/\b110\b/g,'one ten').replace(/the 10\b/g,'the ten').replace(/1987/g,'nineteen eighty seven')
   .replace(/Dr\./g,'Doctor').replace(/\bAve\b/g,'Avenue').replace(/\bBlvd\b/g,'Boulevard').replace(/\bSt\b/g,'Street').replace(/\bDr\b/g,'Drive').replace(/\bHwy\b/g,'Highway').replace(/\bRd\b/g,'Road').replace(/\bLn\b/g,'Lane').replace(/\bPl\b/g,'Place');
 
-// ---------- The Traffic Guys: Rick (doom) and Dana (sunshine)
-const BITS={
+// ---------- the recorded show: every bit as it was voiced (from production/PRODUCTION-PACK.md). One audio file per bit.
+const VBITS={
   id:[
-    [['D',"You're locked in to K-JAM 101.1, Classic Rock and Gridlock. I'm Dana!"],['R',"And I'm Rick. Somewhere out there, a minivan has had its blinker on since breakfast."],['D',"Let's get you moving, folks!"]],
-    [['R',"K-JAM 101.1. Classic Rock and Gridlock."],['D',"The station that's stuck in traffic with you!"],['R',"Dana, that's not the comfort you think it is."]],
-    [['D',"Good evening, coast! Dana here, with Rick, and the sun is doing that gorgeous orange thing."],['R',"It's not gorgeous, Dana. It's in everyone's eyes. Every single driver. Squinting."]],
+    {id:'id-01',lines:[['D',"You're locked in to K-Jam one-oh-one point one, Classic Rock and Gridlock. I'm Dana!"],['R',"And I'm Rick. Somewhere out there, a minivan has had its blinker on since breakfast."],['D',"Let's get you moving, folks!"]]},
+    {id:'id-02',lines:[['R',"K-Jam one-oh-one point one. Classic Rock and Gridlock."],['D',"The station that's stuck in traffic with you!"],['R',"Dana, that's not the comfort you think it is."]]},
+    {id:'id-03',lines:[['D',"Good evening, coast! Dana here, with Rick, and the sun is doing that gorgeous orange thing."],['R',"It's not gorgeous, Dana. It's in everyone's eyes. Every single driver. Squinting."]]}
   ],
   traffic:[
-    [['D',"Let's check the roads. Rick, how's {street} looking?"],['R',"Dana. A shopping cart has entered the left lane."],['D',"Just one cart?"],['R',"It's always just one cart. Until it isn't."],['D',"I'm sure it'll roll on through any minute now!"]],
-    [['R',"Traffic on the 405 is at a complete standstill."],['D',"Ooh, how long's the backup?"],['R',"It doesn't end, Dana. It just becomes the 10."],['D',"So it's a loop! That's kind of efficient."]],
-    [['D',"Good news on {street}, folks. Things are wide open!"],['R',"That's because everyone left. They saw what was coming."],['D',"What's coming, Rick?"],['R',"Street sweeping. Tuesday. Nobody is ready."]],
-    [['R',"Reports of a mattress on the 101 northbound."],['D',"Somebody's gonna get a great nap!"],['R',"Three lanes are slowing down to look at it, Dana. Three. Lanes."],['D',"It is a very nice mattress."]],
-    [['D',"Quick look at {cross}. Light's green, sun's out, life is good!"],['R',"Green lights are a trap, Dana. They want you to feel safe."]],
-    [['R',"We have a report of a red convertible doing exactly the speed limit."],['D',"A hero!"],['R',"A suspect."]],
+    {id:'traffic-01',lines:[['D',"Let's check the roads. Rick, how's the coast looking?"],['R',"Dana. A shopping cart has entered the left lane."],['D',"Just one cart?"],['R',"It's always just one cart. Until it isn't."],['D',"I'm sure it'll roll on through any minute now!"]]},
+    {id:'traffic-02',lines:[['R',"Traffic on the four-oh-five is at a complete standstill."],['D',"Ooh, how long's the backup?"],['R',"It doesn't end, Dana. It just becomes the ten."],['D',"So it's a loop! That's kind of efficient."]]},
+    {id:'traffic-03',lines:[['D',"Good news on Ocean Avenue, folks. Things are wide open!"],['R',"That's because everyone left. They saw what was coming."],['D',"What's coming, Rick?"],['R',"Street sweeping. Tuesday. Nobody is ready."]]},
+    {id:'traffic-04',lines:[['R',"Reports of a mattress on the one-oh-one northbound."],['D',"Somebody's gonna get a great nap!"],['R',"Three lanes are slowing down to look at it, Dana. Three. Lanes."],['D',"It is a very nice mattress."]]},
+    {id:'traffic-05',lines:[['D',"Quick look downtown. Light's green, sun's out, life is good!"],['R',"Green lights are a trap, Dana. They want you to feel safe."]]},
+    {id:'traffic-06',lines:[['R',"We have a report of a red convertible doing exactly the speed limit."],['D',"A hero!"],['R',"A suspect."]]}
   ],
   sigalert:[
-    [['R',"And now. Sig Alert Theatre."],['R',"Tonight's production. A Traffic Cone, Alone."],['R',"It stood in lane three. Orange. Defiant. No one asked it to be there. And yet. There it stood."],['D',"Bravo. Bravo, Rick."],['R',"Lane three remains closed until further notice."]],
-    [['R',"Sig Alert Theatre presents. A Ladder in the Carpool Lane."],['R',"Act one. The ladder fell. Act two. Everyone slowed down to look at the ladder."],['D',"And act three?"],['R',"There is no act three, Dana. We are all still looking at the ladder."]],
-    [['R',"Sig Alert Theatre. A tragedy in one lane."],['R',"A man on {street} tried to merge. He waved. No one waved back."],['D',"Oh no."],['R',"He is still there, Dana. Still waving."],['D',"Somebody wave at that man!"]],
-    [['R',"Sig Alert Theatre. The Beach Chair."],['R',"It blew off a roof rack on Highway 1. It landed upright. Facing the ocean."],['D',"Aww, it just wanted to see the sunset."],['R',"It has a better view than any of us, Dana. It is mocking us."]],
+    {id:'sigalert-01',lines:[['R',"And now. Sig Alert Theatre."],['R',"Tonight's production. A Traffic Cone, Alone."],['R',"It stood in lane three. Orange. Defiant. No one asked it to be there. And yet. There it stood."],['D',"Bravo. Bravo, Rick."],['R',"Lane three remains closed until further notice."]]},
+    {id:'sigalert-02',lines:[['R',"Sig Alert Theatre presents. A Ladder in the Carpool Lane."],['R',"Act one. The ladder fell. Act two. Everyone slowed down to look at the ladder."],['D',"And act three?"],['R',"There is no act three, Dana. We are all still looking at the ladder."]]},
+    {id:'sigalert-03',lines:[['R',"Sig Alert Theatre. A tragedy in one lane."],['R',"A man on Avocado Boulevard tried to merge. He waved. No one waved back."],['D',"Oh no."],['R',"He is still there, Dana. Still waving."],['D',"Somebody wave at that man!"]]},
+    {id:'sigalert-04',lines:[['R',"Sig Alert Theatre. The Beach Chair."],['R',"It blew off a roof rack on Highway 1. It landed upright. Facing the ocean."],['D',"Aww, it just wanted to see the sunset."],['R',"It has a better view than any of us, Dana. It is mocking us."]]}
   ],
   call:[
-    [['D',"We've got a caller! Brenda, you're on K-JAM."],['F',"Hi guys. I've been on the 10 eastbound since March.",'BRENDA'],['R',"Brenda, I am so sorry."],['F',"Don't be. I've got an herb garden on the dashboard now. The basil's doing great.",'BRENDA'],['D',"See, Rick? The 10 is a community!"]],
-    [['R',"Caller, you're on the air."],['M',"Hey, it's Kevin from the 101. I got married in the fast lane.",'KEVIN'],['D',"Congratulations!"],['M',"Thanks. We met at a merge. She let me in.",'KEVIN'],['R',"Love found a way, Kevin. You still haven't found an exit."]],
-    [['D',"Line two, you're on K-JAM!"],['F',"Hi. I've been listening ever since my car became my apartment.",'GLORIA'],['R',"How's the square footage?"],['F',"Great natural light. Terrible parking.",'GLORIA']],
-    [['R',"Caller, go ahead."],['M',"Hi, it's Marco. I'm on Highway 1 behind an R V called The Wanderer.",'MARCO'],['D',"How long have you been behind it?"],['M',"We're on a first-name basis now. His name is Gary.",'MARCO'],['R',"Gary is never pulling over, Marco. Gary has never pulled over in his life."]],
+    {id:'call-01',lines:[['D',"We've got a caller! Brenda, you're on K-Jam."],['F',"Hi guys. I've been on the ten eastbound since March.",'BRENDA'],['R',"Brenda, I am so sorry."],['F',"Don't be. I've got an herb garden on the dashboard now. The basil's doing great.",'BRENDA'],['D',"See, Rick? The ten is a community!"]]},
+    {id:'call-02',lines:[['R',"Caller, you're on the air."],['M',"Hey, it's Kevin from the one-oh-one. I got married in the fast lane.",'KEVIN'],['D',"Congratulations!"],['M',"Thanks. We met at a merge. She let me in.",'KEVIN'],['R',"Love found a way, Kevin. You still haven't found an exit."]]},
+    {id:'call-03',lines:[['D',"Line two, you're on K-Jam!"],['F',"Hi. I've been listening ever since my car became my apartment.",'GLORIA'],['R',"How's the square footage?"],['F',"Great natural light. Terrible parking.",'GLORIA']]},
+    {id:'call-04',lines:[['R',"Caller, go ahead."],['M',"Hi, it's Marco. I'm on Highway 1 behind an R V called The Wanderer.",'MARCO'],['D',"How long have you been behind it?"],['M',"We're on a first-name basis now. His name is Gary.",'MARCO'],['R',"Gary is never pulling over, Marco. Gary has never pulled over in his life."]]}
   ],
   shortcut:[
-    [['D',"Time for Dana's shortcut of the day!"],['D',"Skip {street}, cut over on {cross}, then hang a left through the car wash."],['R',"Through the car wash, Dana?"],['D',"In one end, out the other. Wax is optional."],['R',"Last week's shortcut put forty cars in a cul-de-sac. They've formed a homeowners association."]],
-    [['D',"Dana's shortcut of the day: take {cross} all the way to the end!"],['R',"It ends in the ocean, Dana."],['D',"Then you've arrived at the beach. Shortcut!"]],
-    [['D',"Shortcut of the day! Follow the ice cream truck. They know things."],['R',"That ice cream truck has been circling the same block since 1987."]],
-    [['D',"Shortcut of the day: take Highway 1. The whole way. No turns!"],['R',"That's not a shortcut, Dana. That's just the road."],['D',"And isn't it beautiful?"]],
+    {id:'shortcut-01',lines:[['D',"Time for Dana's shortcut of the day!"],['D',"Skip the highway, cut over on Jacaranda, then hang a left through the car wash."],['R',"Through the car wash, Dana?"],['D',"In one end, out the other. Wax is optional."],['R',"Last week's shortcut put forty cars in a cul-de-sac. They've formed a homeowners association."]]},
+    {id:'shortcut-02',lines:[['D',"Dana's shortcut of the day: take Sunset Vista all the way to the end!"],['R',"It ends in the ocean, Dana."],['D',"Then you've arrived at the beach. Shortcut!"]]},
+    {id:'shortcut-03',lines:[['D',"Shortcut of the day! Follow the ice cream truck. They know things."],['R',"That ice cream truck has been circling the same block since nineteen eighty-seven."]]},
+    {id:'shortcut-04',lines:[['D',"Shortcut of the day: take Highway 1. The whole way. No turns!"],['R',"That's not a shortcut, Dana. That's just the road."],['D',"And isn't it beautiful?"]]}
   ],
   ad:[
-    [['D',"Tired of circling the block?"],['R',"Madame Valeria. Parking-spot psychic."],['D',"She sees an open meter... in your future."],['R',"Readings by appointment. She's double-parked out front. Street sweeping is Tuesday."]],
-    [['R',"Feeling stuck? Emotionally? Also physically, on the freeway?"],['D',"Try Dr. Pam's Drive-Thru Therapy! Pull up, unload, pull forward."],['R',"Would you like to talk about your mother, or upsize to a fear of abandonment?"],['D',"Now with a second window for couples!"]],
-    [['D',"This traffic report is brought to you by Gridlock Gourmet."],['R',"A five-course meal you can eat between two exits."],['D',"The soup course alone takes the whole 110!"]],
-    [['D',"Sunset Surf School! Learn to surf in one lesson!"],['R',"Or learn to sit on a board and stare at the horizon for three hours."],['D',"Both count as surfing!"]],
+    {id:'ad-01',lines:[['D',"Tired of circling the block?"],['R',"Madame Valeria. Parking-spot psychic."],['D',"She sees an open meter... in your future."],['R',"Readings by appointment. She's double-parked out front. Street sweeping is Tuesday."]]},
+    {id:'ad-02',lines:[['R',"Feeling stuck? Emotionally? Also physically, on the freeway?"],['D',"Try Doctor Pam's Drive-Thru Therapy! Pull up, unload, pull forward."],['R',"Would you like to talk about your mother, or upsize to a fear of abandonment?"],['D',"Now with a second window for couples!"]]},
+    {id:'ad-03',lines:[['D',"This traffic report is brought to you by Gridlock Gourmet."],['R',"A five-course meal you can eat between two exits."],['D',"The soup course alone takes the whole one-ten!"]]},
+    {id:'ad-04',lines:[['D',"Sunset Surf School! Learn to surf in one lesson!"],['R',"Or learn to sit on a board and stare at the horizon for three hours."],['D',"Both count as surfing!"]]}
   ],
   red:[
-    [['R',"If you're sitting at a red light right now, that's fine. That's healthy. Breathe."],['D',"Use this time to wave at a pedestrian!"]],
-    [['D',"Stopped at a light? Perfect time for a stretch!"],['R',"Not too big a stretch. The light could change. Then what, Dana. Then what."]],
-    [['R',"A red light is just the city asking you to think about your choices."],['D',"And then it turns green and says, go for it!"]],
+    {id:'red-01',lines:[['R',"If you're sitting at a red light right now, that's fine. That's healthy. Breathe."],['D',"Use this time to wave at a pedestrian!"]]},
+    {id:'red-02',lines:[['D',"Stopped at a light? Perfect time for a stretch!"],['R',"Not too big a stretch. The light could change. Then what, Dana. Then what."]]},
+    {id:'red-03',lines:[['R',"A red light is just the city asking you to think about your choices."],['D',"And then it turns green and says, go for it!"]]}
   ],
   town:[
-    [['D',"Looks like you're rolling into {town}! Lovely little beach town."],['R',"Lovely. Sure. Their one traffic light has a waiting list."]],
-    [['R',"Heads up. {town}, coming up on Highway 1."],['D',"Ooh, best fish tacos on the coast!"],['R',"Longest line for fish tacos on the coast. It merges with the highway, Dana."]],
-    [['D',"Next stop, {town}! Population: friendly!"],['R',"Population: everyone who missed the exit for the last town."]],
-    [['D',"Welcome to {town}, where the parking meters take seashells!"],['R',"And the meter maids are seagulls. Very strict seagulls."]],
+    {id:'town-01',lines:[['R',"Lovely. Their one traffic light has a waiting list."]]},
+    {id:'town-02',lines:[['D',"Ooh, best fish tacos on the coast!"],['R',"Longest line for fish tacos on the coast. It merges with the highway, Dana."]]},
+    {id:'town-03',lines:[['D',"Population: friendly!"],['R',"Population: everyone who missed the exit for the last town."]]},
+    {id:'town-04',lines:[['D',"Where the parking meters take seashells!"],['R',"And the meter maids are seagulls. Very strict seagulls."]]}
+  ],
+  after:[
+    {id:'after-01',lines:[['D',"A classic!"]]},
+    {id:'after-02',lines:[['R',"They broke up in traffic, you know. Different lanes."]]},
+    {id:'after-03',lines:[['D',"Windows down, volume up!"],['R',"Dana, it's a convertible. There are no windows."],['D',"Then everything up!"]]}
   ],
   place:{
-    coast:[
-      [['D',"Cruising Highway 1. Ocean on one side, hills on the other. This is the life!"],['R',"It's the life until a tour bus stops for a photo of a rock."]],
-      [['R',"Highway 1 advisory. A pelican has been spotted. It looks judgmental."],['D',"Wave at the pelican, folks!"]],
-      [['D',"Not a single traffic light out here on the coast!"],['R',"That's what worries me, Dana. No one is in charge."]],
-      [['R',"If you're on a cliff stretch of Highway 1 right now, both hands on the wheel."],['D',"And both eyes on that view!"],['R',"No, Dana. Eyes on the road. The view isn't going anywhere. You might be."]],
-    ],
-    beach:[[['D',"Ooh, cruising the coast! Smell that salt air!"],['R',"That's not salt air, Dana. That's a seagull with a french fry and a plan."]],[['R',"If you're on Pacific Coast Highway, keep your eyes on the road, not the sunset."],['D',"The sunset's the best part!"],['R',"That's how they get you."]]],
-    downtown:[[['R',"If you're heading downtown right now, I want you to know. I respect your courage."],['D',"Downtown's lovely this time of day!"],['R',"Name one thing."],['D',"The windows are very orange."]]],
-    homes:[[['D',"Out in the neighborhoods, folks are watering their lawns at golden hour."],['R',"And every sprinkler is aimed directly at the sidewalk. Every single one."]]],
-    strip:[[['D',"Strip mall country! Donuts, dry cleaning and a nail salon, all in one lot!"],['R',"And one parking space. For all three."]]],
-    freeway:[[['R',"Look up, folks. That's the freeway. You're not on it. Count your blessings."],['D',"I bet it's moving great up there!"],['R',"It is not, Dana. It has never once been moving great."]]],
-    park:[[['D',"Passing a park! Somebody's having a birthday party under that tree."],['R',"They've been setting up that bounce house since noon. It's not inflating, Dana. It's never inflating."]]],
+    coast:[{id:'coast-01',lines:[['D',"Cruising Highway 1. Ocean on one side, hills on the other. This is the life!"],['R',"It's the life until a tour bus stops for a photo of a rock."]]},{id:'coast-02',lines:[['R',"Highway 1 advisory. A pelican has been spotted. It looks judgmental."],['D',"Wave at the pelican, folks!"]]},{id:'coast-03',lines:[['D',"Not a single traffic light out here on the coast!"],['R',"That's what worries me, Dana. No one is in charge."]]},{id:'coast-04',lines:[['R',"If you're on a cliff stretch of Highway 1 right now, both hands on the wheel."],['D',"And both eyes on that view!"],['R',"No, Dana. Eyes on the road. The view isn't going anywhere. You might be."]]}],
+    beach:[{id:'beach-01',lines:[['D',"Ooh, cruising the coast! Smell that salt air!"],['R',"That's not salt air, Dana. That's a seagull with a french fry and a plan."]]},{id:'beach-02',lines:[['R',"If you're on Pacific Coast Highway, keep your eyes on the road, not the sunset."],['D',"The sunset's the best part!"],['R',"That's how they get you."]]}],
+    downtown:[{id:'downtown-01',lines:[['R',"If you're heading downtown right now, I want you to know. I respect your courage."],['D',"Downtown's lovely this time of day!"],['R',"Name one thing."],['D',"The windows are very orange."]]}],
+    homes:[{id:'homes-01',lines:[['D',"Out in the neighborhoods, folks are watering their lawns at golden hour."],['R',"And every sprinkler is aimed directly at the sidewalk. Every single one."]]}],
+    strip:[{id:'strip-01',lines:[['D',"Strip mall country! Donuts, dry cleaning and a nail salon, all in one lot!"],['R',"And one parking space. For all three."]]}],
+    freeway:[{id:'freeway-01',lines:[['R',"Look up, folks. That's the freeway. You're not on it. Count your blessings."],['D',"I bet it's moving great up there!"],['R',"It is not, Dana. It has never once been moving great."]]}],
+    park:[{id:'park-01',lines:[['D',"Passing a park! Somebody's having a birthday party under that tree."],['R',"They've been setting up that bounce house since noon. It's not inflating, Dana. It's never inflating."]]}],
   },
-  intro:[
-    [['D',"Here's {song}, from {band}."]],
-    [['R',"This is {band}. {song}."],['D',"A classic!"]],
-    [['D',"Next up, {band} with {song}!"],['R',"They broke up in traffic, you know. Different lanes."]],
-    [['R',"{song}. {band}. Turn it up and stay in your lane."]],
-    [['D',"Windows down, volume up. It's {band}!"],['R',"Dana, it's a convertible. There are no windows."],['D',"Then everything up!"]],
-  ],
+  townname:{
+    'playa-dorada':{id:'townname-playa-dorada',lines:[['D',"Rolling into Playa Dorada!"]]},
+    'costa-linda':{id:'townname-costa-linda',lines:[['D',"Rolling into Costa Linda!"]]},
+    'pelican-point':{id:'townname-pelican-point',lines:[['D',"Rolling into Pelican Point!"]]},
+    'bahia-vista':{id:'townname-bahia-vista',lines:[['D',"Rolling into Bahía Vista!"]]},
+    'seal-rock':{id:'townname-seal-rock',lines:[['D',"Rolling into Seal Rock!"]]},
+    'sunset-cove':{id:'townname-sunset-cove',lines:[['D',"Rolling into Sunset Cove!"]]},
+    'rincon-bay':{id:'townname-rincon-bay',lines:[['D',"Rolling into Rincón Bay!"]]},
+    'las-olas':{id:'townname-las-olas',lines:[['D',"Rolling into Las Olas!"]]},
+    'marisol':{id:'townname-marisol',lines:[['D',"Rolling into Marisol!"]]},
+    'point-paloma':{id:'townname-point-paloma',lines:[['D',"Rolling into Point Paloma!"]]},
+    'coral-mesa':{id:'townname-coral-mesa',lines:[['D',"Rolling into Coral Mesa!"]]},
+    'laguna-serena':{id:'townname-laguna-serena',lines:[['D',"Rolling into Laguna Serena!"]]},
+  },
 };
 const used={};
 function pickBit(key,pool){
@@ -1568,16 +1574,52 @@ function startSong(tok,song){
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);playRealSong(song,onEnd,synth)}else synth();
 }
+// ---------- recorded voices: one file per bit, subtitles timed from timings.json; the device voice is only a backup
+let voiceBus=null,VT=null,vtLoading=null;const voiceCache=new Map();
+function initVoices(){
+  if(voiceBus||!AC)return;
+  voiceBus=AC.createGain();voiceBus.connect(master);
+  vtLoading=fetch('audio/voice/timings.json').then(r=>r.ok?r.json():null).then(j=>{VT=j}).catch(()=>{});
+}
+function loadVoice(id){
+  if(!AC)return Promise.resolve(null);
+  if(voiceCache.has(id))return voiceCache.get(id);
+  const p=fetch('audio/voice/'+id+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+    .then(b=>new Promise((res,rej)=>AC.decodeAudioData(b,res,rej))).catch(()=>null);
+  voiceCache.set(id,p);
+  if(voiceCache.size>14)voiceCache.delete(voiceCache.keys().next().value); // keep memory small: only recent bits stay decoded
+  return p;
+}
+// the script spells numbers out for the voices; show them normally on the radio display
+const showText=t=>t.replace(/K-Jam/g,'K-JAM').replace(/one-oh-one point one/g,'101.1').replace(/four-oh-five/g,'405').replace(/one-oh-one/g,'101')
+  .replace(/one-ten/g,'110').replace(/\bthe ten\b/g,'the 10').replace(/nineteen eighty-seven/g,'1987').replace(/\bR V\b/g,'RV').replace(/Doctor Pam/g,'Dr. Pam');
+const SPKN={R:'RICK',D:'DANA'};
+function stopVoice(){if(Show.voiceSrc){const s=Show.voiceSrc;Show.voiceSrc=null;s.onended=null;try{s.stop()}catch(e){}}}
+function playBit(bit,tok,done){
+  Promise.all([loadVoice(bit.id),vtLoading||Promise.resolve()]).then(([buf])=>{
+    if(tok!==Show.token)return;
+    const tm=VT&&VT[bit.id];
+    if(!buf||!tm||!settings.voices){playLines(bit.lines.map(l=>[l[0],showText(l[1]),l[2]]),tok,done);return} // backup: device voice, or subtitles only
+    const s=AC.createBufferSource();s.buffer=buf;s.connect(voiceBus);Show.voiceSrc=s;s.start(AC.currentTime+.05);
+    bit.lines.forEach((l,i)=>setTimeout(()=>{if(tok===Show.token&&Show.voiceSrc===s)setLCD(l[2]||SPKN[l[0]]||'CALLER',showText(l[1]))},(tm.t[i]||0)*1000+50));
+    s.onended=()=>{if(Show.voiceSrc===s)Show.voiceSrc=null;if(tok===Show.token)setTimeout(done,300)};
+  });
+}
+function playBits(list,tok,done){let i=0;const next=()=>{if(tok!==Show.token)return;if(i>=list.length)return done();playBit(list[i++],tok,next)};next()}
+const townSlug=n=>(n||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
 function talk(kind){
   if(!Show.on)return;
   Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
-  cueSong(song);
-  const ctx={street:curStreet(),cross:crossStreet(),town:currentTown()||'the next town',song:song.title,band:song.band};
-  const body=kind==='place'?(()=>{const k=placeKey(),pool=BITS.place[k]||BITS.place.strip;return pickBit('place-'+k,pool)})():pickBit(kind,BITS[kind]);
-  const intro=[song.intro,...(Math.random()<.35?pick(AFTER):[])];
-  const lines=[...body,...intro].map(l=>[l[0],l[1].replace(/\{(\w+)\}/g,(m,k)=>ctx[k]??m),l[2]]);
+  stopVoice();cueSong(song);
+  const list=[];
+  if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
+  else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
+  else list.push(pickBit(kind,VBITS[kind]));
+  list.push({id:'intro-'+song.id,lines:[song.intro]});
+  if(Math.random()<.35)list.push(pick(VBITS.after));
+  list.forEach(b=>loadVoice(b.id)); // fetch the whole segment up front
   try{speechSynthesis.cancel()}catch(e){}
-  playLines(lines,tok,()=>startSong(tok,song));
+  playBits(list,tok,()=>startSong(tok,song));
 }
 onRedStop=()=>{
   if(Show.on&&Show.phase==='song'&&AC&&AC.currentTime-M.start>35){Show.phase='fading';stopSong(2.5,()=>talk('red'))}
@@ -1588,12 +1630,12 @@ onTownCue=()=>{ // approaching a town on Highway 1
 function seek(){
   if(!Show.on)return;
   if(Show.phase==='song'){Show.phase='fading';stopSong(.8,()=>talk(nextKind()))}
-  else if(Show.phase==='talk'){const tok=++Show.token;try{speechSynthesis.cancel()}catch(e){}startSong(tok,Show.pending||nextSong())}
+  else if(Show.phase==='talk'){const tok=++Show.token;stopVoice();try{speechSynthesis.cancel()}catch(e){}startSong(tok,Show.pending||nextSong())}
 }
 function power(on){
   Show.on=on;Show.token++;
   if(on)talk('id');
-  else{try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','RADIO OFF · LISTENING TO THE COAST')}
+  else{stopVoice();try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','RADIO OFF · LISTENING TO THE COAST')}
 }
 // ---------- HUD & controls
 const $=id=>document.getElementById(id);
