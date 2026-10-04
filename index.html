@@ -1224,7 +1224,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:false,requested:false,reqTips:0};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
