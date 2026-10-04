@@ -36,6 +36,13 @@ Tips:
 | welcome-01-4 | DANA | And we'll keep the hits coming! | cheerful |
 | welcome-01-5 | RICK | One of us will. | dry, under his breath |
 
+**Request plug** (follows the welcome until the player has requested a song once)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| plug-01-1 | DANA | Want a different song? Tap the radio, we take requests! | bright, helpful |
+| plug-01-2 | RICK | We take them. We don't enjoy them. | deadpan |
+
 **Station IDs**
 
 | Clip id | Voice | Line | Direction |

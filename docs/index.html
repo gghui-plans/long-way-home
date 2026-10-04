@@ -121,6 +121,14 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .lcd .freq b{font-weight:400;color:var(--lcd);text-shadow:0 0 6px rgba(255,179,71,.5)}
 .lcd .msg{font-size:21px;line-height:1.05;margin-top:3px;min-height:2.1em;overflow-wrap:anywhere}
 .lcd{cursor:pointer}
+.lcdwrap{display:grid;gap:4px;min-width:0}
+.lcdwrap>span{font-size:9px;letter-spacing:.18em;color:#a99aa6;font-weight:800;text-align:center;cursor:pointer}
+.reqtip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 26px);background:var(--sun,#ffc861);color:#2a1a22;font-weight:800;font-size:14px;padding:8px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .4s}
+.reqtip::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--sun,#ffc861)}
+.reqtip.show{opacity:1}
+.lcd.pulse{animation:lcdPulse 1.2s ease-in-out 2}
+@keyframes lcdPulse{50%{box-shadow:inset 0 2px 7px rgba(0,0,0,.85),0 0 0 2px var(--lcd),0 0 18px rgba(255,179,71,.7)}}
+@media (prefers-reduced-motion: reduce){.lcd.pulse{animation:none}}
 .lcd:hover{box-shadow:inset 0 2px 7px rgba(0,0,0,.85),0 0 0 1px var(--lcd-dim)}
 .playlist{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:min(52vh,420px);overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain}
 .playlist button{width:100%;text-align:left;border:0;border-radius:12px;background:#130d16;color:var(--ink);padding:10px 12px;display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer;font-family:var(--f-body)}
@@ -205,12 +213,13 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <span class="pct" id="volPct">80%</span>
   </div>
   <div class="toast" id="toast"></div>
+  <div class="reqtip" id="reqTip" hidden>Tap the radio to pick a song</div>
   <div class="radio" id="radio">
     <div class="knobwrap"><button class="knob" id="pwr" aria-label="Radio on or off"></button><span>PWR</span></div>
     <div class="knobwrap"><button class="vbtn" id="volBtn" aria-label="Volume">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path id="volW1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path id="volW2" d="M18.5 7a7 7 0 0 1 0 10"/><path id="volX" d="M16.5 9.5l5 5M21.5 9.5l-5 5" style="display:none"/></svg>
     </button><span>VOL</span></div>
-    <div class="lcd" id="lcd" role="button" tabindex="0" aria-label="Open the playlist to request a song" aria-live="polite"><div class="freq"><span>FM <b>101.1</b> K-JAM</span><b id="lcdtag">STEREO</b></div><div class="msg" id="lcdmsg">CLASSIC ROCK &amp; GRIDLOCK</div></div>
+    <div class="lcdwrap"><div class="lcd" id="lcd" role="button" tabindex="0" aria-label="Open the playlist to request a song" aria-live="polite"><div class="freq"><span>FM <b>101.1</b> K-JAM</span><b id="lcdtag">STEREO</b></div><div class="msg" id="lcdmsg">CLASSIC ROCK &amp; GRIDLOCK</div></div><span id="lcdLabel" aria-hidden="true">♫ TAP FOR SONGS</span></div>
     <div class="knobwrap"><button class="knob" id="seek" aria-label="Skip ahead"></button><span>SEEK</span></div>
   </div>
 </div>
@@ -1240,7 +1249,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:false};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:false,requested:false,reqTips:0};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
@@ -1541,6 +1550,7 @@ const spoken=t=>t.replace(/K-JAM/g,'K Jam').replace(/101\.1/g,'one oh one point 
 // ---------- the recorded show: every bit as it was voiced (from production/PRODUCTION-PACK.md). One audio file per bit.
 const VBITS={
   welcome:{id:'welcome-01',lines:[['R',"Gee-gee-hue-ee welcomes you to Long Way Home in California."],['D',"Top down, sun low, take it slow!"],['R',"No destination. No score. The car drives itself. Your only job is to leave your phone alone."],['D',"And we'll keep the hits coming!"],['R',"One of us will."]]},
+  plug:{id:'plug-01',lines:[['D',"Want a different song? Tap the radio, we take requests!"],['R',"We take them. We don't enjoy them."]]},
   id:[
     {id:'id-01',lines:[['D',"You're locked in to K-Jam one-oh-one point one, Classic Rock and Gridlock. I'm Dana!"],['R',"And I'm Rick. Somewhere out there, a minivan has had its blinker on since breakfast."],['D',"Let's get you moving, folks!"]]},
     {id:'id-02',lines:[['R',"K-Jam one-oh-one point one. Classic Rock and Gridlock."],['D',"The station that's stuck in traffic with you!"],['R',"Dana, that's not the comfort you think it is."]]},
@@ -1676,6 +1686,7 @@ function playLines(lines,tok,done){
 function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place']);while(k===Show.lastKind);return k}
 // a song picked from the playlist: fade out whatever's on, play a request bit and the song's intro, then the song
 function requestSong(s){
+  if(!settings.requested){settings.requested=true;saveSettings();hideReqTip()}
   playlist=playlist.filter(x=>x!==s); // it won't come round again straight after
   const go=()=>{
     Show.on=true;Show.phase='talk';Show.lastKind='request';const tok=++Show.token;Show.pending=s;lastSongId=s.id;
@@ -1707,6 +1718,22 @@ function startSong(tok,song){
   const onEnd=()=>{if(tok===Show.token&&Show.on)talk(nextKind())};
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);Show.current=song;updateMediaSession(song);refreshPlaylist();playRealSong(song,onEnd,synth)}else synth();
+  maybeReqTip();
+}
+// first couple of drives: once the first song starts, point at the display so people find the request list
+let reqTipDone=false,reqTipT=0;
+function maybeReqTip(){
+  if(reqTipDone)return;reqTipDone=true;
+  if(settings.requested||settings.reqTips>=2)return;
+  settings.reqTips++;saveSettings();
+  setTimeout(()=>{
+    const tip=$('reqTip');tip.hidden=false;requestAnimationFrame(()=>tip.classList.add('show'));
+    $('lcd').classList.add('pulse');reqTipT=setTimeout(hideReqTip,6000);
+  },1500);
+}
+function hideReqTip(){
+  clearTimeout(reqTipT);const tip=$('reqTip');tip.classList.remove('show');$('lcd').classList.remove('pulse');
+  setTimeout(()=>{if(!tip.classList.contains('show'))tip.hidden=true},450);
 }
 // ---------- recorded voices: one file per bit, subtitles timed from timings.json; the device voice is only a backup
 let voiceBus=null,VT=null,vtLoading=null;const voiceCache=new Map();
@@ -1746,7 +1773,7 @@ function talk(kind){
   Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
-  if(special)list.push(special);
+  if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug)} // the request plug, until they've tried it
   else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
   else list.push(pickBit(kind,VBITS[kind]));
@@ -1831,8 +1858,9 @@ function refreshPlaylist(){
     li.appendChild(b);ul.appendChild(li);
   }
 }
-const openPlaylist=()=>{refreshPlaylist();$('plSheet').hidden=false};
+const openPlaylist=()=>{refreshPlaylist();hideReqTip();$('plSheet').hidden=false};
 $('lcd').addEventListener('click',openPlaylist);
+$('lcdLabel').addEventListener('click',openPlaylist);
 $('lcd').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPlaylist()}});
 $('plClose').addEventListener('click',()=>{$('plSheet').hidden=true});
 $('plSheet').addEventListener('click',e=>{if(e.target===$('plSheet'))$('plSheet').hidden=true});
