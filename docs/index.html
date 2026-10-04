@@ -420,10 +420,11 @@ const detailTex=(()=>{
   const t=new THREE.DataTexture(d,N,N);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;
   t.generateMipmaps=true;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.needsUpdate=true;return t;
 })();
-const detailU={uDetail:{value:detailTex},uOrigin:{value:new THREE.Vector3()}}; // origin snaps every 512 m so the pattern stays sharp far from the start
+const detailU={uDetail:{value:detailTex},uOrigin:{value:new THREE.Vector3()},uTime:{value:0}}; // origin snaps every 512 m so the pattern stays sharp far from the start
 MAT.onBeforeCompile=sh=>{
   Object.assign(sh.uniforms,detailU);
-  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWPos;varying vec3 vWNrm;')
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWPos;varying vec3 vWNrm;attribute float sway;uniform float uTime;')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\nif(sway>0.0){float ph=transformed.x*.07+transformed.z*.05;transformed.x+=sway*(.32*sin(uTime*1.1+ph)+.1*sin(uTime*2.6+ph*1.7));transformed.z+=sway*.22*sin(uTime*.85+ph+1.3);}')
     .replace('#include <project_vertex>','#include <project_vertex>\nvWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vWNrm=normalize(mat3(modelMatrix)*objectNormal);');
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
 uniform sampler2D uDetail;uniform vec3 uOrigin;varying vec3 vWPos;varying vec3 vWNrm;
@@ -448,6 +449,7 @@ if(dUp>.6){ // ground and roofs: grain and broad patches; cracks on asphalt; win
   dH=tF.g;
 }
 diffuseColor.rgb*=mix(1.0,dMod,dFade);`)
+  .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));')
   .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
 };
 const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
@@ -459,15 +461,17 @@ for(const m of[MAT_CAR,MAT_Q])m.onBeforeCompile=sh=>{
 };
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_n3=new THREE.Matrix3(),_c=new THREE.Color();
 class Builder{
-  constructor(){this.pos=[];this.nor=[];this.col=[]}
+  constructor(){this.pos=[];this.nor=[];this.col=[];this.sw=null;this.gain=1} // sw: per-vertex wind sway (palms); gain: brighter-than-white colours for glowing parts
   add(geo,color,x,y,z,sx=1,sy=1,sz=1,ry=0,rx=0,rz=0){
     _e.set(rx,ry,rz,'YXZ');_q.setFromEuler(_e);_m.compose(_p.set(x,y,z),_q,_s.set(sx,sy,sz));_n3.getNormalMatrix(_m);
-    const P=geo.attributes.position.array,N=geo.attributes.normal.array,C=color==null?geo.attributes.color.array:null;
-    if(!C)_c.set(color);
+    const P=geo.attributes.position.array,N=geo.attributes.normal.array,C=color==null?geo.attributes.color.array:null,SW=geo.attributes.sway?geo.attributes.sway.array:null,gn=this.gain;
+    if(!C)_c.set(color).multiplyScalar(gn);
+    if(SW&&!this.sw)this.sw=new Array(this.pos.length/3).fill(0);
     for(let k=0;k<P.length;k+=3){
       _v.set(P[k],P[k+1],P[k+2]).applyMatrix4(_m);this.pos.push(_v.x,_v.y,_v.z);
       _v.set(N[k],N[k+1],N[k+2]).applyMatrix3(_n3).normalize();this.nor.push(_v.x,_v.y,_v.z);
-      if(C)this.col.push(C[k],C[k+1],C[k+2]);else this.col.push(_c.r,_c.g,_c.b);
+      if(C)this.col.push(C[k]*gn,C[k+1]*gn,C[k+2]*gn);else this.col.push(_c.r,_c.g,_c.b);
+      if(this.sw)this.sw.push(SW?SW[k/3]:0);
     }
   }
   tri2(a,b,c,col){this.tri(a,b,c,col,col,col);this.tri(a,c,b,col,col,col)} // visible from both sides
@@ -476,7 +480,8 @@ class Builder{
     let nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;const l=Math.hypot(nx,ny,nz)||1;
     this.pos.push(a[0],a[1],a[2],b[0],b[1],b[2],c[0],c[1],c[2]);
     for(let k=0;k<3;k++)this.nor.push(nx/l,ny/l,nz/l);
-    for(const col of[ca,cb,cc]){_c.set(col);this.col.push(_c.r,_c.g,_c.b)}
+    for(const col of[ca,cb,cc]){_c.set(col).multiplyScalar(this.gain);this.col.push(_c.r,_c.g,_c.b)}
+    if(this.sw)this.sw.push(0,0,0);
   }
   quad(p0,p1,p2,p3,c0,c1=c0,c2=c0,c3=c0){ // wound so the face points up
     const ny=(p1[2]-p0[2])*(p2[0]-p0[0])-(p1[0]-p0[0])*(p2[2]-p0[2]);
@@ -488,12 +493,14 @@ class Builder{
     g.setAttribute('position',new THREE.Float32BufferAttribute(this.pos,3));
     g.setAttribute('normal',new THREE.Float32BufferAttribute(this.nor,3));
     g.setAttribute('color',new THREE.Float32BufferAttribute(this.col,3));
+    if(this.sw)g.setAttribute('sway',new THREE.Float32BufferAttribute(this.sw,1));
     return g;
   }
   mesh(mat=MAT){const m=new THREE.Mesh(this.geo(),mat);m.castShadow=m.receiveShadow=true;return m}
 }
 const darker=(c,k=.72)=>new THREE.Color(c).multiplyScalar(k).getHex();
 
+function swayGeo(g,h){const P=g.attributes.position.array,w=new Float32Array(P.length/3);for(let i=0;i<w.length;i++){const t=Math.max(0,P[i*3+1]/h);w[i]=Math.min(1.3,t*t)}g.setAttribute('sway',new THREE.BufferAttribute(w,1));return g}
 // ---------- palms: curved trunks and drooping, folded fronds (a few prebuilt variants)
 const PALMS=[12,14.5,17].map((h,vi)=>{
   const b=new Builder(),r=rng(900+vi),lean=(r()-.5)*2.4,RS=7,SEG=6;
@@ -518,7 +525,7 @@ const PALMS=[12,14.5,17].map((h,vi)=>{
       for(const sg of[-1,1]){const a2=e(a,w0,sg),c2=e(c,w1,sg);b.tri2(a,c,c2,col);b.tri2(a,c2,a2,col)}
     }
   }
-  return b.geo();
+  return swayGeo(b.geo(),h);
 });
 const BLOB=ni(new THREE.IcosahedronGeometry(1,1));
 // ---------- Mexican fan palms: the tall, skinny LA palm. Thin trunk, a straw "skirt" of dead fronds, a small round head of fans
@@ -542,11 +549,11 @@ const FANPALMS=[19,23,27].map((h,vi)=>{
       b.tri2(base,tip(a0),tip(a1),col);
     }
   }
-  return b.geo();
+  return swayGeo(b.geo(),h);
 });
 // agave / yucca: a rosette of stiff blue-green blades
 function agave(b,x,y,z,s,r){const col=r()<.5?0x6f9a8a:0x7f9c6a;for(let k=0;k<7;k++){const a=k/7*Math.PI*2+r(),t=.55+r()*.35;b.add(G.cone,col,x+Math.cos(a)*.35*s,y+.55*s,z+Math.sin(a)*.35*s,.16*s,1.3*s,.16*s,-a+Math.PI/2,t,0)}}
-const JACARANDA=[0x9b7fd1,0x8f6fc8,0xa98ad9],ICEPLANT=[0x5f8a3a,0x6e9440,0x7a9a48],ICEBLOOM=[0xd9468f,0xe25aa0,0xc93a7f];
+const JACARANDA=[0x9b7fd1,0x8f6fc8,0xa98ad9],ICEPLANT=[0x4d6b34,0x58763a,0x63703c],ICEBLOOM=[0xc94a86,0xd65a92,0xb8407a];
 
 // ---------- ocean: one big plane under everything; land is built on top of it
 const SEA=-6;
@@ -561,6 +568,51 @@ const waveTex=(()=>{ // a small tiling normal map so the sea sparkles in the low
 const ocean=new THREE.Mesh(new THREE.PlaneGeometry(16000,16000),new THREE.MeshStandardMaterial({color:0x0e4a5c,roughness:.1,metalness:0,normalMap:waveTex,normalScale:new THREE.Vector2(.7,.7),envMapIntensity:1.2,fog:false}));
 ocean.receiveShadow=true;
 ocean.rotation.x=-Math.PI/2;ocean.position.y=SEA;scene.add(ocean);
+// long, slow swells rolling towards the shore: a second, larger wave pattern fixed to the world
+const swellU={uSwell:{value:0}};
+ocean.material.onBeforeCompile=sh=>{
+  Object.assign(sh.uniforms,swellU);
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec2 vSw;').replace('#include <project_vertex>','#include <project_vertex>\nvSw=(modelMatrix*vec4(transformed,1.0)).xz;');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>','#include <common>\nvarying vec2 vSw;uniform float uSwell;')
+    .replace('#include <normal_fragment_maps>',THREE.ShaderChunk.normal_fragment_maps.replace('vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;','vec3 mapN = texture2D( normalMap, vNormalMapUv ).xyz * 2.0 - 1.0;\n\tvec3 mapS = texture2D( normalMap, vSw*vec2(.0055,.0011)+vec2(-uSwell*.0042,0.0) ).xyz * 2.0 - 1.0;\n\tmapN = normalize( vec3( mapN.xy + mapS.xy*.55, mapN.z ) );'));
+};
+// surf: foam bands that run up the beach and fade, plus lace in the swash. u runs along the shore, v from sea (0) to sand (1)
+const foamU={uTime:{value:0}};
+const FOAM_MAT=new THREE.ShaderMaterial({uniforms:foamU,transparent:true,depthWrite:false,side:THREE.DoubleSide,
+  polygonOffset:true,polygonOffsetFactor:-1,polygonOffsetUnits:-2,
+  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:`uniform float uTime;varying vec2 vUv;
+    float h1(float x){return fract(sin(x*12.9898)*43758.5453);}
+    float n1(float x){float i=floor(x),f=fract(x);return mix(h1(i),h1(i+1.0),f*f*(3.0-2.0*f));}
+    void main(){
+      float u=vUv.x,v=vUv.y,t=uTime*.16;
+      float ph=v*2.2-t+n1(u*.6)*.4,band=fract(ph);
+      float crest=smoothstep(0.0,.04,band)*(1.0-smoothstep(.1,.55,band))*(.45+.55*smoothstep(.15,.6,n1(u*2.3+floor(ph)*7.1)));
+      float lace=smoothstep(.55,.85,v)*(.6+.4*sin(uTime*.8+u*1.3))*smoothstep(.3,.65,n1(u*4.0+uTime*.25));
+      float a=min(1.0,crest*.95+lace*.7)*smoothstep(0.0,.18,v)*(1.0-smoothstep(.9,1.0,v));
+      gl_FragColor=vec4(vec3(1.0,.94,.88),a);
+      #include <tonemapping_fragment>
+      #include <colorspace_fragment>
+    }`});
+// a foam strip along shore points [x,z,nx,nz] (n points out to sea): from w out to sea up to 1.5 m onto the sand
+function foamStrip(pts,w){
+  const pos=[],uv=[],idx=[];let along=0;
+  pts.forEach((p,i)=>{if(i)along+=Math.hypot(p[0]-pts[i-1][0],p[1]-pts[i-1][1]);
+    pos.push(p[0]+p[2]*w,SEA+.05,p[1]+p[3]*w, p[0]-p[2]*4,SEA+.42,p[1]-p[3]*4);uv.push(p[1]%9000/9,0,p[1]%9000/9,1); // the shore edge rises a little, lying on the wet sand
+    if(i){const a=(i-1)*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}});
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);
+  const m=new THREE.Mesh(g,FOAM_MAT);m.renderOrder=1;return m;
+}
+// white water around a sea stack: a ring with v running inwards to the rock
+function foamRing(x,z,r0,r1){
+  const pos=[],uv=[],idx=[],N=18;
+  for(let k=0;k<=N;k++){const a=k/N*Math.PI*2,c=Math.cos(a),s=Math.sin(a);pos.push(x+c*r1,SEA+.05,z+s*r1,x+c*r0,SEA+.05,z+s*r0);uv.push(k*1.7,0,k*1.7,1);if(k){const b=(k-1)*2;idx.push(b,b+2,b+1,b+1,b+2,b+3)}}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);
+  const m=new THREE.Mesh(g,FOAM_MAT);m.renderOrder=1;return m;
+}
+// glowing parts (neon, string lights, lamps): colours brighter than white, so the sunset glow (bloom) picks them up
+const MAT_GLOW=new THREE.MeshBasicMaterial({vertexColors:true});
+const spinners=new Set(); // Ferris wheels, turned in the main loop
 
 // ---------- traffic signals: fixed cycle, two offset groups by intersection parity
 const CYC=24;
@@ -627,6 +679,30 @@ function cellKind(i,j){
   if(lotRow(j)&&i>=XMIN-1&&i<=XMAX-1)return district(i,j);
   return nodeExists(i,j)?'edge':null; // boundary streets only
 }
+const NEON=[0xff4fa3,0x4ff0ff,0xffb347,0xb36bff],PARKT=['sedan','sedan','sedan2','suv','sport1','sport2'];
+// a sagging wire between two points, as a few thin segments
+function wire(b,a,c,sag,col=0x2a2628){let p0=a;for(let k=1;k<=5;k++){const t=k/5,p1=[a[0]+(c[0]-a[0])*t,a[1]+(c[1]-a[1])*t-4*sag*t*(1-t),a[2]+(c[2]-a[2])*t],dx=p1[0]-p0[0],dy=p1[1]-p0[1],dz=p1[2]-p0[2],hl=Math.hypot(dx,dz);b.add(G.box,col,(p0[0]+p1[0])/2,(p0[1]+p1[1])/2,(p0[2]+p1[2])/2,.04,.04,Math.hypot(hl,dy),Math.atan2(dx,dz),-Math.atan2(dy,hl));p0=p1}}
+// a wooden pier out over the surf, lamps along it, a snack shack, and a Ferris wheel near the end that turns slowly
+function buildPier(b,gb,grp,xw,zc){
+  const x1=xw-190,cx=(xw+x1)/2;
+  b.add(G.box,0x9a7a5a,cx,1.15,zc,190,.5,10);
+  for(let x=xw-6;x>x1;x-=12)for(const s of[-1,1])b.add(G.box,0x6b5640,x,(SEA-1+1)/2,zc+s*4,.6,2-SEA,.6);
+  for(const s of[-1,1]){b.add(G.box,0xf2efe6,cx,2.35,zc+s*4.9,190,.1,.1);b.add(G.box,0xf2efe6,cx,1.9,zc+s*4.9,190,.08,.08);
+    for(let x=xw-8;x>x1;x-=16){b.add(G.box,0x8f8f96,x,3.4,zc+s*4.7,.14,4.4,.14);gb.add(BLOB,0xffe2a8,x,5.7,zc+s*4.7,.3,.3,.3)}}
+  b.add(G.box,0xf6e3a8,xw-60,3.6,zc,7,4.4,6);b.add(G.roof,0xb6553c,xw-60,6.6,zc,4.2,1.6,3.6);
+  const wx=xw-150,R=13,hub=17.4;
+  for(const s of[-1,1])for(const t of[-1,1])b.add(G.box,0xe8e4da,wx+t*1.6,(1.4+hub)/2,zc+s*2.1,.45,Math.hypot(hub-1.4,4.2),.45,0,-s*.257,0);
+  const wb=new Builder(),wg=new Builder();wg.gain=3;
+  for(const xo of[-1.3,1.3]){
+    for(let k=0;k<28;k++){const a=k/28*Math.PI*2;wb.add(G.box,0xf2efe6,xo,Math.sin(a)*R,Math.cos(a)*R,.28,.28,2*Math.PI*R/28*1.05,0,-(a+Math.PI/2))}
+    for(let k=0;k<12;k++){const a=k/12*Math.PI*2;wb.add(G.box,0xd9d4ca,xo,Math.sin(a)*R/2,Math.cos(a)*R/2,.14,.14,R,0,-a)}
+    for(let k=0;k<56;k++){const a=k/56*Math.PI*2;wg.add(G.box,[0xff4fa3,0x4ff0ff,0xffd36b][k%3],xo*1.08,Math.sin(a)*R,Math.cos(a)*R,.22,.22,.22)}
+  }
+  wb.add(G.cyl,0xd9d4ca,0,0,0,.8,3.2,.8,0,0,Math.PI/2);
+  for(let k=0;k<12;k++){const a=k/12*Math.PI*2;wb.add(G.box,SIGNS[k%SIGNS.length],0,Math.sin(a)*R,Math.cos(a)*R,1.5,1.8,1.6)}
+  const wheel=new THREE.Group(),wm=new THREE.Mesh(wb.geo(),MAT);wm.castShadow=true;wheel.add(wm,new THREE.Mesh(wg.geo(),MAT_GLOW));
+  wheel.position.set(wx,hub,zc);grp.add(wheel);spinners.add(wheel);
+}
 function buildBlock(i,j,d){
   const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group();
   const x0=i*B+HW,z0=j*B+HW,cx=x0+S/2,cz=z0+S/2,ix=i*B,jz=j*B;
@@ -635,7 +711,19 @@ function buildBlock(i,j,d){
   const put=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);b.add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)};
   const palm=(u,v,h)=>{const s=.92+rnd()*.16;if(rnd()<.55)put(FANPALMS[h<14?0:h<16.5?1:2],null,u,.3,v,s,s,s,rnd()*6.28);else put(PALMS[h<13.5?0:h<16?1:2],null,u,.3,v,s,s,s,rnd()*6.28)}; // over half are tall fan palms
   const tree=(u,v,s=1)=>{put(G.trunk,0x7a5a40,u,1.7*s,v,.25*s,2.8*s,.25*s);put(BLOB,rnd()<.22?pick(JACARANDA,rnd):pick([0x5f8f3e,0x6e9a45,0x4f7f3a],rnd),u,3.9*s,v,2.2*s,1.9*s,2.2*s,rnd()*6)}; // some are purple jacarandas
-  const parked=(u,v,ry)=>{const c=pick(CARCOL,rnd);put(G.box,c,u,.85,v,1.9,.75,4.2,ry);put(G.box,0x2a3340,u,1.45,v,1.7,.5,2.2,ry)};
+  const parkedL=[],gb=new Builder();gb.gain=2.6; // parked model cars (drawn by the traffic system) and glowing parts
+  const gput=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);gb.add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)};
+  const park=(x,z,ry)=>parkedL.push({type:pick(PARKT,rnd),x,z,ry,col:new THREE.Color(pick(CARCOL,rnd))});
+  const parked=(u,v,ry)=>{const p=P(u,v);park(p[0],p[1],ry+rot*Math.PI/2)};
+  // street lamps on the lot corners, and cars parked along the curbs
+  if(d!=='edge'&&d!=='beach'){
+    const lamp=(x,z,ax,az)=>{b.add(G.box,0x8f8f96,x,3.6,z,.18,7.2,.18);b.add(G.box,0x8f8f96,x+ax*.8,7.15,z+az*.8,ax?1.7:.12,.12,az?1.7:.12);gb.add(G.box,0xffc77a,x+ax*1.55,6.95,z+az*1.55,.55,.18,.55)};
+    lamp(ix+9.3,jz+(i===XMIN?48:30),-1,0);lamp(ix+B/2,jz+9.3,0,-1);
+    if(d!=='freeway'){
+      if(i!==XMIN&&legExists(i,j,2)&&hwyTarget(i,j,2)==null)for(const o of[18,25,32,39])if(rnd()<.5)park(ix+6.9,jz+o,Math.PI);
+      if(legExists(i,j,1))for(const o of[18,25,32,39])if(rnd()<.5)park(ix+o,jz+6.9,Math.PI/2);
+    }
+  }
 
   // roads: double-yellow center lines, crosswalks, stop lines, signals
   if(d!=='edge'&&d!=='beach')b.add(G.box,0x4b4851,ix+B/2,0,jz+B/2,B+W,.02,B+W); // street surface
@@ -676,6 +764,8 @@ function buildBlock(i,j,d){
     b.add(G.box,0x8fa3b8,xe-6,.32,jz+B/2,3.2,.04,B);
     const L=(x,z)=>[x-x0,z-z0];
     for(let z=jz+4;z<jz+B;z+=12){const [u,v]=L(xe-2,z);palm(u,v,13+rnd()*5)}
+    grp.add(foamStrip([[xw-19.3,jz,-1,0],[xw-19.3,jz+B/2,-1,0],[xw-19.3,jz+B,-1,0]],9)); // surf on the town beach
+    const tw=townOfRow(j);if(tw&&j===tw.a+Math.floor(tw.TL/2)&&hash(tw.k,9,3)<.65)buildPier(b,gb,grp,xw,jz+B/2);
     if(rnd()<.7){ // lifeguard tower
       const tx=xw+16,tz=jz+B/2;
       for(const a of[-1,1])for(const c of[-1,1])b.add(G.box,0xf2efe6,tx+a,1.8,tz+c,.25,3,.25);
@@ -702,9 +792,12 @@ function buildBlock(i,j,d){
       const pastel=d==='shore';rot=Math.floor(rnd()*4);
       const bw=S-10,depth=pastel?9:11,h=pastel?6.5:4.8,n=3+Math.floor(rnd()*2),seg=bw/n,back=4.5,front=back+depth;
       put(G.box,pastel?pick(PASTEL,rnd):pick([0xe8dcc4,0xd9c8a8,0xefe6d6],rnd),S/2,h/2+.3,back+depth/2,bw,h,depth);
+      if(rnd()<(pastel?.5:.35))put(G.box,0xb6553c,S/2,h+.35,front-1,bw+.5,.22,2.6,0,.45); // red tile roof edge
+      if(!pastel&&rnd()<.35){const bh=(h-.8)/3;[0xf2a541,0xe8505b,0x5b6ee1].forEach((c,k)=>put(G.box,c,4.93,.7+bh*(k+.5),back+depth/2,.06,bh,depth-1.4));put(G.cyl,0xffd36b,4.88,h*.6,back+depth/2,1.3,.08,1.3,0,0,Math.PI/2)} // sunset mural on the end wall
       for(let k=0;k<n;k++){
         const u=5+seg*(k+.5);
         put(G.box,pick(SIGNS,rnd),u,h-.4,front+.2,seg-.6,1.1,.4);
+        if(rnd()<.45){const nc=pick(NEON,rnd);gput(G.box,nc,u,h+.2,front+.44,seg-1.1,.09,.06);gput(G.box,nc,u,h-1,front+.44,seg-1.1,.09,.06);gput(G.box,pick(NEON,rnd),u,h-.4,front+.46,(seg-1.1)*.55,.13,.06)} // neon
         put(G.box,0x2e3a4a,u,1.7,front+.06,seg-1.6,2.4,.2);
         put(G.box,pick(SIGNS,rnd),u,3.1,front+.8,seg-1,.15,1.6,0,-.25);
         if(rnd()<.4){ // a café table out front
@@ -715,6 +808,7 @@ function buildBlock(i,j,d){
         }
         if(pastel&&rnd()<.6)for(let s=0;s<3;s++)put(G.box,pick(SIGNS,rnd),u-seg/2+1.2+s*.7,1.9,front+.5,.55,3,.12,0,-.15);
       }
+      if(pastel&&rnd()<.75)for(let u=4;u<=S-4;u+=1.15){const t=(u-4)/(S-8);gput(G.box,0xffd27a,u,4.3-.45*Math.sin(Math.PI*t),front+2.3,.15,.15,.15)} // string lights
       if(!pastel){
         for(let u=7;u<S-6;u+=3.2)put(G.box,0xe8e4da,u,.34,front+6,.15,.02,5);
         const n2=2+Math.floor(rnd()*3);for(let k=0;k<n2;k++)parked(8+Math.floor(rnd()*9)*3.2+1.6,front+6,0);
@@ -744,6 +838,11 @@ function buildBlock(i,j,d){
         if(rnd()<.3)tree(u+(u<S/2?-6:6),v+(v<S/2?-6:6),.8);
       }
       if(rnd()<.45){put(G.box,0xf2eee6,S/2,.36,11,4.8,.06,7);put(G.box,0x56c8dc,S/2,.38,11,4,.06,6.2)}
+      { // telephone poles down the middle of the block, wires sagging pole to pole (and on to the next block of homes)
+        const px=x0+S/2,nextHomes=lotRow(j+1)&&district(i,j+1)==='homes';
+        for(const v of[2,22,42]){const pz=z0+v;b.add(G.box,0x6b5640,px,4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,8.6,pz,2.4,.16,.16);if(v===22)b.add(G.cyl,0x8a8f96,px+.4,7.3,pz,.34,.9,.34);
+          if(v<42||nextHomes)for(const o of[-1.05,0,1.05])wire(b,[px+o,o?8.75:9.2,pz],[px+o,o?8.75:9.2,pz+20],.55)}
+      }
       for(let k=0;k<3;k++){const e=Math.floor(rnd()*4),t=4+rnd()*(S-8);palm(e===0?t:e===1?S-1.7:e===2?t:1.7,e===0?1.7:e===1?t:e===2?S-1.7:t,13+rnd()*6)}
     }else if(d==='downtown'){
       const cols=[0x6f98ad,0x88a9a8,0x9a8db0,0xc7a37f,0x7f8fa6];
@@ -779,7 +878,8 @@ function buildBlock(i,j,d){
     }
   }
   const mesh=b.mesh();grp.add(mesh);
-  grp.userData={mesh,ij:[i,j]};
+  if(gb.pos.length)grp.add(new THREE.Mesh(gb.geo(),MAT_GLOW));
+  grp.userData={mesh,ij:[i,j],parked:parkedL};
   return grp;
 }
 
@@ -799,7 +899,8 @@ const inlandCol=(x,z,y)=>y<1?TC.scrub:y<8?((Math.floor(x/37+z/53)&1)?TC.scrub:TC
 const NEAR=[13,24,45,80,140],FAR=[150,260,400,XE,XE+30,XE+80,XE+160,XE+300,XE+500,XE+700];
 function westProfile(z){ // [dx,y,color] from far offshore to the shoulder
   const c=coastType(z),L=(a,b)=>a+(b-a)*c,cl=c>.5;
-  return[[-80,L(-9,-24),cl?TC.rockD:TC.wet],[-64,L(-6.5,-18),cl?TC.rock:TC.wet],[-56,L(.2,-14),cl?TC.rock:TC.sand],[-20,L(.25,-3),cl?TC.rock:TC.sand],[-12,L(.25,.1),cl?TC.scrub:TC.sand],[-9.5,0,TC.shoulder]];
+  // beaches shelve gently into the sea (so the surf runs up a wide, wet slope); cliffs drop away steeply
+  return[[-92,L(-10,-26),cl?TC.rockD:TC.wet],[-77,L(-7.2,-20),cl?TC.rockD:TC.wet],[-67,L(-5.3,-16),cl?TC.rock:TC.wet],[-56,L(-2.2,-14),cl?TC.rock:TC.wet],[-44,L(.2,-9),cl?TC.rock:TC.sand],[-20,L(.25,-3),cl?TC.rock:TC.sand],[-12,L(.25,.1),cl?TC.scrub:TC.sand],[-9.5,0,TC.shoulder]];
 }
 function signTex(top,bottom){
   const c=document.createElement('canvas');c.width=256;c.height=96;const x=c.getContext('2d');
@@ -819,6 +920,10 @@ function buildTerrain(j){
       for(const x of FAR){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     }else for(const x of FAR.slice(3)){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     rows.push({z,rc,nx,nz,pts});
+  }
+  if(!lot){ // surf along the waterline, where the shore profile dips below sea level
+    const fp=rows.map(r=>{const pr=westProfile(r.z);let dw=-60;for(let k=0;k+1<pr.length;k++){const [d0,y0]=pr[k],[d1,y1]=pr[k+1];if(y0<=SEA&&y1>SEA){dw=d0+(SEA-y0)/(y1-y0)*(d1-d0);break}}return[r.rc+dw*r.nx,r.z+dw*r.nz,-r.nx,-r.nz]});
+    grp.add(foamStrip(fp,9));
   }
   { // shared vertices + smooth normals so the land rolls instead of looking faceted
     const NP=rows[0].pts.length,pos=[],col=[],idx=[];
@@ -841,15 +946,21 @@ function buildTerrain(j){
     }
     // scenery
     const zm=z0+B/2,c=coastType(zm),rc=roadX(zm),hm=hillMul(zm);
+    if(hm>.3){ // telephone poles on the inland shoulder, wires sagging pole to pole along the highway
+      const pole=z=>{const x=roadX(z)+12.5;return[x,inlandY(x,z),z]};
+      for(const zo of[5,35]){const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
+        if(hillMul(z0+zo+30)>.3)for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
+    }
     if(c<.35){
       if(rnd()<.6)for(let k=0;k<2;k++){const z=z0+10+rnd()*40,x=roadX(z)-15-rnd()*4;b.add(rnd()<.4?pick(FANPALMS,rnd):pick(PALMS,rnd),null,x,.2,z,1,1,1,rnd()*6.28)}
       if(rnd()<.45)for(let k=0;k<3;k++){const z=z0+5+rnd()*50,x=roadX(z)-28-rnd()*20;b.add(G.box,0xf2efe6,x,1.5,z,.1,2.6,.1);b.add(G.cone,pick(SIGNS,rnd),x,2.9,z,1.7,.7,1.7);b.add(G.box,pick(SIGNS,rnd),x+1.4,.27,z,1,.04,2);if(rnd()<.8)lyer(b,x+1.4,.29,z,0,rnd)}
-      if(rnd()<.3)stander(b,roadX(zm)-50,.2,zm,-Math.PI/2,rnd,true);
+      if(rnd()<.3)stander(b,roadX(zm)-41,.2,zm,-Math.PI/2,rnd,true);
       if(rnd()<.15){const z=zm,x=rc-38;for(const a of[-1,1])for(const d of[-1,1])b.add(G.box,0xf2efe6,x+a,1.8,z+d,.25,3,.25);b.add(G.box,0x8fd0e6,x,4.6,z,2.6,2.2,2.4);b.add(G.box,0xe8505b,x,5.85,z,3.2,.3,3)}
     }
     // ice plant: green carpets with pink flowers along the bluff tops and dunes, between the shoulder and the drop
-    for(let k=0;k<(c>.3?26:10);k++){const z=z0+rnd()*B,x=roadX(z)-10.4-rnd()*2.6,sx=.8+rnd()*1.1,sz=.7+rnd()*1;b.add(BLOB,pick(ICEPLANT,rnd),x,.1,z,sx,.28,sz,rnd()*6);if(rnd()<.5)b.add(BLOB,pick(ICEBLOOM,rnd),x+(rnd()-.5)*.6,.28,z+(rnd()-.5)*.6,sx*.45,.12,sz*.45)}
-    if(c>.5&&rnd()<.55)for(let k=0;k<1+rnd()*3;k++){const z=z0+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9)}
+    for(let k=0;k<(c>.3?7:5);k++){const zc=z0+rnd()*B,xc=roadX(zc)-(c>.3?11.8:13.5+rnd()*3),y=c>.3?.06:.2,col=pick(ICEPLANT,rnd); // a mat: many small overlapping clumps, dotted with flowers
+      for(let q=0;q<10;q++){const x=xc+(rnd()-.5)*(c>.3?2.2:3.2),z=zc+(rnd()-.5)*4.5;b.add(BLOB,rnd()<.7?col:pick(ICEPLANT,rnd),x,y,z,.45+rnd()*.5,.14,.45+rnd()*.5,rnd()*6);if(rnd()<.6)b.add(BLOB,pick(ICEBLOOM,rnd),x+(rnd()-.5)*.5,y+.11,z+(rnd()-.5)*.5,.16,.06,.16)}}
+    if(c>.5&&rnd()<.55)for(let k=0;k<1+rnd()*3;k++){const z=z0+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9);grp.add(foamRing(x,z,s*.75,s*1.8))}
     if(hm>.3){ // golden poppies and agave on the slopes
       for(let k=0;k<3;k++){const zc=z0+rnd()*B,xc=roadX(zc)+18+rnd()*55;for(let q=0;q<9;q++){const x=xc+(rnd()-.5)*7,z=zc+(rnd()-.5)*7;b.add(BLOB,rnd()<.5?0xf08a24:0xf5a13a,x,inlandY(x,z)+.12,z,.35+rnd()*.3,.18,.35+rnd()*.3)}}
       for(let k=0;k<3;k++){const z=z0+rnd()*B,x=roadX(z)+14+rnd()*40;agave(b,x,inlandY(x,z),z,.9+rnd()*.6,rnd)}
@@ -873,13 +984,13 @@ function buildTerrain(j){
 }
 
 // ---------- streaming: build blocks near the car, recycle far ones
-const blocks=new Map();let queue=[],lastCi=1e9,lastCj=1e9;
+const blocks=new Map(),parkedCars=new Set();let queue=[],lastCi=1e9,lastCj=1e9;
 function stream(px,pz,force){
   const ci=Math.floor(px/B),cj=Math.floor(pz/B);
   if(ci!==lastCi||cj!==lastCj||force){
     lastCi=ci;lastCj=cj;
     const drop=g=>{scene.remove(g);g.traverse(o=>{if(o.isMesh&&o.geometry!==LAMP_GEO){o.geometry.dispose();if(o.material.map&&o.material!==MAT&&!LAMP_MAT.includes(o.material))o.material.map.dispose()}})};
-    for(const [k,g] of blocks){const [i,j]=g.userData.ij;if(Math.abs(i-ci)>RAD+1||Math.abs(j-cj)>RAD+2){drop(g);blocks.delete(k);setFarCell(i,j,0)}}
+    for(const [k,g] of blocks){const [i,j]=g.userData.ij;if(Math.abs(i-ci)>RAD+1||Math.abs(j-cj)>RAD+2){drop(g);blocks.delete(k);setFarCell(i,j,0);for(const p of g.userData.parked||[])parkedCars.delete(p)}}
     for(const [j,g] of terr)if(Math.abs(j-cj)>RAD_T+1){drop(g);terr.delete(j)}
     queue=[];
     for(let dj=-RAD_T;dj<=RAD_T;dj++){const j=cj+dj;if(!terr.has(j))queue.push([Math.abs(dj)*.9,'t',j])}
@@ -891,7 +1002,7 @@ function stream(px,pz,force){
     const [,i,j]=queue.shift();
     if(i==='t'){if(terr.has(j))continue;const g=buildTerrain(j);terr.set(j,g);scene.add(g);continue}
     const k=i+','+j;if(blocks.has(k))continue;
-    const g=buildBlock(i,j,cellKind(i,j));g.userData.ij=[i,j];blocks.set(k,g);scene.add(g);setFarCell(i,j,1);
+    const g=buildBlock(i,j,cellKind(i,j));g.userData.ij=[i,j];blocks.set(k,g);scene.add(g);setFarCell(i,j,1);for(const p of g.userData.parked)parkedCars.add(p);
   }
 }
 const terr=new Map();
@@ -1022,9 +1133,9 @@ const VTYPES={
   moto:{hl:1,w:5,pal:[0x2b2b30,0xd8344a,0x2f6fb3,0xf2a541],bike:true,build(b){b.add(G.box,WH,0,.72,0,.22,.4,1.6);b.add(RB(.36,.26,.62,.1),WH,0,1,.25);for(const z of[.72,-.72])b.add(G.cyl,TI,0,.32,z,.32,.12,.32,0,0,Math.PI/2);b.add(G.box,0x2a2a30,0,1.35,-.15,.45,.62,.3,0,.3);b.add(BLOB,WH,0,1.86,.02,.22,.22,.24);for(const s of[-1,1])b.add(G.box,0x2a2a30,s*.2,.9,.1,.14,.14,.7,0,-.4)}},
   bike:{hl:.9,w:5,pal:SHIRT,bike:true,lane:6.6,slow:true,build(b){for(const z of[.55,-.55])b.add(G.cyl,TI,0,.34,z,.34,.05,.34,0,0,Math.PI/2);b.add(G.box,0x9a9aa2,0,.68,0,.06,.06,1.05);b.add(G.box,0x9a9aa2,0,.55,-.15,.05,.45,.05);b.add(G.box,WH,0,1.28,-.08,.45,.62,.3,0,.25);b.add(BLOB,WH,0,1.78,.05,.21,.21,.23);for(const s of[-1,1])b.add(G.box,0x2f3b5a,s*.12,.78,-.05,.14,.55,.16,0,.3)}},
 };
-const POOL=36,agents=[],vMesh={};
+const POOL=36,CAP=110,agents=[],vMesh={}; // CAP: each car type also has room for parked cars
 const paintFromWhite=g=>{const c=g.attributes.color.array,p=new Float32Array(c.length/3);for(let i=0;i<p.length;i++)p[i]=c[i*3]>.99&&c[i*3+1]>.99&&c[i*3+2]>.99?1:0;g.setAttribute('paint',new THREE.BufferAttribute(p,1));return g}; // generated cars: white parts take the paint
-for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
+for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,CAP);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<CAP;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
 for(let k=0;k<POOL;k++)agents.push({k,on:false,type:'sedan',x:0,z:0,fx:0,fz:1,v:0,hl:2.3});
 // modelled traffic cars (Quaternius, CC0), baked by production/bake-traffic.js; until they arrive the generated shapes stand in
 fetch('models/traffic.bin').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(buf=>{
@@ -1166,6 +1277,9 @@ function updateTraffic(dt){
     npcSignal(a);
   }
   npcBlink.instanceMatrix.needsUpdate=true;
+  // parked cars near you go in after the moving ones
+  const pr=settings.hq?140:80;
+  for(const p of parkedCars){const dx=p.x-car.x,dz=p.z-car.z;if(dx*dx+dz*dz>pr*pr||used[p.type]>=CAP)continue;const n=used[p.type]++;_d.position.set(p.x,0,p.z);_d.rotation.set(0,p.ry,0);_d.scale.set(1,1,1);_d.updateMatrix();vMesh[p.type].setMatrixAt(n,_d.matrix);vMesh[p.type].setColorAt(n,p.col)}
   if(active<target){const a=agents.find(o=>!o.on);if(a&&spawnAgent(a))a.on=true}
   for(const [k,m] of Object.entries(vMesh)){m.count=used[k];m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
 }
@@ -1235,7 +1349,9 @@ function buildFarChunk(c){
 function farCell(b,i,j,d){
   const rnd=rng(Math.floor(hash(i,j,77)*4294967296)),ix=i*B,jz=j*B,x0=ix+HW,z0=jz+HW,cx=x0+S/2,cz=z0+S/2,A=0x4b4851;
   if(d==='edge'){if(legExists(i,j,2))b.add(G.box,A,ix,0,jz+B/2,W,.04,B);if(legExists(i,j,1))b.add(G.box,A,ix+B/2,0,jz,B,.04,W);return}
-  if(d==='beach'){const xe=ix+B-HW;b.add(G.box,0xead39c,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+6;z<jz+B;z+=14)farPalm(b,xe-2,0,z,rnd()<.5?22:14,rnd);return}
+  if(d==='beach'){const xe=ix+B-HW;b.add(G.box,0xead39c,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+6;z<jz+B;z+=14)farPalm(b,xe-2,0,z,rnd()<.5?22:14,rnd);
+    const tw=townOfRow(j);if(tw&&j===tw.a+Math.floor(tw.TL/2)&&hash(tw.k,9,3)<.65){const zc=jz+B/2;b.add(G.box,0x9a7a5a,ix-95,1.15,zc,190,.5,10);for(let k=0;k<20;k++){const a=k/20*Math.PI*2;b.add(G.box,0xf2efe6,ix-150,17.4+Math.sin(a)*13,zc+Math.cos(a)*13,.5,.5,4.2,0,-(a+Math.PI/2))}} // the pier and wheel from afar
+    return}
   b.add(G.box,A,ix+B/2,0,jz+B/2,B+W,.04,B+W);
   const gcol={strip:0x5d5a63,homes:0x7aa857,downtown:0xb4aca0,park:0x6ea250,shore:0xd9c49a,freeway:0xa79a7a}[d]||0xcdc3b3;
   b.add(G.box,0xcdc3b3,cx,.15,cz,S,.3,S);b.add(G.box,gcol,cx,.17,cz,S-7,.32,S-7);
@@ -2359,6 +2475,7 @@ function loop(now){
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
   updateSkyline(car.x,car.z,car.d,clock);
+  detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
   if(!hudEl.hidden){const sg=signal.on?signal.side:'';if(sg!==lastSig){lastSig=sg;sigLEl.classList.toggle('on',sg==='L');sigREl.classList.toggle('on',sg==='R')}
