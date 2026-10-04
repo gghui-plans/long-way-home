@@ -124,6 +124,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .pill{border:0;border-radius:99px;padding:12px 18px;font-weight:800;font-size:15px;background:var(--ink);color:var(--dusk);cursor:pointer}
 .tiltbox{display:grid;gap:8px;justify-items:start}
 .note{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+.note.credits{font-size:11.5px}.note a{color:inherit}
 input[type=range]{width:55%;accent-color:var(--sun)}
 input[type=checkbox]{width:22px;height:22px;accent-color:var(--sun)}
 
@@ -215,6 +216,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <p class="note">Fades the signs and buttons after 10 seconds without touching anything. The hands-free timer stays. Tap anywhere to bring everything back.</p>
     <div class="row"><label class="lbl" for="hq">High-quality graphics</label><input type="checkbox" id="hq" checked></div>
     <p class="note">Soft glow and sharper shadows. Turn off to save battery on long drives.</p>
+    <p class="note credits">Your car: <a href="https://sketchfab.com/3d-models/1962-corvette-c1-f52ad070ec12455981d4ba63f21bcf0e" target="_blank" rel="noopener">"1962 Corvette c1"</a> by <a href="https://sketchfab.com/platemodels" target="_blank" rel="noopener">Plate Models</a>, <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> (top down and repainted). Traffic cars by Quaternius (CC0).</p>
     <div class="row"><button class="pill ghost" id="openFb">Send feedback</button><button class="pill" id="close">Back to the drive</button></div>
   </div>
 </div>
@@ -270,6 +272,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 (()=>{
 'use strict';
 // ---------- constants & helpers
@@ -411,7 +414,7 @@ if(dUp>.6){ // ground and roofs: grain and broad patches; cracks on asphalt; win
   float sand=smoothstep(.20,.30,dLum)*smoothstep(.35,.5,dSat)*step(dc.b,dc.g)*(1.0-smoothstep(1.0,4.0,vWPos.y));
   float rip=sin(dot(dP.xz,vec2(.8,.6))*2.2+tB.g*9.0)*.5+.5;
   dMod=.9+.2*tF.r+(tB.r-.5)*.3;
-  dMod*=1.0-asph*.45*(1.0-smoothstep(.015,.04,tC.b))*smoothstep(.7,.8,tB.g);
+  dMod*=1.0-asph*.25*(1.0-smoothstep(.008,.02,tC.b))*smoothstep(.8,.9,tB.g);
   dMod=mix(dMod,1.0+(tF.a-.5)*.12,sand*.6)*(1.0+sand*(rip-.5)*.1);
   dH=mix(tF.a,rip,sand*.5);dBmp=mix(1.0,.35,sand);
 }else{ // walls: stucco mottling, a little grime near the ground
@@ -422,6 +425,12 @@ diffuseColor.rgb*=mix(1.0,dMod,dFade);`)
   .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
 };
 const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
+const MAT_Q=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.4,metalness:.1,flatShading:true}); // the modelled traffic cars (faceted)
+// each car's own colour only goes on its body paint (a per-vertex 'paint' flag), not on the windows, tyres and lights
+for(const m of[MAT_CAR,MAT_Q])m.onBeforeCompile=sh=>{
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float paint;')
+    .replace('#include <color_vertex>',THREE.ShaderChunk.color_vertex.replace('vColor.xyz *= instanceColor.xyz;','vColor.xyz *= mix(vec3(1.0),instanceColor.xyz,paint);'));
+};
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_n3=new THREE.Matrix3(),_c=new THREE.Color();
 class Builder{
   constructor(){this.pos=[];this.nor=[];this.col=[]}
@@ -938,8 +947,13 @@ const WH=0xffffff,GL=0x2b3442,TI=0x1c1a1e,DK=0x3a3a3e,LT=0xfff2c4,TL=0xd01a1a;
 const wheels4=(b,r,x,z)=>{for(const sx of[-x,x])for(const sz of[-z,z])b.add(G.cyl,TI,sx,r,sz,r,.26,r,0,0,Math.PI/2)};
 const lights=(b,x,y,z)=>{for(const s of[-1,1]){b.add(G.box,LT,s*x,y,z,.36,.14,.05);b.add(G.box,TL,s*x,y,-z,.36,.14,.05)}};
 const VTYPES={
-  sedan:{hl:2.3,w:34,pal:[0xd8344a,0x2f6fb3,0xf2efe6,0x3a3f4a,0x6b8fd6,0x9a3f6e,0xc9c4bb,0x2b2b30,0x5e8f6f],build(b){b.add(RB(1.8,.62,4.5,.18),WH,0,.62,0);b.add(RB(1.62,.5,2.2,.18),GL,0,1.13,-.2);b.add(RB(1.64,.08,1.9,.04),WH,0,1.4,-.25);for(const z of[2.25,-2.25])b.add(G.box,DK,0,.42,z,1.82,.18,.2);lights(b,.6,.72,2.27);wheels4(b,.33,.82,1.45)}},
-  suv:{hl:2.4,w:22,pal:[0xf2efe6,0x2b2b30,0x5b6470,0x7a2a30,0x2f4f6f,0xc9c4bb],build(b){b.add(RB(1.9,.85,4.7,.2),WH,0,.8,0);b.add(RB(1.8,.6,3,.2),GL,0,1.48,-.25);b.add(RB(1.82,.1,2.8,.05),WH,0,1.8,-.3);for(const s of[-1,1])b.add(G.box,DK,s*.6,1.88,-.3,.06,.06,2.4);for(const z of[2.35,-2.35])b.add(G.box,DK,0,.45,z,1.92,.22,.2);lights(b,.62,.95,2.37);wheels4(b,.4,.86,1.55)}},
+  sedan:{hl:2.3,w:14,model:'sedan1',pal:[0xd8344a,0x2f6fb3,0xf2efe6,0x3a3f4a,0x6b8fd6,0x9a3f6e,0xc9c4bb,0x2b2b30,0x5e8f6f],build(b){b.add(RB(1.8,.62,4.5,.18),WH,0,.62,0);b.add(RB(1.62,.5,2.2,.18),GL,0,1.13,-.2);b.add(RB(1.64,.08,1.9,.04),WH,0,1.4,-.25);for(const z of[2.25,-2.25])b.add(G.box,DK,0,.42,z,1.82,.18,.2);lights(b,.6,.72,2.27);wheels4(b,.33,.82,1.45)}},
+  suv:{hl:2.4,w:16,model:'suv',pal:[0xf2efe6,0x2b2b30,0x5b6470,0x7a2a30,0x2f4f6f,0xc9c4bb],build(b){b.add(RB(1.9,.85,4.7,.2),WH,0,.8,0);b.add(RB(1.8,.6,3,.2),GL,0,1.48,-.25);b.add(RB(1.82,.1,2.8,.05),WH,0,1.8,-.3);for(const s of[-1,1])b.add(G.box,DK,s*.6,1.88,-.3,.06,.06,2.4);for(const z of[2.35,-2.35])b.add(G.box,DK,0,.45,z,1.92,.22,.2);lights(b,.62,.95,2.37);wheels4(b,.4,.86,1.55)}},
+  sedan2:{hl:2.3,w:12,model:'sedan2',pal:[0x9fc3e0,0xf2efe6,0xc9c4bb,0x5e8f6f,0xe9dcc0,0x2b2b30],build(b){VTYPES.sedan.build(b)}},
+  sport1:{hl:2.2,w:4,model:'sport1',pal:[0xd8344a,0xf2a541,0x2f6fb3,0x2b2b30,0xf2efe6],build(b){VTYPES.sedan.build(b)}},
+  sport2:{hl:2.2,w:4,model:'sport2',pal:[0xf2efe6,0xc9c4bb,0x2b2b30,0x7a2a30,0x2fb3a8],build(b){VTYPES.sedan.build(b)}},
+  taxi:{hl:2.3,w:4,model:'taxi',pal:[0xffffff],build(b){VTYPES.sedan.build(b)}},
+  cop:{hl:2.35,w:2,model:'cop',pal:[0xffffff],build(b){VTYPES.sedan.build(b)}},
   pickup:{hl:2.5,w:12,pal:[0xd8344a,0xf2efe6,0x2b2b30,0x4a6b8a,0xb5893d],build(b){b.add(G.box,WH,0,.6,0,1.9,.45,4.9);b.add(RB(1.9,.55,2.2,.16),WH,0,1.02,1.3);b.add(RB(1.8,.6,1.5,.15),GL,0,1.42,.25);b.add(RB(1.82,.1,1.4,.05),WH,0,1.75,.25);b.add(G.box,DK,0,.86,-1.35,1.75,.06,2.2);for(const s of[-1,1])b.add(G.box,WH,s*.9,1.08,-1.35,.1,.5,2.25);b.add(G.box,WH,0,1.08,-2.42,1.85,.5,.08);lights(b,.62,.95,2.47);wheels4(b,.42,.86,1.6)}},
   van:{hl:2.25,w:9,pal:[0xf2a541,0x2fb3a8,0xe8505b,0xf1e2c6,0x8fb3d6],build(b){b.add(RB(1.9,1.75,4.4,.4),WH,0,1.2,0);b.add(RB(1.93,.55,3.4,.2),GL,0,1.6,-.25);b.add(RB(1.6,.55,.12,.06),GL,0,1.6,2.18);b.add(G.box,0xf2efe6,0,.75,0,1.94,.25,4.3);for(const z of[2.2,-2.2])b.add(G.box,DK,0,.42,z,1.9,.18,.2);lights(b,.6,.95,2.22);wheels4(b,.36,.84,1.4)}},
   wagon:{hl:2.45,w:8,pal:[0xe9dcc0,0x9fd3c7,0xf2c6a0,0xbfe3d9],build(b){b.add(RB(1.8,.62,4.8,.18),WH,0,.62,0);b.add(RB(1.62,.5,3,.18),GL,0,1.13,-.5);b.add(RB(1.64,.08,2.9,.04),WH,0,1.4,-.5);for(const s of[-1,1])b.add(G.box,0x8a5a33,s*.91,.66,-.4,.04,.36,3.6);b.add(G.box,0xf2efe6,.4,1.52,-.4,.55,.08,2.9);b.add(G.box,0x2fb3a8,-.4,1.52,-.4,.55,.08,2.9);lights(b,.6,.72,2.42);wheels4(b,.33,.82,1.6)}},
@@ -949,8 +963,21 @@ const VTYPES={
   bike:{hl:.9,w:5,pal:SHIRT,bike:true,lane:6.6,slow:true,build(b){for(const z of[.55,-.55])b.add(G.cyl,TI,0,.34,z,.34,.05,.34,0,0,Math.PI/2);b.add(G.box,0x9a9aa2,0,.68,0,.06,.06,1.05);b.add(G.box,0x9a9aa2,0,.55,-.15,.05,.45,.05);b.add(G.box,WH,0,1.28,-.08,.45,.62,.3,0,.25);b.add(BLOB,WH,0,1.78,.05,.21,.21,.23);for(const s of[-1,1])b.add(G.box,0x2f3b5a,s*.12,.78,-.05,.14,.55,.16,0,.3)}},
 };
 const POOL=36,agents=[],vMesh={};
-for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(b.geo(),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
+const paintFromWhite=g=>{const c=g.attributes.color.array,p=new Float32Array(c.length/3);for(let i=0;i<p.length;i++)p[i]=c[i*3]>.99&&c[i*3+1]>.99&&c[i*3+2]>.99?1:0;g.setAttribute('paint',new THREE.BufferAttribute(p,1));return g}; // generated cars: white parts take the paint
+for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
 for(let k=0;k<POOL;k++)agents.push({k,on:false,type:'sedan',x:0,z:0,fx:0,fz:1,v:0,hl:2.3});
+// modelled traffic cars (Quaternius, CC0), baked by production/bake-traffic.js; until they arrive the generated shapes stand in
+fetch('models/traffic.bin').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(buf=>{
+  const hl=new DataView(buf).getUint32(0,true),H=JSON.parse(new TextDecoder().decode(new Uint8Array(buf,4,hl))),base=4+hl,cars={};
+  for(const c of H.cars){
+    const P=new Int16Array(buf,base+c.pos,c.vc*3),C=new Uint8Array(buf,base+c.col,c.vc*4),I=new Uint16Array(buf,base+c.idx,c.ic);
+    const pos=new Float32Array(c.vc*3),col=new Float32Array(c.vc*3),pnt=new Float32Array(c.vc);
+    for(let i=0;i<c.vc;i++){for(let j=0;j<3;j++){pos[i*3+j]=P[i*3+j]/H.scale;col[i*3+j]=C[i*4+j]/255}pnt[i]=C[i*4+3]/255}
+    const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(pos,3));g.setAttribute('color',new THREE.BufferAttribute(col,3));
+    g.setAttribute('paint',new THREE.BufferAttribute(pnt,1));g.setIndex(new THREE.BufferAttribute(I.slice(),1));g.computeVertexNormals();cars[c.name]={g,hl:c.hl}; // normals only steady the shadows; the faces shade flat
+  }
+  for(const [k,t] of Object.entries(VTYPES)){const c=t.model&&cars[t.model];if(!c)continue;const m=vMesh[k];m.geometry.dispose();m.geometry=c.g;m.material=MAT_Q;t.hl=c.hl;for(const a of agents)if(a.type===k)a.hl=c.hl}
+}).catch(()=>{}); // no file: keep the generated cars
 // other drivers signal too: front and rear amber lights on the turning side
 const npcBlink=new THREE.InstancedMesh(new THREE.SphereGeometry(.15,8,6),new THREE.MeshBasicMaterial({color:0xffb030}),POOL*2);
 npcBlink.frustumCulled=false;npcBlink.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<POOL*2;i++)npcBlink.setMatrixAt(i,_zero);scene.add(npcBlink);
@@ -1137,8 +1164,8 @@ function updateSkyline(cx,cz,dir,clock){
 }
 
 // ---------- the convertible (model faces +z; driver on the left, which is +x)
-const carG=new THREE.Group(),body=new THREE.Group();carG.add(body);scene.add(carG);
-const wheels=[],blink={L:[],R:[]},blinkGlow={L:[],R:[]};
+const carG=new THREE.Group(),body=new THREE.Group(),shell=new THREE.Group(),driver=new THREE.Group();carG.add(body);body.add(shell,driver);scene.add(carG); // shell: the generated body, replaced by the Corvette model once it loads
+const wheels=[],blink={L:[],R:[]},blinkGlow={L:[],R:[]},blinkLens={L:[],R:[]};let wheelR=.42;
 let signal={side:null,on:false}; // shared with the dashboard arrows and the tick sound
 window.__sig=()=>({signal,glow:blinkGlow.R.map(g=>g.visible).concat(blinkGlow.L.map(g=>g.visible)),npc:agents.filter(a=>a.on&&a.piece==='turn'&&a.nd!==a.d).length}); // TEMP
 function smoothNormals(g,deg=50){ // average normals across shared positions, keeping hard edges sharper than deg
@@ -1152,7 +1179,7 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
   const chrome=new THREE.MeshStandardMaterial({color:0xeeebe6,roughness:.16,metalness:1});
   const cream=new THREE.MeshStandardMaterial({roughness:.85,color:0xf1e2c6}),dark=new THREE.MeshStandardMaterial({roughness:.85,color:0x2a2228});
   const skin=new THREE.MeshStandardMaterial({roughness:.85,color:0xc68863}),tire=new THREE.MeshStandardMaterial({roughness:.85,color:0x1c1a1e}),white=new THREE.MeshStandardMaterial({roughness:.85,color:0xf4f1ea});
-  const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0,parent=body)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;parent.add(m);return m};
+  const add=(geo,mat,x,y,z,rx=0,ry=0,rz=0,parent=shell)=>{const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;parent.add(m);return m};
   // side profile (car length along the shape's x, height along y), extruded across the width
   const profile=notch=>{
     const s=new THREE.Shape();s.moveTo(-2.28,.36);s.lineTo(2.22,.36);s.quadraticCurveTo(2.42,.38,2.42,.62);s.quadraticCurveTo(2.4,.9,2.1,.94);s.lineTo(.85,1);
@@ -1185,11 +1212,11 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
   add(new THREE.CylinderGeometry(.025,.025,1.88,6).rotateZ(Math.PI/2),chrome,0,1.58,.6);
   const glass=add(new THREE.PlaneGeometry(1.84,.58),new THREE.MeshStandardMaterial({color:0xcfeaf5,roughness:.04,metalness:0,transparent:true,opacity:.28,side:THREE.DoubleSide}),0,1.3,.73,-.45);glass.castShadow=false;
   // driver
-  add(rbox(.5,.6,.3,.1),new THREE.MeshStandardMaterial({roughness:.85,color:0x2fb3a8}),.45,1.26,-.18);
-  add(new THREE.SphereGeometry(.21,14,12),skin,.45,1.8,-.12);
-  add(new THREE.SphereGeometry(.225,14,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({roughness:.85,color:0x3a2a20}),.45,1.84,-.15);
-  add(rbox(.36,.07,.05,.02),new THREE.MeshStandardMaterial({color:0x111114,roughness:.12,metalness:.3}),.45,1.83,.08);
-  for(const s of[-1,1])add(new THREE.CylinderGeometry(.06,.055,.5,8),skin,.45+s*.2,1.3,.12,-1.1);
+  add(rbox(.5,.6,.3,.1),new THREE.MeshStandardMaterial({roughness:.85,color:0x2fb3a8}),.45,1.26,-.18,0,0,0,driver);
+  add(new THREE.SphereGeometry(.21,14,12),skin,.45,1.8,-.12,0,0,0,driver);
+  add(new THREE.SphereGeometry(.225,14,8,0,Math.PI*2,0,Math.PI/2),new THREE.MeshStandardMaterial({roughness:.85,color:0x3a2a20}),.45,1.84,-.15,0,0,0,driver);
+  add(rbox(.36,.07,.05,.02),new THREE.MeshStandardMaterial({color:0x111114,roughness:.12,metalness:.3}),.45,1.83,.08,0,0,0,driver);
+  for(const s of[-1,1])add(new THREE.CylinderGeometry(.06,.055,.5,8),skin,.45+s*.2,1.3,.12,-1.1,0,0,driver);
   // wheels: black tire, whitewall, chrome hubcap
   const tg=new THREE.CylinderGeometry(.42,.42,.28,24).rotateZ(Math.PI/2),wg=new THREE.CylinderGeometry(.31,.31,.29,24).rotateZ(Math.PI/2),hg=new THREE.CylinderGeometry(.17,.17,.3,16).rotateZ(Math.PI/2);
   for(const sx of[-.98,.98])for(const sz of[-1.48,1.48]){
@@ -1200,11 +1227,32 @@ function smoothNormals(g,deg=50){ // average normals across shared positions, ke
   const bg=new THREE.SphereGeometry(.11,12,10),glowMat=new THREE.SpriteMaterial({map:sTex(gradCanvas(64,64,[[0,'rgba(255,200,90,1)'],[.25,'rgba(255,160,40,.8)'],[1,'rgba(255,140,30,0)']],true)),transparent:true,depthWrite:false,blending:THREE.AdditiveBlending});
   for(const side of['L','R']){
     const m=new THREE.MeshBasicMaterial({color:0x5a3a10});blink[side]=m;blinkGlow[side]=[];
-    for(const sz of[2.43,-2.42]){const x=side==='L'?.84:-.84;add(bg,m,x,.62,sz);const g=new THREE.Sprite(glowMat);g.position.set(x,.62,sz+(sz>0?.08:-.08));g.scale.set(1.1,1.1,1);g.visible=false;body.add(g);blinkGlow[side].push(g)}
+    for(const sz of[2.43,-2.42]){const x=side==='L'?.84:-.84;blinkLens[side].push(add(bg,m,x,.62,sz,0,0,0,body));const g=new THREE.Sprite(glowMat);g.position.set(x,.62,sz+(sz>0?.08:-.08));g.scale.set(1.1,1.1,1);g.visible=false;body.add(g);blinkGlow[side].push(g)}
   }
   const sh=new THREE.Mesh(new THREE.PlaneGeometry(2.8,5.4),new THREE.MeshBasicMaterial({map:sTex(gradCanvas(64,64,[[0,'rgba(20,10,25,.4)'],[.6,'rgba(20,10,25,.2)'],[1,'rgba(20,10,25,0)']],true)),transparent:true,depthWrite:false}));
   sh.rotation.x=-Math.PI/2;sh.position.y=.03;carG.add(sh);
 })();
+// the real car: "1962 Corvette c1" by Plate Models (CC-BY 4.0), top down and painted here; the wheels, driver and signals
+// above are reused. If it can't load, the generated car stays.
+new GLTFLoader().load('models/corvette/scene.gltf',g=>{
+  const m=g.scene,L=4.6,k=L/4.5;
+  const mat={'Material':new THREE.MeshPhysicalMaterial({color:0xc92a3e,roughness:.34,metalness:.05,clearcoat:1,clearcoatRoughness:.06}),
+    'Material.002':new THREE.MeshStandardMaterial({color:0xeeebe6,roughness:.16,metalness:1}),
+    'Material.007':new THREE.MeshStandardMaterial({color:0xf1e2c6,roughness:.6}),
+    'Material.001':new THREE.MeshStandardMaterial({color:0xcfeaf5,roughness:.04,metalness:0,transparent:true,opacity:.28,side:THREE.DoubleSide})};
+  m.traverse(o=>{if(!o.isMesh)return;if(/^(soft_top|windows_)/i.test(o.name)){o.visible=false;return}o.material=mat[o.material.name]||o.material;o.castShadow=o.receiveShadow=o.material.opacity===1});
+  const fit=new THREE.Group(),bx=new THREE.Box3(),v=new THREE.Vector3();fit.add(m);
+  const box=()=>{fit.updateMatrixWorld(true);return bx.setFromObject(m)};
+  // as delivered, this model already points its grille along +z (the car's forward)
+  box().getSize(v);m.scale.multiplyScalar(L/Math.max(v.x,v.z));
+  box().getCenter(v);m.position.x-=v.x;m.position.z-=v.z;m.position.y-=box().min.y-.1*k; // sits on its tyres
+  const r=.33*k;
+  body.add(fit);shell.visible=false;
+  wheelR=r;[[.75,1.22],[.75,-1.37]].forEach(([x,z],n)=>{for(const s of[-1,1]){const w=wheels.find(w=>Math.sign(w.position.x)===s&&Math.sign(w.position.z)===Math.sign(z));w.position.set(s*x*k,r,z*k);w.scale.setScalar(r/.42)}});
+  driver.position.set(-.1,-.55,-.15); // down into the lower seat, behind the windshield
+  // signals: just the glow, beside the grille and at the tail lamps (the round lenses would poke out of the curved nose)
+  for(const side of['L','R']){const sg=side==='L'?1:-1;blinkLens[side].forEach(l=>l.visible=false);blinkGlow[side][0].position.set(sg*.72,.48,2.3);blinkGlow[side][1].position.set(sg*.79,.68,-2.3)}
+},undefined,()=>{});
 
 // ---------- autopilot: street grid in towns (right-hand lanes, bezier turns), winding Highway 1 in between
 const ACC=3.5,DEC=4,ALAT=5;
@@ -1300,7 +1348,7 @@ function updateCar(dt){
   const yaw=Math.atan2(dx,dz);let dy=yaw-car.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));
   car.yaw+=dy;car.yawRate=dt>0?dy/dt:0;car.x=x;car.z=z;
   carG.position.set(x,0,z);carG.rotation.y=car.yaw;
-  for(const w of wheels)w.rotation.x+=car.v*dt/.42;
+  for(const w of wheels)w.rotation.x+=car.v*dt/wheelR;
   body.rotation.z+=(clamp(car.yawRate*car.v*.012,-.07,.07)-body.rotation.z)*Math.min(1,dt*5);
   // turn signals: autopilot signals its own choice too, about 4 seconds before the turn
   const c=choice()[0],turning=car.piece==='turn',showing=turning?car.final!=='S':(c&&c!=='S'&&toEndNow()<Math.max(40,car.v*4));

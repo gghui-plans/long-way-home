@@ -32,3 +32,5 @@ powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://<username>.g
 ```
 
 The world is generated in the browser from rules, with no real maps or brands. Songs were made with Suno, voices with ElevenLabs, and nature sounds are CC0 recordings from Freesound (see `production/NATURE-SOURCES.md`).
+
+Car models: your car is "[1962 Corvette c1](https://sketchfab.com/3d-models/1962-corvette-c1-f52ad070ec12455981d4ba63f21bcf0e)" by [Plate Models](https://sketchfab.com/platemodels), licensed [CC-BY 4.0](http://creativecommons.org/licenses/by/4.0/) (top removed and repainted in the game). Traffic cars are from the Quaternius Cars Pack (CC0), baked by `production/bake-traffic.js` into `docs/models/traffic.bin`.
