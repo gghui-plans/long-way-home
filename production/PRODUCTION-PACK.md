@@ -221,22 +221,22 @@ Tips:
 
 | Clip id | Voice | Line | Direction |
 |---|---|---|---|
-| intro-golden-hour-gasoline | DANA | Here's Golden Hour Gasoline, from The Offramps. | DJ |
-| intro-carpool-lane-lightning | RICK | This is Sig Alert. Carpool Lane Lightning. | DJ, dry |
-| intro-red-light-lullaby | DANA | Next up, Valet Overdrive with Red Light Lullaby! | DJ |
-| intro-merge-left-into-my-heart | RICK | The Carpoolers. Merge Left, Into My Heart. Turn it up and stay in your lane. | DJ, dry |
-| intro-low-tide-blues | DANA | Here's Smog Cutters with Low Tide Blues. Kick off your shoes, folks. | DJ, mellow |
-| intro-bonfire-on-the-beach | RICK | This is my cousin's band. No. It's Dana's cousin's band. Dana's Cousin Kevin, Bonfire on the Beach. | correcting himself |
-| intro-tan-lines | DANA | Gridlock Prophets! Tan Lines! | DJ, hyped |
-| intro-postcard-from-the-pier | DANA | Here's The Turn Signals, with Postcard from the Pier. | DJ, warm |
-| intro-taillight-serenade | RICK | Rush Hour Rebels. Taillight Serenade. Somebody hold me. | DJ, emotional |
-| intro-hammock-by-the-sea | DANA | Tailgate Thunder, Hammock by the Sea. Put your feet up, everybody. | DJ, relaxed |
-| intro-hot-sand-shuffle | RICK | The Offramps. Hot Sand Shuffle. No words. Just sand. | DJ, dry |
-| intro-off-ramp-outlaw | DANA | Here's Sig Alert with Off-Ramp Outlaw! | DJ |
-| intro-catalina-sunset | DANA | Valet Overdrive. Catalina Sunset. Smooth as a fresh repave. | DJ, smooth |
-| intro-longboard-summer | RICK | Smog Cutters. Longboard Summer. I tried surfing once. The ocean won. | DJ, dry |
-| intro-pacific-coast-cruise | DANA | Something mellow for the coast. The Turn Signals, Pacific Coast Cruise. | DJ, soft |
-| intro-long-way-home | DANA | And this one's for you, out there taking the long way home. Rush Hour Rebels. | DJ, heartfelt |
+| intro-golden-hour-gasoline | DANA | Here's Golden Hour Gasoline, from The Offramps. | bright, upbeat |
+| intro-carpool-lane-lightning | RICK | This is Sig Alert. Carpool Lane Lightning. | dry |
+| intro-red-light-lullaby | DANA | Next up, Valet Overdrive with Red Light Lullaby! | bright, upbeat |
+| intro-merge-left-into-my-heart | RICK | The Carpoolers. Merge Left, Into My Heart. Turn it up and stay in your lane. | dry |
+| intro-low-tide-blues | DANA | Here's Smog Cutters with Low Tide Blues. Kick off your shoes, folks. | mellow, relaxed |
+| intro-bonfire-on-the-beach | RICK | This is my cousin's band. No. It's Dana's cousin's band. Dana's Cousin Kevin, Bonfire on the Beach. | dry, correcting himself |
+| intro-tan-lines | DANA | Gridlock Prophets! Tan Lines! | bright, excited |
+| intro-postcard-from-the-pier | DANA | Here's The Turn Signals, with Postcard from the Pier. | warm, upbeat |
+| intro-taillight-serenade | RICK | Rush Hour Rebels. Taillight Serenade. Somebody hold me. | dry, quietly emotional |
+| intro-hammock-by-the-sea | DANA | Tailgate Thunder, Hammock by the Sea. Put your feet up, everybody. | relaxed, warm |
+| intro-hot-sand-shuffle | RICK | The Offramps. Hot Sand Shuffle. No words. Just sand. | dry |
+| intro-off-ramp-outlaw | DANA | Here's Sig Alert with Off-Ramp Outlaw! | bright, upbeat |
+| intro-catalina-sunset | DANA | Valet Overdrive. Catalina Sunset. Smooth as a fresh repave. | smooth, upbeat |
+| intro-longboard-summer | RICK | Smog Cutters. Longboard Summer. I tried surfing once. The ocean won. | dry |
+| intro-pacific-coast-cruise | DANA | Something mellow for the coast. The Turn Signals, Pacific Coast Cruise. | soft, warm |
+| intro-long-way-home | DANA | And this one's for you, out there taking the long way home. Rush Hour Rebels. | heartfelt, warm |
 | after-01-1 | DANA | A classic! | happy |
 | after-02-1 | RICK | They broke up in traffic, you know. Different lanes. | dry |
 | after-03-1 | DANA | Windows down, volume up! | hyped |

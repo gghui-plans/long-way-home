@@ -7,7 +7,8 @@
 #   -Force           regenerate even if the file already exists (for retakes)
 #   -Model id        model to use (default eleven_v3)
 #   -ListModels      show which models this key can use, then stop
-param([switch]$DryRun, [string[]]$Only, [switch]$Force, [string]$Model = 'eleven_v3', [switch]$ListModels)
+#   -Stability n     0 to 1; higher keeps the voice closer to the original (less drift), lower is more expressive
+param([switch]$DryRun, [string[]]$Only, [switch]$Force, [string]$Model = 'eleven_v3', [switch]$ListModels, [double]$Stability = -1)
 $ErrorActionPreference = 'Stop'
 if ($Only) { $Only = @($Only | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ }) } # accept "a,b" too
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -57,7 +58,9 @@ if ($DryRun) { $todo | ForEach-Object { "  $_ ($($bits[$_].Count) lines)" }; ret
 
 $ok = 0; $failed = @()
 foreach ($b in $todo) {
-  $body = @{ inputs = @($bits[$b]); model_id = $Model } | ConvertTo-Json -Depth 5
+  $req = @{ inputs = @($bits[$b]); model_id = $Model }
+  if ($Stability -ge 0) { $req.settings = @{ stability = $Stability } }
+  $body = $req | ConvertTo-Json -Depth 5
   $file = Join-Path $out "$b.mp3"
   for ($try = 1; $try -le 2; $try++) {
     try {
