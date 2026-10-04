@@ -1174,6 +1174,7 @@ function initAudio(){
   const lo=AC.createGain();lo.gain.value=.09;const dl=AC.createDelay();dl.delayTime.value=.28;const fb=AC.createGain();fb.gain.value=.3;
   leadIn.connect(ws2);ws2.connect(ll);ll.connect(lo);lo.connect(musicBus);lo.connect(dl);dl.connect(fb);fb.connect(dl);dl.connect(musicBus);
   noiseBuf=AC.createBuffer(1,AC.sampleRate,AC.sampleRate);const nd=noiseBuf.getChannelData(0);for(let i=0;i<nd.length;i++)nd[i]=Math.random()*2-1;
+  initSongEl();
 }
 function blinkerTick(on){ // the relay click of a turn signal: tick when it lights, tock when it goes dark
   if(!AC||AC.state!=='running')return;
@@ -1353,9 +1354,59 @@ function playSong(sg,onEnd){
   Object.assign(M,{song:sg,bar:0,step:0,next:t+.08,onEnd,start:t});M.timer=setInterval(tick,25);
 }
 function stopSong(fade,cb){
-  clearInterval(M.timer);M.timer=null;M.song=null;
+  clearInterval(M.timer);M.timer=null;M.song=null;const wasReal=M.real;M.real=false;
   if(AC){const t=AC.currentTime;musicBus.gain.cancelScheduledValues(t);musicBus.gain.setValueAtTime(musicBus.gain.value,t);musicBus.gain.linearRampToValueAtTime(0,t+fade)}
-  setTimeout(()=>cb&&cb(),fade*1000+200);
+  setTimeout(()=>{if(wasReal&&!M.real)songEl.pause();cb&&cb()},fade*1000+200);
+}
+
+// ---------- K-JAM's playlist: 16 recorded songs, shuffled, no repeats until all have played
+const SONGS=[
+  {id:'golden-hour-gasoline',title:"Golden Hour Gasoline",band:"The Offramps",intro:['D',"Here's Golden Hour Gasoline, from The Offramps."]},
+  {id:'carpool-lane-lightning',title:"Carpool Lane Lightning",band:"Sig Alert",intro:['R',"This is Sig Alert. Carpool Lane Lightning."]},
+  {id:'red-light-lullaby',title:"Red Light Lullaby",band:"Valet Overdrive",intro:['D',"Next up, Valet Overdrive with Red Light Lullaby!"]},
+  {id:'merge-left-into-my-heart',title:"Merge Left (Into My Heart)",band:"The Carpoolers",intro:['R',"The Carpoolers. Merge Left, Into My Heart. Turn it up and stay in your lane."]},
+  {id:'low-tide-blues',title:"Low Tide Blues",band:"Smog Cutters",intro:['D',"Here's Smog Cutters with Low Tide Blues. Kick off your shoes, folks."]},
+  {id:'bonfire-on-the-beach',title:"Bonfire on the Beach",band:"Dana's Cousin Kevin",intro:['R',"This is my cousin's band. No. It's Dana's cousin's band. Dana's Cousin Kevin, Bonfire on the Beach."]},
+  {id:'tan-lines',title:"Tan Lines",band:"Gridlock Prophets",intro:['D',"Gridlock Prophets! Tan Lines!"]},
+  {id:'postcard-from-the-pier',title:"Postcard from the Pier",band:"The Turn Signals",intro:['D',"Here's The Turn Signals, with Postcard from the Pier."]},
+  {id:'taillight-serenade',title:"Taillight Serenade",band:"Rush Hour Rebels",intro:['R',"Rush Hour Rebels. Taillight Serenade. Somebody hold me."]},
+  {id:'hammock-by-the-sea',title:"Hammock by the Sea",band:"Tailgate Thunder",intro:['D',"Tailgate Thunder, Hammock by the Sea. Put your feet up, everybody."]},
+  {id:'hot-sand-shuffle',title:"Hot Sand Shuffle",band:"The Offramps",intro:['R',"The Offramps. Hot Sand Shuffle. No words. Just sand."]},
+  {id:'off-ramp-outlaw',title:"Off-Ramp Outlaw",band:"Sig Alert",intro:['D',"Here's Sig Alert with Off-Ramp Outlaw!"]},
+  {id:'catalina-sunset',title:"Catalina Sunset",band:"Valet Overdrive",intro:['D',"Valet Overdrive. Catalina Sunset. Smooth as a fresh repave."]},
+  {id:'longboard-summer',title:"Longboard Summer",band:"Smog Cutters",intro:['R',"Smog Cutters. Longboard Summer. I tried surfing once. The ocean won."]},
+  {id:'pacific-coast-cruise',title:"Pacific Coast Cruise",band:"The Turn Signals",intro:['D',"Something mellow for the coast. The Turn Signals, Pacific Coast Cruise."]},
+  {id:'long-way-home',title:"Long Way Home",band:"Rush Hour Rebels",intro:['D',"And this one's for you, out there taking the long way home. Rush Hour Rebels."]},
+];
+const AFTER=[[['D',"A classic!"]],[['R',"They broke up in traffic, you know. Different lanes."]],[['D',"Windows down, volume up!"],['R',"Dana, it's a convertible. There are no windows."],['D',"Then everything up!"]]];
+let playlist=[],lastSongId='';
+function nextSong(){
+  if(!playlist.length){playlist=SONGS.slice().sort(()=>Math.random()-.5);if(playlist[0].id===lastSongId)playlist.push(playlist.shift())}
+  const s=playlist.shift();lastSongId=s.id;return s;
+}
+// songs stream through one audio player routed into the radio's volume (decoding them all would be too heavy for phones)
+const songEl=new Audio();songEl.preload='auto';
+let songNode=null;
+const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYzLjEuMTAyAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAADKQBaWlpaWlpaWlpaWlpaWlpae3t7e3t7e3t7e3t7e3t7e3ucnJycnJycnJycnJycnJycvb29vb29vb29vb29vb29vb3e3t7e3t7e3t7e3t7e3t7e3v////////////////////8AAAAATGF2YzYzLjEuAAAAAAAAAAAAAAAAJAKjAAAAAAAAAymyj8UTAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDBVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
+function initSongEl(){ // runs inside the first tap: unlocks the player on iPhone
+  if(songNode||!AC)return;
+  try{songNode=AC.createMediaElementSource(songEl);songNode.connect(musicBus)}catch(e){songNode=false}
+  songEl.src=SILENT;const p=songEl.play();if(p)p.catch(()=>{});
+}
+const songUrl=s=>'audio/music/'+s.id+'.mp3';
+function cueSong(s){ // start buffering while the hosts talk
+  try{songEl.pause();songEl.src=songUrl(s);songEl.load()}catch(e){}
+}
+function playRealSong(s,onEnd,fallback){
+  clearInterval(M.timer);M.timer=null;
+  const t=AC.currentTime;musicBus.gain.cancelScheduledValues(t);musicBus.gain.setValueAtTime(1,t);
+  Object.assign(M,{song:s,onEnd,start:t,real:true});
+  let failed=false;const fail=()=>{if(failed||M.song!==s)return;failed=true;M.real=false;M.song=null;fallback()};
+  songEl.onended=()=>{if(M.song===s){M.song=null;M.real=false;setTimeout(()=>onEnd&&onEnd(),900)}};
+  songEl.onerror=fail;
+  if(!songEl.src.endsWith(songUrl(s)))songEl.src=songUrl(s);
+  try{songEl.currentTime=0}catch(e){}
+  const p=songEl.play();if(p)p.catch(fail);
 }
 
 // ---------- voices: two hosts (plus callers) from the device's built-in text-to-speech
@@ -1486,15 +1537,20 @@ function playLines(lines,tok,done){
 }
 function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place']);while(k===Show.lastKind);return k}
 function startSong(tok,song){
-  Show.phase='song';setLCD('STEREO','♪ '+song.title.toUpperCase()+' · '+song.band.toUpperCase());
-  playSong(song,()=>{if(tok===Show.token&&Show.on)talk(nextKind())});
+  Show.phase='song';
+  const show=s=>setLCD('STEREO','♪ '+s.title.toUpperCase()+' · '+s.band.toUpperCase());
+  const onEnd=()=>{if(tok===Show.token&&Show.on)talk(nextKind())};
+  const synth=()=>{const fb=makeSong();show(fb);playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
+  if(song.id&&songNode!==false){show(song);playRealSong(song,onEnd,synth)}else synth();
 }
 function talk(kind){
   if(!Show.on)return;
-  Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=makeSong();Show.pending=song;
+  Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
+  cueSong(song);
   const ctx={street:curStreet(),cross:crossStreet(),town:currentTown()||'the next town',song:song.title,band:song.band};
   const body=kind==='place'?(()=>{const k=placeKey(),pool=BITS.place[k]||BITS.place.strip;return pickBit('place-'+k,pool)})():pickBit(kind,BITS[kind]);
-  const lines=[...body,...pickBit('intro',BITS.intro)].map(l=>[l[0],l[1].replace(/\{(\w+)\}/g,(m,k)=>ctx[k]??m),l[2]]);
+  const intro=[song.intro,...(Math.random()<.35?pick(AFTER):[])];
+  const lines=[...body,...intro].map(l=>[l[0],l[1].replace(/\{(\w+)\}/g,(m,k)=>ctx[k]??m),l[2]]);
   try{speechSynthesis.cancel()}catch(e){}
   playLines(lines,tok,()=>startSong(tok,song));
 }
@@ -1507,7 +1563,7 @@ onTownCue=()=>{ // approaching a town on Highway 1
 function seek(){
   if(!Show.on)return;
   if(Show.phase==='song'){Show.phase='fading';stopSong(.8,()=>talk(nextKind()))}
-  else if(Show.phase==='talk'){const tok=++Show.token;try{speechSynthesis.cancel()}catch(e){}startSong(tok,Show.pending||makeSong())}
+  else if(Show.phase==='talk'){const tok=++Show.token;try{speechSynthesis.cancel()}catch(e){}startSong(tok,Show.pending||nextSong())}
 }
 function power(on){
   Show.on=on;Show.token++;
