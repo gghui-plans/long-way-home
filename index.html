@@ -36,7 +36,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .arrow.on{background:var(--sun);color:var(--dusk);border-color:var(--sun)}
 .arrow.mid{width:58px;height:58px;align-self:flex-end}
 @media (orientation: landscape){.arrows{flex-wrap:wrap}.arrow.mid{position:absolute;right:8px;bottom:86px}} /* keep the car clear on wide screens */
-.top .right{display:flex;gap:8px;align-items:center;flex:none}
+.top .right{display:flex;gap:6px;align-items:center;flex:none}
+.volpop{position:absolute;top:calc(env(safe-area-inset-top,0px) + 64px);right:16px;max-width:calc(100% - 32px);box-sizing:border-box;display:flex;align-items:center;gap:10px;background:#231a26;border:1px solid var(--face-edge);border-radius:14px;padding:10px 12px;pointer-events:auto;box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.volpop .mute{border:0;border-radius:99px;padding:8px 14px;background:#130d16;color:var(--ink);font-weight:700;font-size:14px;cursor:pointer;min-width:84px}
+.volpop input[type=range]{width:150px;min-width:0;flex:1;accent-color:var(--sun);touch-action:auto}
+.volpop .pct{font-family:var(--f-lcd);color:var(--lcd);font-size:19px;min-width:4.2ch;text-align:right;font-variant-numeric:tabular-nums}
 .speedo{display:flex;align-items:baseline;gap:4px;background:var(--glass);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);padding:6px 11px;border-radius:99px;font-family:var(--f-lcd);color:var(--lcd);text-shadow:0 0 6px rgba(255,179,71,.5)}
 .speedo b{font-weight:400;font-size:24px;line-height:1;min-width:2ch;text-align:right;font-variant-numeric:tabular-nums}
 .speedo span{font-size:15px}
@@ -116,6 +120,9 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     </div>
     <div class="right">
     <div class="speedo" aria-label="Speed"><i class="sig" id="sigL" aria-hidden="true"></i><b id="kmh">0</b><span>km/h</span><i class="sig r" id="sigR" aria-hidden="true"></i></div>
+    <button class="iconbtn" id="volBtn" aria-label="Volume">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path id="volW1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path id="volW2" d="M18.5 7a7 7 0 0 1 0 10"/><path id="volX" d="M16.5 9.5l5 5M21.5 9.5l-5 5" style="display:none"/></svg>
+    </button>
     <button class="iconbtn" id="gear" aria-label="Settings">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>
     </button>
@@ -127,6 +134,11 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <button class="arrow" id="btnR" aria-label="Turn right at the next intersection"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
   <button class="tiltbar" id="tiltbar" hidden aria-label="Re-center tilt"><span class="dz"></span><span class="dot" id="tiltdot"></span><span class="cap">TAP TO RE-CENTER</span></button>
+  <div class="volpop" id="volPop" hidden role="dialog" aria-label="Volume">
+    <button class="mute" id="muteBtn">Mute</button>
+    <input type="range" id="vol2" min="0" max="100" value="80" aria-label="Volume level">
+    <span class="pct" id="volPct">80%</span>
+  </div>
   <div class="toast" id="toast"></div>
   <div class="radio" id="radio">
     <div class="knobwrap"><button class="knob" id="pwr" aria-label="Radio on or off"></button><span>PWR</span></div>
@@ -144,7 +156,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
       <p class="note" id="tiltnote">Tilt the phone left or right to pick the next turn. Small wobbles are ignored. Level the phone, then tilt again to pick another.</p>
     </div>
     <div class="row"><span class="lbl">Cruise speed</span><div class="stepper"><button id="spdDown" aria-label="Slower">−</button><output id="spdVal">100 km/h</output><button id="spdUp" aria-label="Faster">+</button></div></div>
-    <div class="row"><label class="lbl" for="vol">Radio volume</label><input type="range" id="vol" min="0" max="100" value="80"></div>
+    <div class="row"><label class="lbl" for="vol">Volume</label><input type="range" id="vol" min="0" max="100" value="80"></div>
     <div class="row"><label class="lbl" for="voices">Host voices</label><input type="checkbox" id="voices" checked></div>
     <p class="note">Rick and Dana use your device's built-in voices, with subtitles on the radio display. For better voices on iPhone, search Settings for "Voices" and download Evan and Ava (Premium). If there's no sound, check the silent switch.</p>
     <div class="row"><button class="pill ghost" id="openFb">Send feedback</button><button class="pill" id="close">Back to the drive</button></div>
@@ -1137,9 +1149,10 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
+const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
 
 // ---------- music: a tiny classic-rock-ish band made with Web Audio
 let AC=null,master,musicBus,drumBus,gtrIn,gtrLP,bassBus,leadIn,noiseBuf;
@@ -1149,7 +1162,7 @@ function initAudio(){
   if(AC)return;const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
   AC=new C();
   try{if(navigator.audioSession)navigator.audioSession.type='playback'}catch(e){}
-  master=AC.createGain();master.gain.value=settings.vol;
+  master=AC.createGain();master.gain.value=effVol();
   const comp=AC.createDynamicsCompressor();comp.threshold.value=-14;comp.ratio.value=4;master.connect(comp);comp.connect(AC.destination);
   musicBus=AC.createGain();musicBus.connect(master);
   drumBus=AC.createGain();drumBus.gain.value=.8;drumBus.connect(musicBus);
@@ -1459,11 +1472,11 @@ function sayLine(line,tok,next){
   let done=false,to;
   const fin=()=>{if(done)return;done=true;clearTimeout(to);if(tok===Show.token)setTimeout(next,280)};
   const est=900+text.length*65/sp.rate;
-  if(settings.voices&&'speechSynthesis' in window){
+  if(settings.voices&&!settings.muted&&'speechSynthesis' in window){
     to=setTimeout(fin,est*1.8+2500);
     const u=new SpeechSynthesisUtterance(spoken(text)),v=sp.v();
     if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';
-    u.pitch=sp.pitch();u.rate=sp.rate;u.volume=settings.vol;u.onend=fin;u.onerror=fin;
+    u.pitch=sp.pitch();u.rate=sp.rate;u.volume=effVol();u.onend=fin;u.onerror=fin;
     keepAlive.push(u);if(keepAlive.length>8)keepAlive.shift();
     speechSynthesis.speak(u);
   }else to=setTimeout(fin,est);
@@ -1532,7 +1545,8 @@ addEventListener('keydown',e=>{
   if(e.key==='ArrowLeft'||e.key==='a')choose('L');
   else if(e.key==='ArrowRight'||e.key==='d')choose('R');
   else if(e.key==='ArrowUp'||e.key==='w')choose('S');
-  else if(e.key==='Escape')$('sheet').hidden=true;
+  else if(e.key==='Escape'){$('sheet').hidden=true;$('volPop').hidden=true}
+  else if(e.key==='m'||e.key==='M')toggleMute();
 });
 new ResizeObserver(()=>document.documentElement.style.setProperty('--radio-h',radioEl.offsetHeight+'px')).observe(radioEl);
 
@@ -1571,8 +1585,27 @@ if(cardShot)document.documentElement.classList.add('card');
 $('sheet').addEventListener('click',e=>{if(e.target===$('sheet'))$('sheet').hidden=true});
 $('mArrows').addEventListener('click',()=>{settings.mode='arrows';saveSettings();applyMode()});
 $('mTilt').addEventListener('click',()=>{settings.mode='tilt';saveSettings();applyMode()});
-$('vol').value=Math.round(settings.vol*100);
-$('vol').addEventListener('input',e=>{settings.vol=e.target.value/100;if(master)master.gain.value=settings.vol;saveSettings()});
+// volume: one level for everything (music, hosts, nature, ticks), plus mute
+function applyVolume(){
+  if(master)master.gain.setTargetAtTime(effVol(),AC.currentTime,.03);
+  const pct=Math.round(settings.vol*100);$('vol').value=$('vol2').value=pct;
+  $('volPct').textContent=settings.muted?'Muted':pct+'%';$('muteBtn').textContent=settings.muted?'Unmute':'Mute';
+  const lvl=settings.muted||settings.vol===0?0:settings.vol<.5?1:2;
+  $('volW1').style.display=lvl>=1?'':'none';$('volW2').style.display=lvl>=2?'':'none';$('volX').style.display=lvl===0?'':'none';
+  $('volBtn').setAttribute('aria-label',settings.muted?'Sound muted. Open volume':'Volume '+pct+'%');
+}
+function setVolume(v){settings.vol=v;if(v>0)settings.muted=false;saveSettings();applyVolume()}
+function toggleMute(){
+  settings.muted=!settings.muted;saveSettings();
+  if(settings.muted){try{speechSynthesis.cancel()}catch(e){}} // the current line ends; subtitles carry on silently
+  applyVolume();
+}
+$('vol').addEventListener('input',e=>setVolume(e.target.value/100));
+$('vol2').addEventListener('input',e=>setVolume(e.target.value/100));
+$('muteBtn').addEventListener('click',toggleMute);
+$('volBtn').addEventListener('click',e=>{e.stopPropagation();$('volPop').hidden=!$('volPop').hidden});
+document.addEventListener('pointerdown',e=>{if(!$('volPop').hidden&&!e.target.closest('#volPop,#volBtn'))$('volPop').hidden=true});
+applyVolume();
 $('voices').checked=settings.voices;
 $('voices').addEventListener('change',e=>{settings.voices=e.target.checked;saveSettings();if(!settings.voices)try{speechSynthesis.cancel()}catch(_){}});
 
