@@ -371,6 +371,56 @@ const G={
   donut:ni(new THREE.TorusGeometry(1,.42,6,14)),
 };
 const MAT=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,metalness:0});
+const MAT_PED=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.85,metalness:0}); // people stay plain
+// ---------- surface detail, generated here (nothing to download), projected in world space so no UVs are needed
+// R: grain with speckle (asphalt aggregate, sand), G: soft mottling (stucco), B: cell edges (cracks), A: smooth grain (for the bump)
+const detailTex=(()=>{
+  const N=256,d=new Uint8Array(N*N*4),r=rng(5150);
+  const lat=L=>{const a=new Float32Array(L*L);for(let i=0;i<a.length;i++)a[i]=r();return[a,L]};
+  const vn=([a,L],x,y)=>{const fx=x*L,fy=y*L,x0=Math.floor(fx),y0=Math.floor(fy),tx=fx-x0,ty=fy-y0,sx=tx*tx*(3-2*tx),sy=ty*ty*(3-2*ty);
+    const X0=x0%L,X1=(x0+1)%L,Y0=(y0%L)*L,Y1=((y0+1)%L)*L,t=a[Y0+X0]+(a[Y0+X1]-a[Y0+X0])*sx,b=a[Y1+X0]+(a[Y1+X1]-a[Y1+X0])*sx;return t+(b-t)*sy};
+  const fbm=(oc,x,y)=>{let s=0,w=0,m=1;for(const o of oc){s+=vn(o,x,y)*m;w+=m;m*=.55}return s/w};
+  const grain=[8,16,32,64,128].map(lat),mott=[4,8,16,32].map(lat),C=8,pts=[];
+  for(let i=0;i<C*C;i++)pts.push([(i%C+r())/C,(Math.floor(i/C)+r())/C]);
+  const k=v=>Math.max(0,Math.min(255,Math.round(v*255))),st=v=>(v-.5)*2.4+.5;
+  for(let y=0;y<N;y++)for(let x=0;x<N;x++){
+    const u=x/N,v=y/N,i=(y*N+x)*4,g=st(fbm(grain,u,v)),cx=Math.floor(u*C),cy=Math.floor(v*C);let f1=9,f2=9;
+    for(let oy=-1;oy<=1;oy++)for(let ox=-1;ox<=1;ox++){const ax=cx+ox,ay=cy+oy,gx=(ax+C)%C,gy=(ay+C)%C,p=pts[gy*C+gx],dd=Math.hypot(p[0]+(ax-gx)/C-u,p[1]+(ay-gy)/C-v);if(dd<f1){f2=f1;f1=dd}else if(dd<f2)f2=dd}
+    d[i]=k(g*.65+r()*.35);d[i+1]=k(st(fbm(mott,u,v)));d[i+2]=k((f2-f1)*C);d[i+3]=k(g);
+  }
+  const t=new THREE.DataTexture(d,N,N);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps=true;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.needsUpdate=true;return t;
+})();
+const detailU={uDetail:{value:detailTex},uOrigin:{value:new THREE.Vector3()}}; // origin snaps every 512 m so the pattern stays sharp far from the start
+MAT.onBeforeCompile=sh=>{
+  Object.assign(sh.uniforms,detailU);
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWPos;varying vec3 vWNrm;')
+    .replace('#include <project_vertex>','#include <project_vertex>\nvWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vWNrm=normalize(mat3(modelMatrix)*objectNormal);');
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
+uniform sampler2D uDetail;uniform vec3 uOrigin;varying vec3 vWPos;varying vec3 vWNrm;
+vec3 dtBump(vec3 p,vec3 n,vec2 dH,float fd){vec3 sx=normalize(dFdx(p)),sy=normalize(dFdy(p)),r1=cross(sy,n),r2=cross(n,sx);float det=dot(sx,r1)*fd;return normalize(abs(det)*n-sign(det)*(dH.x*r1+dH.y*r2));}`)
+  .replace('#include <color_fragment>',`#include <color_fragment>
+vec3 dP=vWPos-uOrigin,dN=normalize(vWNrm),dc=vColor.rgb;float dUp=abs(dN.y);
+float dMx=max(dc.r,max(dc.g,dc.b)),dSat=(dMx-min(dc.r,min(dc.g,dc.b)))/(dMx+1e-3),dLum=dot(dc,vec3(.2126,.7152,.0722));
+float dFade=1.0-smoothstep(70.0,190.0,length(vViewPosition)),dH;
+vec2 dUV=dUp>.6?dP.xz:(abs(dN.x)>abs(dN.z)?dP.zy:dP.xy);
+vec4 tF=texture2D(uDetail,dUV*.25),tB=texture2D(uDetail,dUV*(1.0/64.0)),tC=texture2D(uDetail,dUV*(1.0/16.0));
+float dMod,dBmp=1.0;
+if(dUp>.6){ // ground and roofs: grain and broad patches; cracks on asphalt; wind ripples on low sand
+  float asph=(1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat));
+  float sand=smoothstep(.20,.30,dLum)*smoothstep(.35,.5,dSat)*step(dc.b,dc.g)*(1.0-smoothstep(1.0,4.0,vWPos.y));
+  float rip=sin(dot(dP.xz,vec2(.8,.6))*2.2+tB.g*9.0)*.5+.5;
+  dMod=.9+.2*tF.r+(tB.r-.5)*.3;
+  dMod*=1.0-asph*.45*(1.0-smoothstep(.015,.04,tC.b))*smoothstep(.7,.8,tB.g);
+  dMod=mix(dMod,1.0+(tF.a-.5)*.12,sand*.6)*(1.0+sand*(rip-.5)*.1);
+  dH=mix(tF.a,rip,sand*.5);dBmp=mix(1.0,.35,sand);
+}else{ // walls: stucco mottling, a little grime near the ground
+  dMod=(.87+.27*tF.g+(tB.g-.5)*.3)*mix(.76,1.0,smoothstep(0.0,2.5,vWPos.y));
+  dH=tF.g;
+}
+diffuseColor.rgb*=mix(1.0,dMod,dFade);`)
+  .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
+};
 const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_n3=new THREE.Matrix3(),_c=new THREE.Color();
 class Builder{
@@ -794,7 +844,7 @@ const pedGeo={
   leg:(()=>{const b=new Builder();b.add(G.box,0xffffff,0,-.45,0,.2,.9,.2);return b.geo()})(),
 };
 const pedMesh={};
-for(const [k,g] of Object.entries(pedGeo)){const n=k==='leg'?PEDN*2:PEDN,m=new THREE.InstancedMesh(g,MAT,n);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<n;i++)m.setColorAt(i,_c.set(0xffffff));scene.add(m);pedMesh[k]=m}
+for(const [k,g] of Object.entries(pedGeo)){const n=k==='leg'?PEDN*2:PEDN,m=new THREE.InstancedMesh(g,MAT_PED,n);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<n;i++)m.setColorAt(i,_c.set(0xffffff));scene.add(m);pedMesh[k]=m}
 const _d=new THREE.Object3D(),_zero=new THREE.Matrix4().makeScale(0,0,0);
 for(let k=0;k<PEDN;k++){
   const p={k,on:false,mode:'ring',i:0,j:0,u:0,dir:1,sp:1.2,ph:Math.random()*6,x:0,z:0,y:.3,yaw:0,wait:0,from:null,to:null,t:0,len:0,next:null};
@@ -2143,12 +2193,13 @@ function loop(now){
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
   updateSkyline(car.x,car.z,car.d,clock);
-  followSun(car.x,car.z);
+  followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
   if(!hudEl.hidden){const sg=signal.on?signal.side:'';if(sg!==lastSig){lastSig=sg;sigLEl.classList.toggle('on',sg==='L');sigREl.classList.toggle('on',sg==='R')}
     updateHud();const k=Math.round(car.v*3.6);if(k!==lastKmh){lastKmh=k;kmhEl.textContent=k}}
   updateHaze();
   sky.position.copy(camera.position);
+  if(!innerWidth||!innerHeight)return; // no size yet (hidden tab): nothing to draw
   if(composer&&settings.hq)composer.render();else renderer.render(scene,camera);
 }
 requestAnimationFrame(loop);
