@@ -141,6 +141,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
 .tagline{margin:0;font-size:18px;font-weight:600;max-width:30ch;line-height:1.35}
 .go{border:0;border-radius:99px;padding:17px 30px;font-weight:800;font-size:18px;background:var(--sun);color:var(--dusk);cursor:pointer;box-shadow:0 8px 24px rgba(255,210,122,.35)}
 .hint{margin:0;font-size:13px;color:#e6d8e0;max-width:46ch;line-height:1.45}
+.hint.lead{font-size:15px;color:#fff6ec;font-weight:600}
 @media (prefers-reduced-motion: reduce){.arrow,.knob,.toast{transition:none}}
 </style>
 
@@ -245,7 +246,8 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <h1>Long Way Home<span class="sub">in California</span></h1>
     <p class="tagline">Top down, sun low, take it slow.</p>
     <button class="go" id="go">Tap to drive</button>
-    <p class="hint" id="hint">Turn the sound on. The radio is half the fun. Override the autopilot with ◀ ↑ ▶ or the arrow keys, or switch to tilt in settings. Cruise speed is in settings too. Tap the radio display to request a song.</p>
+    <p class="hint lead">How long can you leave your phone alone? The hands-free timer counts up while you drive. Switch apps or lock your screen and it starts over. Rick and Dana notice.</p>
+    <p class="hint" id="hint">Turn the sound on. Steer with ◀ ↑ ▶ or the arrow keys. Tap the radio display to request a song. More in settings.</p>
     <p class="byline">A game by <b>gghui</b></p>
   </div>
 </div>
@@ -1244,8 +1246,13 @@ function blinkerTick(on){ // the relay click of a turn signal: tick when it ligh
   if(!AC||AC.state!=='running')return;
   const t=AC.currentTime,o=AC.createOscillator(),f=AC.createBiquadFilter(),g=AC.createGain();
   o.type='square';o.frequency.value=on?2100:1500;f.type='bandpass';f.frequency.value=on?2600:1800;f.Q.value=2;
-  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.09,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.035);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.002);g.gain.exponentialRampToValueAtTime(.0001,t+.035);
   o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.05);
+  // a short snap pitched above the surf, so the click still cuts through the ocean and wind with the radio off
+  const n=AC.createBufferSource(),nf=AC.createBiquadFilter(),ng=AC.createGain();
+  n.buffer=noiseBuf;nf.type='bandpass';nf.frequency.value=on?4400:3400;nf.Q.value=1.4;
+  ng.gain.setValueAtTime(.0001,t);ng.gain.exponentialRampToValueAtTime(.45,t+.001);ng.gain.exponentialRampToValueAtTime(.0001,t+.02);
+  n.connect(nf);nf.connect(ng);ng.connect(master);n.start(t,Math.random()*.9);n.stop(t+.03);
 }
 // ---------- the coast when the radio is off: surf, gulls, wind over the open top, songbirds in town
 const Amb={bus:null,sea:null,waveG:null,waveLP:null,fizzG:null,windG:null,windBP:null,nextWave:0,nextGull:0,nextBird:0};
@@ -1500,6 +1507,7 @@ const spoken=t=>t.replace(/K-JAM/g,'K Jam').replace(/101\.1/g,'one oh one point 
 
 // ---------- the recorded show: every bit as it was voiced (from production/PRODUCTION-PACK.md). One audio file per bit.
 const VBITS={
+  welcome:{id:'welcome-01',lines:[['R',"Gee-gee-hue-ee welcomes you to Long Way Home in California."],['D',"Top down, sun low, take it slow!"],['R',"No destination. No score. The car drives itself. Your only job is to leave your phone alone."],['D',"And we'll keep the hits coming!"],['R',"One of us will."]]},
   id:[
     {id:'id-01',lines:[['D',"You're locked in to K-Jam one-oh-one point one, Classic Rock and Gridlock. I'm Dana!"],['R',"And I'm Rick. Somewhere out there, a minivan has had its blinker on since breakfast."],['D',"Let's get you moving, folks!"]]},
     {id:'id-02',lines:[['R',"K-Jam one-oh-one point one. Classic Rock and Gridlock."],['D',"The station that's stuck in traffic with you!"],['R',"Dana, that's not the comfort you think it is."]]},
@@ -1684,7 +1692,7 @@ function loadVoice(id){
   return p;
 }
 // the script spells numbers out for the voices; show them normally on the radio display
-const showText=t=>t.replace(/K-Jam/g,'K-JAM').replace(/one-oh-one point one/g,'101.1').replace(/four-oh-five/g,'405').replace(/one-oh-one/g,'101')
+const showText=t=>t.replace(/Gee-gee-hue-ee/g,'gghui').replace(/K-Jam/g,'K-JAM').replace(/one-oh-one point one/g,'101.1').replace(/four-oh-five/g,'405').replace(/one-oh-one/g,'101')
   .replace(/one-ten/g,'110').replace(/\bthe ten\b/g,'the 10').replace(/nineteen eighty-seven/g,'1987').replace(/\bR V\b/g,'RV').replace(/Doctor Pam/g,'Dr. Pam');
 const SPKN={R:'RICK',D:'DANA'};
 function stopVoice(){if(Show.voiceSrc){const s=Show.voiceSrc;Show.voiceSrc=null;s.onended=null;try{s.stop()}catch(e){}}}
@@ -2059,6 +2067,7 @@ async function keepAwake(){try{wake=await navigator.wakeLock.request('screen')}c
 $('go').addEventListener('click',()=>{
   $('start').hidden=true;hudEl.hidden=false;applyMode();
   initAudio();if(AC)AC.resume();
+  Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
   power(true);keepAwake();startStreak();
 });
 document.addEventListener('visibilitychange',()=>{

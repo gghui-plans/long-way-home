@@ -26,6 +26,16 @@ Tips:
 
 ### Script
 
+**Welcome** (plays once, right after Tap to drive; "Gee-gee-hue-ee" is how gghui is said, and the radio display shows "gghui")
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| welcome-01-1 | RICK | Gee-gee-hue-ee welcomes you to Long Way Home in California. | announcer, grave |
+| welcome-01-2 | DANA | Top down, sun low, take it slow! | big, sunny |
+| welcome-01-3 | RICK | No destination. No score. The car drives itself. Your only job is to leave your phone alone. | deadpan, slow |
+| welcome-01-4 | DANA | And we'll keep the hits coming! | cheerful |
+| welcome-01-5 | RICK | One of us will. | dry, under his breath |
+
 **Station IDs**
 
 | Clip id | Voice | Line | Direction |
