@@ -116,6 +116,16 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .lcd{cursor:pointer}
 .lcdwrap{display:grid;gap:4px;min-width:0}
 .lcdwrap>span{font-size:9px;letter-spacing:.18em;color:#a99aa6;font-weight:800;text-align:center;cursor:pointer}
+.lcdlabels{display:flex;justify-content:center;gap:16px}
+.lcdlabels>span{font-size:9px;letter-spacing:.18em;color:#a99aa6;font-weight:800;cursor:pointer}
+.lyrbtn{border:0;background:none;padding:0;font:inherit;font-size:9px;letter-spacing:.18em;color:#a99aa6;font-weight:800;cursor:pointer;pointer-events:auto}
+.lyrbtn.on{color:var(--sun);text-shadow:0 0 6px rgba(255,210,122,.5)}
+.lyrics{position:absolute;left:16px;right:16px;margin:0 auto;max-width:560px;bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 174px);background:rgba(20,12,24,.42);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);border-radius:14px;padding:8px 14px 9px;text-align:center;pointer-events:none;transition:opacity .4s}
+.lyrics .l1{font-size:19px;font-weight:800;color:#fff7ec;text-shadow:0 1px 6px rgba(0,0,0,.5);min-height:1.25em;line-height:1.25}
+.lyrics .l2{font-size:13px;font-weight:600;color:rgba(255,247,236,.6);min-height:1.3em;margin-top:2px}
+.lyrics.idle{opacity:.55}
+@media (max-height:520px){.lyrics{bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 96px);left:84px;right:84px}.lyrics .l1{font-size:17px}} /* short landscape screens: between the arrow columns */
+.hud.lyr .toast{bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) + 250px)}
 .reqtip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) - 4px);z-index:1;background:var(--sun,#ffc861);color:#2a1a22;font-weight:800;font-size:14px;padding:8px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .4s}
 .reqtip::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--sun,#ffc861)}
 .reqtip.show{opacity:1}
@@ -212,12 +222,13 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
   </div>
   <div class="toast" id="toast"></div>
   <div class="reqtip" id="reqTip" hidden>Tap the radio to pick a song</div>
+  <div class="lyrics" id="lyrics" hidden aria-live="off"><div class="l1" id="lyr1"></div><div class="l2" id="lyr2"></div></div>
   <div class="radio" id="radio">
     <div class="knobwrap"><button class="knob" id="pwr" aria-label="Radio on or off"></button><span>PWR</span></div>
     <div class="knobwrap"><button class="vbtn" id="volBtn" aria-label="Volume">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor" stroke="none"/><path id="volW1" d="M16 9.5a3.5 3.5 0 0 1 0 5"/><path id="volW2" d="M18.5 7a7 7 0 0 1 0 10"/><path id="volX" d="M16.5 9.5l5 5M21.5 9.5l-5 5" style="display:none"/></svg>
     </button><span>VOL</span></div>
-    <div class="lcdwrap"><div class="lcd" id="lcd" role="button" tabindex="0" aria-label="Open the playlist to request a song" aria-live="polite"><div class="freq"><span>FM <b>101.1</b> K-JAM</span><b id="lcdtag">STEREO</b></div><div class="msg" id="lcdmsg">CLASSIC ROCK &amp; GRIDLOCK</div></div><span id="lcdLabel" aria-hidden="true">♫ TAP FOR SONGS</span></div>
+    <div class="lcdwrap"><div class="lcd" id="lcd" role="button" tabindex="0" aria-label="Open the playlist to request a song" aria-live="polite"><div class="freq"><span>FM <b>101.1</b> K-JAM</span><b id="lcdtag">STEREO</b></div><div class="msg" id="lcdmsg">CLASSIC ROCK &amp; GRIDLOCK</div></div><div class="lcdlabels"><span id="lcdLabel" aria-hidden="true">♫ TAP FOR SONGS</span><button class="lyrbtn" id="lyrBtn" aria-pressed="false" aria-label="Sing-along lyrics">♪ LYRICS</button></div></div>
     <div class="knobwrap"><button class="knob" id="seek" aria-label="Skip ahead"></button><span>SEEK</span></div>
   </div>
 </div>
@@ -1715,7 +1726,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
@@ -1959,6 +1970,8 @@ function nextSong(){
 }
 // songs stream through one audio player routed into the radio's volume (decoding them all would be too heavy for phones)
 const songEl=new Audio();songEl.preload='auto';
+// sing-along lyrics: when each line starts in the part of each song we play (production/align-lyrics.js makes the file)
+let LYR=null;fetch('audio/music/lyrics.json').then(r=>r.ok?r.json():null).then(j=>{LYR=j}).catch(()=>{});
 let songNode=null;
 const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYzLjEuMTAyAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAADKQBaWlpaWlpaWlpaWlpaWlpae3t7e3t7e3t7e3t7e3t7e3ucnJycnJycnJycnJycnJycvb29vb29vb29vb29vb29vb3e3t7e3t7e3t7e3t7e3t7e3v////////////////////8AAAAATGF2YzYzLjEuAAAAAAAAAAAAAAAAJAKjAAAAAAAAAymyj8UTAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDBVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
 function unlockAudio(){ // resume sound, and play one silent sample (the classic iPhone unlock)
@@ -2333,6 +2346,22 @@ function refreshPlaylist(){
 const openPlaylist=()=>{refreshPlaylist();hideReqTip();$('plSheet').hidden=false};
 $('lcd').addEventListener('click',openPlaylist);
 $('lcdLabel').addEventListener('click',openPlaylist);
+const showLyrBtn=()=>{$('lyrBtn').classList.toggle('on',settings.lyrics);$('lyrBtn').setAttribute('aria-pressed',settings.lyrics)};showLyrBtn();
+$('lyrBtn').addEventListener('click',e=>{e.stopPropagation();settings.lyrics=!settings.lyrics;saveSettings();showLyrBtn();lyrKey='';if(settings.lyrics&&!(Show.phase==='song'&&M.real))toast('Lyrics will show with the next song')});
+let lyrKey='';
+function updateLyrics(){ // the line being sung, and the next one dimmed; "♪" through solos and gaps
+  const el=$('lyrics'),s=Show.current,L=LYR&&s&&LYR[s.id],on=settings.lyrics&&Show.on&&Show.phase==='song'&&M.real&&M.song===s&&!!L;
+  if(!on){if(!el.hidden){el.hidden=true;hudEl.classList.remove('lyr')}return}
+  let a='',b='';
+  if(L==='instrumental')a='♪ instrumental ♪';
+  else{
+    const t=songEl.currentTime+.25;let i=-1;for(let k=0;k<L.length;k++){if(L[k][0]<=t)i=k;else break}
+    const nx=L[i+1],gap=i>=0&&t-L[i][0]>9&&(!nx||nx[0]-t>2.5);
+    if(i<0||gap){a='♪';b=nx&&nx[0]-t<6?nx[1]:''}else{a=L[i][1];b=nx?nx[1]:''}
+  }
+  const key=a+'|'+b;if(key===lyrKey&&!el.hidden)return;lyrKey=key;
+  $('lyr1').textContent=a;$('lyr2').textContent=b;el.classList.toggle('idle',a==='♪');el.hidden=false;hudEl.classList.add('lyr');
+}
 $('lcd').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openPlaylist()}});
 $('plClose').addEventListener('click',()=>{$('plSheet').hidden=true});
 $('plSheet').addEventListener('click',e=>{if(e.target===$('plSheet'))$('plSheet').hidden=true});
@@ -2709,7 +2738,7 @@ function loop(now){
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
-  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);
+  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);

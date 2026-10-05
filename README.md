@@ -11,7 +11,7 @@ A game by gghui. Built with [three.js](https://threejs.org/).
 Open the GitHub Pages link in a phone or desktop browser and tap **Tap to drive**. Turn the sound on.
 
 - **◀ ↑ ▶** (or the arrow keys) pick your turn at the next intersection. Otherwise the autopilot decides.
-- **Tap the radio display** to request a song. **VOL** on the radio sets the volume or mutes.
+- **Tap the radio display** to request a song. **♪ LYRICS** under the display shows the words as they're sung. **VOL** on the radio sets the volume or mutes.
 - **The map button** shows the coast around you, or the town's streets.
 - **The camera button** makes a vintage postcard of your drive, with your hands-free time, to share or save. You get one automatically at 30 minutes and 1 hour hands-free.
 - **Focus drive** (on the title screen or in settings): a 20 or 30 minute focus timer. When it is up, the car pulls over for a 5-minute break by the ocean, then the next session starts.
