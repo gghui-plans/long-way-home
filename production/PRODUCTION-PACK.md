@@ -308,6 +308,129 @@ Tips:
 | back-03-1 | RICK | And the streak is over. Like all good things. Like the carpool lane. | weary |
 | back-03-2 | DANA | Clean slate, folks! Eyes on the road! | upbeat |
 
+**Fast Lane Facts** (recurring segment: a real fact from Dana or Rick, then Rick's twist; episodes play in order)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| facts-01-1 | DANA | Fast Lane Facts! Rick, did you know the Sig Alert is named after a real person? | bright, quiz-show |
+| facts-01-2 | RICK | Loyd Sigmon. Radio man. Nineteen fifty-five. He built a machine so the police could warn every station about traffic at once. | dry, informative |
+| facts-01-3 | DANA | What a legacy! | delighted |
+| facts-01-4 | RICK | Seventy years of warnings, Dana. Not one of them has fixed anything. | weary |
+| facts-02-1 | DANA | Fast Lane Facts! The traffic cone was invented right here in L.A. A city street painter named Charles Scanlon made the first one in nineteen forty, out of old tires! | bright, proud |
+| facts-02-2 | RICK | So it's a local. That explains the attitude. | dry |
+| facts-02-3 | DANA | He was tired of cars running over his wooden signs! | cheerful |
+| facts-02-4 | RICK | And now the cones are tired of us. Full circle. | deadpan |
+| facts-03-1 | DANA | Fast Lane Facts! Cruise control was invented by Ralph Teetor, an engineer who was blind. | bright, impressed |
+| facts-03-2 | RICK | The story goes, he rode with a lawyer who sped up when he listened and slowed down when he talked. | dry, storytelling |
+| facts-03-3 | DANA | So he invented a whole machine to fix one bad driver! | amazed |
+| facts-03-4 | RICK | A man who couldn't see the road, Dana. Still drove better than everyone on the four-oh-five. | deadpan |
+| facts-04-1 | DANA | Fast Lane Facts! The turn signal was invented by a silent movie star! Florence Lawrence, nineteen fourteen. You pushed a button and a little flag popped up on the back bumper. | bright, excited |
+| facts-04-2 | RICK | And she never patented it. She just gave it to the world. | dry |
+| facts-04-3 | DANA | That's so generous! | touched |
+| facts-04-4 | RICK | And the world said, no thank you. Most ignored invention in California. | deadpan |
+| facts-04-5 | DANA | Somebody uses it! That minivan! Since breakfast! | triumphant |
+| facts-05-1 | DANA | Fast Lane Facts! Every Hass avocado on Earth traces back to one single tree, planted by a mailman named Rudolph Hass in La Habra Heights! | bright, amazed |
+| facts-05-2 | RICK | One tree. | flat |
+| facts-05-3 | DANA | One tree! | excited |
+| facts-05-4 | RICK | And it's still two dollars extra. | deadpan |
+| facts-06-1 | RICK | Fast Lane Facts. Los Angeles is sliding toward San Francisco. About two inches a year. The San Andreas Fault. | dry, informative |
+| facts-06-2 | DANA | We're moving? Without packing? | alarmed, playful |
+| facts-06-3 | RICK | In about fifteen million years, we'll be neighbors. | dry |
+| facts-06-4 | DANA | So the drive up there is getting shorter! | delighted |
+| facts-06-5 | RICK | The only commute in California that gets shorter every year, Dana. And it's still faster than the five. | deadpan |
+| facts-07-1 | DANA | Fast Lane Facts! Brown pelicans dive headfirst into the ocean from sixty feet up! | bright, excited |
+| facts-07-2 | RICK | Headfirst. On purpose. | flat, disturbed |
+| facts-07-3 | DANA | They've got little air sacs under their skin. Like built-in bubble wrap! | delighted |
+| facts-07-4 | RICK | So the pelican has better safety features than my car. | deadpan |
+| facts-08-1 | DANA | Fast Lane Facts! Sea otters hold hands while they sleep, so they don't drift apart. | warm, sweet |
+| facts-08-2 | RICK | Okay. That's nice. I'll allow it. | grudging |
+| facts-08-3 | DANA | And they have the thickest fur of any animal. Up to a million hairs per square inch! | excited |
+| facts-08-4 | RICK | Warm coat, floating on their back, holding hands at sunset. The otter figured out life, Dana. I'm on the ten. | weary |
+| facts-09-1 | DANA | Fast Lane Facts! On spring and summer nights, little silver fish called grunion wiggle right up onto California beaches to lay their eggs in the sand! | bright, excited |
+| facts-09-2 | RICK | Fish. On the beach. On purpose. | flat |
+| facts-09-3 | DANA | Scientists predict the nights from the tides, and people come out with flashlights to watch! | delighted |
+| facts-09-4 | RICK | It's called a grunion run. The only thing in L.A. that shows up exactly on schedule. | dry |
+| facts-10-1 | RICK | Fast Lane Facts. Motorola. Motor, plus Victrola. It started out in nineteen thirty as a radio for your car. | dry, informative |
+| facts-10-2 | DANA | So car radio is where we come from! | delighted |
+| facts-10-3 | RICK | Ninety-five years of car radio. And it all led to this. | weary |
+| facts-10-4 | DANA | To us! | proud |
+| facts-10-5 | RICK | I'm sorry, everyone. | sincere, deadpan |
+| facts-11-1 | DANA | Fast Lane Facts! Watch the ocean right when the sun goes down. Sometimes the last little sliver flashes green! | bright, dreamy |
+| facts-11-2 | RICK | That's real. It's called the green flash. The air bends the light like a prism. | dry, informative |
+| facts-11-3 | DANA | Rick! You know something nice! | surprised, delighted |
+| facts-11-4 | RICK | Don't tell anyone. Also, don't stare at the sun while driving. That's also a fact. | deadpan |
+| facts-12-1 | RICK | Fast Lane Facts. The explorer Magellan named this ocean the Pacific. It means peaceful. | dry, informative |
+| facts-12-2 | DANA | Aww, it is peaceful! | warm |
+| facts-12-3 | RICK | He never saw a beach parking lot on a Saturday. | deadpan |
+| facts-13-1 | DANA | Fast Lane Facts! The Big Sur stretch of Highway 1 took eighteen years to build. It finally opened in nineteen thirty-seven! | bright, impressed |
+| facts-13-2 | RICK | Eighteen years. For one road. | flat |
+| facts-13-3 | DANA | Through cliffs, over canyons, right along the ocean! | dreamy |
+| facts-13-4 | RICK | Still faster than the lane closure by my house. | deadpan |
+| facts-14-1 | DANA | Fast Lane Facts! Gray whales swim from Alaska down to Mexico and back every year. About ten thousand miles, round trip! | bright, amazed |
+| facts-14-2 | RICK | And never once ask for directions. | dry |
+| facts-14-3 | DANA | They just follow the coast. Like us! | cheerful |
+| facts-14-4 | RICK | They're in the fast lane, Dana. We're behind Gary. | weary |
+| facts-15-1 | RICK | Fast Lane Facts. There is no such bird as a seagull. | dry, matter-of-fact |
+| facts-15-2 | DANA | What? I see them every day! | shocked |
+| facts-15-3 | RICK | Those are gulls. Western gulls, California gulls, Heermann's gulls. Lots of kinds. None of them are called seagull. | patient, dry |
+| facts-15-4 | DANA | Then who's been stealing my french fries? | indignant |
+| facts-15-5 | RICK | A Western gull, Dana. And he knows your car. | ominous, deadpan |
+| facts-16-1 | DANA | Fast Lane Facts! The Hollywood sign used to say Hollywoodland. It went up in nineteen twenty-three as an ad for new houses! | bright, excited |
+| facts-16-2 | RICK | The most famous landmark in L.A. is a billboard. | deadpan |
+| facts-16-3 | DANA | They took off the land part in nineteen forty-nine! | cheerful |
+| facts-16-4 | RICK | Even the sign couldn't afford land in L.A. | dry |
+
+**Second song intros** (the game alternates these with the first set)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| introb-golden-hour-gasoline | RICK | The Offramps. Golden Hour Gasoline. Gas prices also golden. | dry |
+| introb-carpool-lane-lightning | DANA | Two or more in the car? This one's for you! Sig Alert, Carpool Lane Lightning! | bright, upbeat |
+| introb-red-light-lullaby | RICK | Valet Overdrive. Red Light Lullaby. If you're stopped at a light right now, don't get comfortable. | dry |
+| introb-merge-left-into-my-heart | DANA | Let 'em in, folks! The Carpoolers, Merge Left, Into My Heart! | bright, upbeat |
+| introb-low-tide-blues | RICK | Smog Cutters. Low Tide Blues. It's about the ocean leaving. I understand the ocean. | weary |
+| introb-bonfire-on-the-beach | DANA | Kevin called the station again. Fine, Kevin! Here's Bonfire on the Beach! | playful, exasperated |
+| introb-tan-lines | RICK | Gridlock Prophets. Tan Lines. Mine are from the steering wheel. | dry |
+| introb-postcard-from-the-pier | DANA | Wish you were here! The Turn Signals, Postcard from the Pier. | warm, bright |
+| introb-taillight-serenade | DANA | Slowing it down with the Rush Hour Rebels. Taillight Serenade. | warm, soft |
+| introb-hammock-by-the-sea | RICK | Tailgate Thunder. Hammock by the Sea. Finally, a band that gets me. | relaxed, dry |
+| introb-hot-sand-shuffle | DANA | No words, just vibes! The Offramps, Hot Sand Shuffle! | bright, upbeat |
+| introb-off-ramp-outlaw | RICK | Sig Alert. Off-Ramp Outlaw. A song about a man who exits without signaling. A villain. | dry, disapproving |
+| introb-catalina-sunset | RICK | Valet Overdrive. Catalina Sunset. Twenty-six miles across the sea. I've driven farther for a sandwich. | dry |
+| introb-longboard-summer | DANA | Surf's up! Smog Cutters, Longboard Summer! | bright, upbeat |
+| introb-pacific-coast-cruise | RICK | The Turn Signals. Pacific Coast Cruise. Nobody talk. | calm, dry |
+| introb-long-way-home | RICK | Rush Hour Rebels. Long Way Home. The only way home, really. The other ways are closed. | dry |
+
+**Reactions** (play when something happens: the real clock on the first break, steering, cruise speed, a postcard, a pier ahead)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| clock-morning-1 | DANA | Good morning, coast! It's sunset here at K-Jam. It's always sunset here at K-Jam. | bright, cheerful |
+| clock-morning-2 | RICK | We don't know how it happened. We stopped asking. | weary |
+| clock-midday-1 | RICK | If you're driving with us on your lunch break, a word of advice. The fries go under the seat, and they never come back. | grave, advisory |
+| clock-midday-2 | DANA | Never! It's a whole ecosystem down there! | playful |
+| clock-evening-1 | DANA | Evening drive time, folks! The real sunset and our sunset, at the same time! | excited |
+| clock-evening-2 | RICK | Twice the squinting. | flat |
+| clock-late-1 | RICK | If you're driving with us this late, you're either very relaxed or very lost. | dry, late-night |
+| clock-late-2 | DANA | Or both! Welcome! | warm |
+| steer-01-1 | RICK | Oh, look who's steering now. | dry, mildly impressed |
+| steer-01-2 | DANA | Ooh, a scenic detour! I love it! | excited |
+| steer-02-1 | DANA | Somebody's taking the scenic route! | bright |
+| steer-02-2 | RICK | Every route is scenic out there, Dana. That's the problem. Nobody can decide. | weary |
+| speed-fast-1 | RICK | Somebody just maxed out the cruise control. | stern |
+| speed-fast-2 | DANA | The ocean's not going anywhere! | cheerful |
+| speed-fast-3 | RICK | Neither is the Highway Patrol. | ominous, dry |
+| speed-slow-1 | DANA | Somebody's taking it nice and slow out there. Love that. | warm, approving |
+| speed-slow-2 | RICK | Gary approves. | flat |
+| postcard-01-1 | DANA | Did somebody just snap a postcard? Say cheese, coast! | bright |
+| postcard-01-2 | RICK | The Corvette doesn't have a bad side. It knows it. | dry |
+| postcard-02-1 | RICK | Another postcard. Send one to the four-oh-five. Let them see what they're missing. | dry |
+| pier-01-1 | DANA | Ferris wheel up ahead! Give it a wave! | excited |
+| pier-01-2 | RICK | It's been going in circles all day and it's having more fun than the ten. | weary |
+| pier-02-1 | RICK | Pier coming up. Somebody's fishing off the end. Nobody has ever caught anything. They're there for the peace and quiet. | calm, dry |
+| pier-02-2 | DANA | Aww. | touched |
+| pier-02-3 | RICK | Then we drive by playing Sig Alert. | deadpan |
+
 ---
 
 ## Part 2: Suno songs

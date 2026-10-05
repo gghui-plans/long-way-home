@@ -763,6 +763,11 @@ function buildPier(b,gb,grp,xw,zc){
   for(let k=0;k<12;k++){const a=k/12*Math.PI*2;wb.add(G.box,SIGNS[k%SIGNS.length],0,Math.sin(a)*R,Math.cos(a)*R,1.5,1.8,1.6)}
   const wheel=new THREE.Group(),wm=new THREE.Mesh(wb.geo(),MAT);wm.castShadow=true;wheel.add(wm,new THREE.Mesh(wg.geo(),MAT_GLOW));
   wheel.position.set(wx,hub,zc);grp.add(wheel);spinners.add(wheel);
+  piers.set(Math.round(zc),wx);
+}
+const piers=new Map(),piersCued=new Set(); // Ferris wheels by z, so the radio can mention one coming up
+function pierCheck(){
+  for(const [z,x] of piers){const d=Math.hypot(car.x-x,car.z-z);if(d<420&&d>120&&!piersCued.has(z)){piersCued.add(z);react('pier',pickBit('pier',VBITS.pier),40,300,true)}}
 }
 function buildBlock(i,j,d){
   const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group();
@@ -2202,6 +2207,64 @@ const VBITS={
     freeway:[{id:'freeway-01',lines:[['R',"Look up, folks. That's the freeway. You're not on it. Count your blessings."],['D',"I bet it's moving great up there!"],['R',"It is not, Dana. It has never once been moving great."]]}],
     park:[{id:'park-01',lines:[['D',"Passing a park! Somebody's having a birthday party under that tree."],['R',"They've been setting up that bounce house since noon. It's not inflating, Dana. It's never inflating."]]}],
   },
+  facts:[ // Fast Lane Facts: real facts, played in order across drives
+    {id:'facts-01',lines:[['D',"Fast Lane Facts! Rick, did you know the Sig Alert is named after a real person?"],['R',"Loyd Sigmon. Radio man. 1955. He built a machine so the police could warn every station about traffic at once."],['D',"What a legacy!"],['R',"Seventy years of warnings, Dana. Not one of them has fixed anything."]]},
+    {id:'facts-02',lines:[['D',"Fast Lane Facts! The traffic cone was invented right here in L.A. A city street painter named Charles Scanlon made the first one in 1940, out of old tires!"],['R',"So it's a local. That explains the attitude."],['D',"He was tired of cars running over his wooden signs!"],['R',"And now the cones are tired of us. Full circle."]]},
+    {id:'facts-03',lines:[['D',"Fast Lane Facts! Cruise control was invented by Ralph Teetor, an engineer who was blind."],['R',"The story goes, he rode with a lawyer who sped up when he listened and slowed down when he talked."],['D',"So he invented a whole machine to fix one bad driver!"],['R',"A man who couldn't see the road, Dana. Still drove better than everyone on the 405."]]},
+    {id:'facts-04',lines:[['D',"Fast Lane Facts! The turn signal was invented by a silent movie star! Florence Lawrence, 1914. You pushed a button and a little flag popped up on the back bumper."],['R',"And she never patented it. She just gave it to the world."],['D',"That's so generous!"],['R',"And the world said, no thank you. Most ignored invention in California."],['D',"Somebody uses it! That minivan! Since breakfast!"]]},
+    {id:'facts-05',lines:[['D',"Fast Lane Facts! Every Hass avocado on Earth traces back to one single tree, planted by a mailman named Rudolph Hass in La Habra Heights!"],['R',"One tree."],['D',"One tree!"],['R',"And it's still two dollars extra."]]},
+    {id:'facts-06',lines:[['R',"Fast Lane Facts. Los Angeles is sliding toward San Francisco. About two inches a year. The San Andreas Fault."],['D',"We're moving? Without packing?"],['R',"In about fifteen million years, we'll be neighbors."],['D',"So the drive up there is getting shorter!"],['R',"The only commute in California that gets shorter every year, Dana. And it's still faster than the 5."]]},
+    {id:'facts-07',lines:[['D',"Fast Lane Facts! Brown pelicans dive headfirst into the ocean from 60 feet up!"],['R',"Headfirst. On purpose."],['D',"They've got little air sacs under their skin. Like built-in bubble wrap!"],['R',"So the pelican has better safety features than my car."]]},
+    {id:'facts-08',lines:[['D',"Fast Lane Facts! Sea otters hold hands while they sleep, so they don't drift apart."],['R',"Okay. That's nice. I'll allow it."],['D',"And they have the thickest fur of any animal. Up to a million hairs per square inch!"],['R',"Warm coat, floating on their back, holding hands at sunset. The otter figured out life, Dana. I'm on the 10."]]},
+    {id:'facts-09',lines:[['D',"Fast Lane Facts! On spring and summer nights, little silver fish called grunion wiggle right up onto California beaches to lay their eggs in the sand!"],['R',"Fish. On the beach. On purpose."],['D',"Scientists predict the nights from the tides, and people come out with flashlights to watch!"],['R',"It's called a grunion run. The only thing in L.A. that shows up exactly on schedule."]]},
+    {id:'facts-10',lines:[['R',"Fast Lane Facts. Motorola. Motor, plus Victrola. It started out in 1930 as a radio for your car."],['D',"So car radio is where we come from!"],['R',"Ninety-five years of car radio. And it all led to this."],['D',"To us!"],['R',"I'm sorry, everyone."]]},
+    {id:'facts-11',lines:[['D',"Fast Lane Facts! Watch the ocean right when the sun goes down. Sometimes the last little sliver flashes green!"],['R',"That's real. It's called the green flash. The air bends the light like a prism."],['D',"Rick! You know something nice!"],['R',"Don't tell anyone. Also, don't stare at the sun while driving. That's also a fact."]]},
+    {id:'facts-12',lines:[['R',"Fast Lane Facts. The explorer Magellan named this ocean the Pacific. It means peaceful."],['D',"Aww, it is peaceful!"],['R',"He never saw a beach parking lot on a Saturday."]]},
+    {id:'facts-13',lines:[['D',"Fast Lane Facts! The Big Sur stretch of Highway 1 took 18 years to build. It finally opened in 1937!"],['R',"Eighteen years. For one road."],['D',"Through cliffs, over canyons, right along the ocean!"],['R',"Still faster than the lane closure by my house."]]},
+    {id:'facts-14',lines:[['D',"Fast Lane Facts! Gray whales swim from Alaska down to Mexico and back every year. About 10,000 miles, round trip!"],['R',"And never once ask for directions."],['D',"They just follow the coast. Like us!"],['R',"They're in the fast lane, Dana. We're behind Gary."]]},
+    {id:'facts-15',lines:[['R',"Fast Lane Facts. There is no such bird as a seagull."],['D',"What? I see them every day!"],['R',"Those are gulls. Western gulls, California gulls, Heermann's gulls. Lots of kinds. None of them are called seagull."],['D',"Then who's been stealing my french fries?"],['R',"A Western gull, Dana. And he knows your car."]]},
+    {id:'facts-16',lines:[['D',"Fast Lane Facts! The Hollywood sign used to say Hollywoodland. It went up in 1923 as an ad for new houses!"],['R',"The most famous landmark in L.A. is a billboard."],['D',"They took off the \"land\" part in 1949!"],['R',"Even the sign couldn't afford land in L.A."]]}
+  ],
+  introb:{ // each song's second intro; the game alternates them
+    'golden-hour-gasoline':{id:'introb-golden-hour-gasoline',lines:[['R',"The Offramps. Golden Hour Gasoline. Gas prices also golden."]]},
+    'carpool-lane-lightning':{id:'introb-carpool-lane-lightning',lines:[['D',"Two or more in the car? This one's for you! Sig Alert, Carpool Lane Lightning!"]]},
+    'red-light-lullaby':{id:'introb-red-light-lullaby',lines:[['R',"Valet Overdrive. Red Light Lullaby. If you're stopped at a light right now, don't get comfortable."]]},
+    'merge-left-into-my-heart':{id:'introb-merge-left-into-my-heart',lines:[['D',"Let 'em in, folks! The Carpoolers, Merge Left, Into My Heart!"]]},
+    'low-tide-blues':{id:'introb-low-tide-blues',lines:[['R',"Smog Cutters. Low Tide Blues. It's about the ocean leaving. I understand the ocean."]]},
+    'bonfire-on-the-beach':{id:'introb-bonfire-on-the-beach',lines:[['D',"Kevin called the station again. Fine, Kevin! Here's Bonfire on the Beach!"]]},
+    'tan-lines':{id:'introb-tan-lines',lines:[['R',"Gridlock Prophets. Tan Lines. Mine are from the steering wheel."]]},
+    'postcard-from-the-pier':{id:'introb-postcard-from-the-pier',lines:[['D',"Wish you were here! The Turn Signals, Postcard from the Pier."]]},
+    'taillight-serenade':{id:'introb-taillight-serenade',lines:[['D',"Slowing it down with the Rush Hour Rebels. Taillight Serenade."]]},
+    'hammock-by-the-sea':{id:'introb-hammock-by-the-sea',lines:[['R',"Tailgate Thunder. Hammock by the Sea. Finally, a band that gets me."]]},
+    'hot-sand-shuffle':{id:'introb-hot-sand-shuffle',lines:[['D',"No words, just vibes! The Offramps, Hot Sand Shuffle!"]]},
+    'off-ramp-outlaw':{id:'introb-off-ramp-outlaw',lines:[['R',"Sig Alert. Off-Ramp Outlaw. A song about a man who exits without signaling. A villain."]]},
+    'catalina-sunset':{id:'introb-catalina-sunset',lines:[['R',"Valet Overdrive. Catalina Sunset. Twenty-six miles across the sea. I've driven farther for a sandwich."]]},
+    'longboard-summer':{id:'introb-longboard-summer',lines:[['D',"Surf's up! Smog Cutters, Longboard Summer!"]]},
+    'pacific-coast-cruise':{id:'introb-pacific-coast-cruise',lines:[['R',"The Turn Signals. Pacific Coast Cruise. Nobody talk."]]},
+    'long-way-home':{id:'introb-long-way-home',lines:[['R',"Rush Hour Rebels. Long Way Home. The only way home, really. The other ways are closed."]]}
+  },
+  clock:{ // the real time of day, on the second break of a drive
+    morning:{id:'clock-morning',lines:[['D',"Good morning, coast! It's sunset here at K-JAM. It's always sunset here at K-JAM."],['R',"We don't know how it happened. We stopped asking."]]},
+    midday:{id:'clock-midday',lines:[['R',"If you're driving with us on your lunch break, a word of advice. The fries go under the seat, and they never come back."],['D',"Never! It's a whole ecosystem down there!"]]},
+    evening:{id:'clock-evening',lines:[['D',"Evening drive time, folks! The real sunset and our sunset, at the same time!"],['R',"Twice the squinting."]]},
+    late:{id:'clock-late',lines:[['R',"If you're driving with us this late, you're either very relaxed or very lost."],['D',"Or both! Welcome!"]]}
+  },
+  steer:[
+    {id:'steer-01',lines:[['R',"Oh, look who's steering now."],['D',"Ooh, a scenic detour! I love it!"]]},
+    {id:'steer-02',lines:[['D',"Somebody's taking the scenic route!"],['R',"Every route is scenic out there, Dana. That's the problem. Nobody can decide."]]}
+  ],
+  speed:{
+    fast:{id:'speed-fast',lines:[['R',"Somebody just maxed out the cruise control."],['D',"The ocean's not going anywhere!"],['R',"Neither is the Highway Patrol."]]},
+    slow:{id:'speed-slow',lines:[['D',"Somebody's taking it nice and slow out there. Love that."],['R',"Gary approves."]]}
+  },
+  postcard:[
+    {id:'postcard-01',lines:[['D',"Did somebody just snap a postcard? Say cheese, coast!"],['R',"The Corvette doesn't have a bad side. It knows it."]]},
+    {id:'postcard-02',lines:[['R',"Another postcard. Send one to the 405. Let them see what they're missing."]]}
+  ],
+  pier:[
+    {id:'pier-01',lines:[['D',"Ferris wheel up ahead! Give it a wave!"],['R',"It's been going in circles all day and it's having more fun than the 10."]]},
+    {id:'pier-02',lines:[['R',"Pier coming up. Somebody's fishing off the end. Nobody has ever caught anything. They're there for the peace and quiet."],['D',"Aww."],['R',"Then we drive by playing Sig Alert."]]}
+  ],
   townname:{
     'playa-dorada':{id:'townname-playa-dorada',lines:[['D',"Rolling into Playa Dorada!"]]},
     'costa-linda':{id:'townname-costa-linda',lines:[['D',"Rolling into Costa Linda!"]]},
@@ -2256,12 +2319,24 @@ function sayLine(line,tok,next){
 function playLines(lines,tok,done){
   let n=0;const step=()=>{if(tok!==Show.token)return;if(n>=lines.length)return done();sayLine(lines[n++],tok,step)};step();
 }
-function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place']);while(k===Show.lastKind);return k}
+function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place','facts','facts']);while(k===Show.lastKind);return k}
+// each song has two intros; play whichever was heard less recently
+const introBit=s=>{const a={id:'intro-'+s.id,lines:[s.intro]},b=VBITS.introb[s.id];return b?pickBit('intro-'+s.id,[a,b]):a};
+// reactions to the drive (you steering, the cruise speed, a postcard, a pier ahead): the freshest one gets the next break, if it's still fresh by then
+const React={bit:null,until:0,last:{}};
+const reactFresh=()=>React.bit&&performance.now()<React.until;
+function react(kind,bit,ttl,cool,urgent){
+  const now=performance.now();if(!Show.on||now<(React.last[kind]??-1e12)+cool*1000)return;
+  React.last[kind]=now;React.bit=bit;React.until=now+ttl*1000;
+  if(urgent&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('short')})}
+}
+function clockBit(){const h=new Date().getHours(),c=VBITS.clock;return h>=5&&h<11?c.morning:h>=11&&h<14?c.midday:h>=17&&h<21?c.evening:h>=21||h<5?c.late:null}
 // not every song gets a full segment: sometimes two songs in a row, sometimes just a quick ID, so the talk doesn't wear thin
 let lastBreak='';
 function nextBreak(){
   const r=Math.random();
   if(Show.queue.length)lastBreak='full';
+  else if(reactFresh()){lastBreak='short';return talk('short')} // the reaction, then the song
   else if(r<.2&&lastBreak!=='music'){lastBreak='music';return backToBack()}
   else if(r<.45&&lastBreak!=='short'){lastBreak='short';return talk('short')}
   else lastBreak='full';
@@ -2279,7 +2354,7 @@ function requestSong(s){
   const go=()=>{
     Show.on=true;Show.phase='talk';Show.lastKind='request';const tok=++Show.token;Show.pending=s;lastSongId=s.id;
     stopVoice();try{speechSynthesis.cancel()}catch(e){}cueSong(s);
-    const list=[pickBit('request',VBITS.request),{id:'intro-'+s.id,lines:[s.intro]}];
+    const list=[pickBit('request',VBITS.request),introBit(s)];
     list.forEach(b=>loadVoice(b.id));
     playBits(list,tok,()=>startSong(tok,s));
   };
@@ -2362,11 +2437,13 @@ function talk(kind){
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
   if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug);if(special===VBITS.welcome&&FOCUS.phase==='focus')list.push(VBITS.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
+  else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null}
+  else if(kind==='facts')list.push(pickBit('facts',VBITS.facts,true))
   else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
   else if(kind==='short'){if(Math.random()<.4)list.push(pickBit('id',VBITS.id))} // a quick break: maybe the station ID, then the song
   else list.push(pickBit(kind,VBITS[kind]));
-  list.push({id:'intro-'+song.id,lines:[song.intro]});
+  list.push(introBit(song));
   if(Math.random()<.35)list.push(pickBit('after',VBITS.after));
   list.forEach(b=>loadVoice(b.id)); // fetch the whole segment up front
   try{speechSynthesis.cancel()}catch(e){}
@@ -2400,15 +2477,20 @@ function choose(c){
     toast(c==='S'?"No road straight ahead. Pick a turn.":car.bi+DIRS[rel(car.d,c)][0]<XMIN?"Can't turn there. That's the Pacific.":car.piece==='hwy'?"No turn that way at the next exit.":"No road that way. Autopilot's got this.");return;
   }
   car.user=c;
+  const now=performance.now();steerTimes.push(now);while(steerTimes.length&&now-steerTimes[0]>180000)steerTimes.shift(); // three picks in three minutes: they're steering
+  if(steerTimes.length>=3)react('steer',pickBit('steer',VBITS.steer),240,900);
 }
+const steerTimes=[];
 const press=(el,fn)=>el.addEventListener('pointerdown',e=>{e.preventDefault();fn()});
 press($('btnL'),()=>choose('L'));press($('btnR'),()=>choose('R'));press($('btnS'),()=>choose('S'));
 // in tilt mode, tapping the road picks straight
 canvas.addEventListener('pointerdown',()=>{if(settings.mode==='tilt'&&$('start').hidden&&$('sheet').hidden){choose('S');toast(car.user==='S'?'Straight at the next one':'Autopilot decides')}});
 // cruise speed, 60 to 160 km/h in 10s
 function applySpeed(){$('spdVal').textContent=settings.cruise+' km/h'}
-$('spdDown').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise-10,60,160);applySpeed();saveSettings()});
-$('spdUp').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise+10,60,160);applySpeed();saveSettings()});
+let spdT=0;
+const spdReact=()=>{clearTimeout(spdT);spdT=setTimeout(()=>{if(settings.cruise>=160)react('speed-fast',VBITS.speed.fast,240,1200);else if(settings.cruise<=60)react('speed-slow',VBITS.speed.slow,240,1200)},2500)}; // once it's settled at the top or bottom
+$('spdDown').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise-10,60,160);applySpeed();saveSettings();spdReact()});
+$('spdUp').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise+10,60,160);applySpeed();saveSettings();spdReact()});
 applySpeed();
 press($('pwr'),()=>{initAudio();unlockAudio();power(!Show.on)});
 press($('seek'),seek);
@@ -2673,7 +2755,7 @@ async function openPostcard(view='scenic',ribbon='',ready=null){
 }
 function closePostcard(){pcOpen=false;$('pcSheet').hidden=true}
 function savePostcard(){if(!pcBlob)return;const a=document.createElement('a');a.href=pcUrl;a.download='long-way-home-postcard.jpg';document.body.appendChild(a);a.click();a.remove()}
-$('camBtn').addEventListener('click',()=>openPostcard('scenic'));
+$('camBtn').addEventListener('click',()=>{openPostcard('scenic');react('postcard',pickBit('postcard',VBITS.postcard),240,600)});
 $('pcClose').addEventListener('click',closePostcard);
 $('pcSheet').addEventListener('click',e=>{if(e.target===$('pcSheet'))closePostcard()});
 $('pcSave').addEventListener('click',savePostcard);
@@ -2842,7 +2924,7 @@ function loop(now){
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
-  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();
+  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();if(frame%30===0)pierCheck();
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
@@ -2867,6 +2949,7 @@ $('go').addEventListener('click',()=>{
   for(const ms of[600,1500,3000])setTimeout(()=>{if(AC&&AC.state!=='running'&&!document.hidden)unlockAudio()},ms); // in case the first try didn't take
   if(settings.focus)startFocus(settings.focus);
   Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
+  const cb=clockBit();if(cb)Show.queue.push(cb); // and the real time of day the next one
   power(true);keepAwake();startStreak();
 });
 document.addEventListener('visibilitychange',()=>{
