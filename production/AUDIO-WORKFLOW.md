@@ -37,6 +37,8 @@ Decided 2026-10-03. The planned fix for picking up iPhone Premium voices is drop
 
 ## Log
 
+- 2026-10-05: radio expansion. 44 new bits generated with Eleven v4 at -Stability 0.75 (about 8,200 credits; about 5,500 left): Fast Lane Facts 01-16, a second intro per song (introb-*), clock-morning/midday/evening/late, steer-01/02, speed-fast/slow, postcard-01/02, pier-01/02. Pitch check: Rick 71-143 Hz, Dana 211-340 Hz, no retakes. Songs now play in full (about 2:30). Traffic-scopes were written but skipped.
+
 - 2026-10-04: focus-drive clips added (focus-20, focus-30, focus-end, focus-back) for the pomodoro mode. About 498 credits; the pitch check is clean.
 - 2026-10-04: plug-01 added (Dana: "Want a different song? Tap the radio, we take requests!" / Rick: "We take them. We don't enjoy them."). It plays after the welcome until the player has requested a song once. About 117 credits.
 - 2026-10-04: welcome-01 added (Rick and Dana welcome you on Tap to drive; "Gee-gee-hue-ee" for gghui, approved by ear). About 312 credits.
