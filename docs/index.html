@@ -154,6 +154,11 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .reqtip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + var(--radio-h,96px) - 4px);z-index:1;background:var(--sun,#ffc861);color:#2a1a22;font-weight:800;font-size:14px;padding:8px 14px;border-radius:99px;white-space:nowrap;box-shadow:0 6px 18px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .4s}
 .reqtip::after{content:'';position:absolute;left:50%;bottom:-6px;margin-left:-7px;border:7px solid transparent;border-bottom:0;border-top-color:var(--sun,#ffc861)}
 .reqtip.show{opacity:1}
+.offtip{transform:none} /* points at the power knob; left is set from the knob's position */
+.offtip::after{left:24px}
+.knob.pulse{animation:knobPulse 1.2s ease-in-out 2}
+@keyframes knobPulse{50%{box-shadow:0 3px 5px rgba(0,0,0,.55),0 0 0 3px var(--sun,#ffc861),0 0 16px rgba(255,200,97,.8)}}
+@media (prefers-reduced-motion: reduce){.knob.pulse{animation:none}}
 .lcd.pulse{animation:lcdPulse 1.2s ease-in-out 2}
 @keyframes lcdPulse{50%{box-shadow:inset 0 2px 7px rgba(0,0,0,.85),0 0 0 2px var(--lcd),0 0 18px rgba(255,179,71,.7)}}
 @media (prefers-reduced-motion: reduce){.lcd.pulse{animation:none}}
@@ -247,6 +252,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
   </div>
   <div class="toast" id="toast"></div>
   <div class="reqtip" id="reqTip" hidden>Tap the radio to pick a song</div>
+  <div class="reqtip offtip" id="offTip" hidden>Turn the radio off for ocean sounds</div>
   <div class="lyrics" id="lyrics" hidden aria-live="off"><div class="l1" id="lyr1"></div><div class="l2" id="lyr2"></div></div>
   <div class="radio" id="radio">
     <div class="knobwrap"><button class="knob" id="pwr" aria-label="Radio on or off"></button><span>PWR</span></div>
@@ -1814,7 +1820,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false,offTips:0,triedOff:false};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
@@ -2381,10 +2387,26 @@ function startSong(tok,song){
   const onEnd=()=>{if(tok===Show.token&&Show.on)nextBreak()};
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);Show.current=song;updateMediaSession(song);refreshPlaylist();playRealSong(song,onEnd,synth)}else synth();
-  maybeReqTip();
+  maybeReqTip();if(++songsThisDrive===2)maybeOffTip();
 }
 // first couple of drives: once the first song starts, point at the display so people find the request list
-let reqTipDone=false,reqTipT=0;
+let reqTipDone=false,reqTipT=0,songsThisDrive=0,offTipT=0;
+// first couple of drives, on the second song: point at the power knob so people find the ocean sounds
+function maybeOffTip(){
+  if(settings.triedOff||settings.offTips>=2)return;
+  settings.offTips++;saveSettings();
+  setTimeout(()=>{
+    if(!Show.on)return;
+    const tip=$('offTip'),k=$('pwr').getBoundingClientRect(),h=hudEl.getBoundingClientRect();
+    tip.style.left=Math.max(8,k.left+k.width/2-h.left-31)+'px';
+    tip.hidden=false;requestAnimationFrame(()=>tip.classList.add('show'));
+    $('pwr').classList.add('pulse');offTipT=setTimeout(hideOffTip,6000);
+  },1500);
+}
+function hideOffTip(){
+  clearTimeout(offTipT);const tip=$('offTip');tip.classList.remove('show');$('pwr').classList.remove('pulse');
+  setTimeout(()=>{if(!tip.classList.contains('show'))tip.hidden=true},450);
+}
 function maybeReqTip(){
   if(reqTipDone)return;reqTipDone=true;
   if(settings.requested||settings.reqTips>=2)return;
@@ -2494,7 +2516,7 @@ const spdReact=()=>{clearTimeout(spdT);spdT=setTimeout(()=>{if(settings.cruise>=
 $('spdDown').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise-10,60,160);applySpeed();saveSettings();spdReact()});
 $('spdUp').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise+10,60,160);applySpeed();saveSettings();spdReact()});
 applySpeed();
-press($('pwr'),()=>{initAudio();unlockAudio();power(!Show.on)});
+press($('pwr'),()=>{initAudio();unlockAudio();if(Show.on&&!settings.triedOff){settings.triedOff=true;saveSettings()}hideOffTip();power(!Show.on)});
 press($('seek'),seek);
 addEventListener('keydown',e=>{
   if(e.repeat)return;
