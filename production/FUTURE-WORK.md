@@ -2,10 +2,6 @@
 
 Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 
-## Hosting
-
-- **Verify itsgordonhui.com in GitHub** (account Settings → Pages → Add a domain, then a TXT record in Squarespace) so no one else can claim a subdomain. The game moved to longwayhome.itsgordonhui.com on 2026-10-05.
-
 ## Radio
 - **Fast Lane Facts jingle**: a short sting from a remaining Suno credit.
 - **Dana's Traffic-scopes**: written and skipped for now; the script is in RADIO-SCRIPTS-DRAFT.md (about 950 credits).
