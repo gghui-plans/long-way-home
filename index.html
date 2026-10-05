@@ -272,6 +272,7 @@ import {EffectComposer} from 'three/addons/postprocessing/EffectComposer.js';
 import {RenderPass} from 'three/addons/postprocessing/RenderPass.js';
 import {UnrealBloomPass} from 'three/addons/postprocessing/UnrealBloomPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
+import {ShaderPass} from 'three/addons/postprocessing/ShaderPass.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 (()=>{
 'use strict';
@@ -333,13 +334,28 @@ const sunLight=new THREE.DirectionalLight(0xffb27a,1.0*Math.PI);
 scene.environmentIntensity=.5;
 const sTex=c=>{const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t}; // painted canvases are sRGB colour
 // high quality: soft glow (bloom) and sharper shadows; battery saver skips both
-let composer=null;
+let composer=null,rayPass=null;
+// sun shafts: bright sky near the sun smeared towards it on screen, so light streams through gaps between palms and buildings
+const GODRAY={uniforms:{tDiffuse:{value:null},uSun:{value:new THREE.Vector2(.5,.5)},uAmt:{value:0}},
+  vertexShader:'varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+  fragmentShader:'uniform sampler2D tDiffuse;uniform vec2 uSun;uniform float uAmt;varying vec2 vUv;\n'+
+    'void main(){vec4 base=texture2D(tDiffuse,vUv);if(uAmt<.001){gl_FragColor=base;return;}\n'+
+    'vec2 d=(vUv-uSun)*(.85/24.0),uv=vUv;float decay=1.0;vec3 acc=vec3(0.0);\n'+
+    'for(int i=0;i<24;i++){uv-=d;vec3 c=texture2D(tDiffuse,uv).rgb;acc+=c*smoothstep(.85,1.7,dot(c,vec3(.299,.587,.114)))*smoothstep(.42,.08,length(uv-uSun))*decay;decay*=.93;} // only light from the sky around the sun\n'+
+    'gl_FragColor=vec4(base.rgb+acc*uAmt*.055,base.a);}'};
+const _sunScr=new THREE.Vector3();
+function updateRays(){
+  if(!rayPass)return;_sunScr.copy(SUN_VIS).multiplyScalar(2000).add(camera.position).project(camera);
+  camera.getWorldDirection(_fogDir);const facing=_fogDir.dot(SUN_VIS);
+  rayPass.uniforms.uSun.value.set(_sunScr.x*.5+.5,_sunScr.y*.5+.5);rayPass.uniforms.uAmt.value=_sunScr.z>1?0:clamp((facing-.25)/.45,0,1);
+}
 function setQuality(hq){
   scene.fog.near=hq?140:90;scene.fog.far=hq?5200:1100; // high quality sees the coast kilometres out; battery saver keeps it hazier
   const n=hq?2048:1024;if(sunLight.shadow.mapSize.x!==n){sunLight.shadow.mapSize.set(n,n);if(sunLight.shadow.map){sunLight.shadow.map.dispose();sunLight.shadow.map=null}}
   if(hq&&!composer){
     composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}));
-    composer.addPass(new RenderPass(scene,camera));composer.addPass(new UnrealBloomPass(new THREE.Vector2(256,256),.35,.5,.9));composer.addPass(new OutputPass());
+    rayPass=new ShaderPass(GODRAY);
+    composer.addPass(new RenderPass(scene,camera));composer.addPass(rayPass);composer.addPass(new UnrealBloomPass(new THREE.Vector2(256,256),.35,.5,.9));composer.addPass(new OutputPass());
     composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,innerHeight);
   }
 }
@@ -399,10 +415,10 @@ const detailU={uDetail:{value:detailTex},uOrigin:{value:new THREE.Vector3()},uTi
 MAT.onBeforeCompile=sh=>{
   Object.assign(sh.uniforms,detailU);
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWPos;varying vec3 vWNrm;attribute float sway;uniform float uTime;')
-    .replace('#include <begin_vertex>','#include <begin_vertex>\nif(sway>0.0){float ph=transformed.x*.07+transformed.z*.05;transformed.x+=sway*(.32*sin(uTime*1.1+ph)+.1*sin(uTime*2.6+ph*1.7));transformed.z+=sway*.22*sin(uTime*.85+ph+1.3);}')
+    .replace('#include <begin_vertex>','#include <begin_vertex>\nif(sway>0.0){float ph=transformed.x*.07+transformed.z*.05;transformed.x+=sway*(.32*sin(uTime*1.1+ph)+.1*sin(uTime*2.6+ph*1.7));transformed.z+=sway*.22*sin(uTime*.85+ph+1.3);}\nelse if(sway<0.0){float ph=(-sway-1.0)*6.283;transformed.y+=.22*sin(uTime*1.25+ph);transformed.x+=.1*sin(uTime*.9+ph);}')
     .replace('#include <project_vertex>','#include <project_vertex>\nvWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vWNrm=normalize(mat3(modelMatrix)*objectNormal);');
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
-uniform sampler2D uDetail;uniform vec3 uOrigin;varying vec3 vWPos;varying vec3 vWNrm;
+uniform sampler2D uDetail;uniform vec3 uOrigin;uniform float uTime;varying vec3 vWPos;varying vec3 vWNrm;
 vec3 dtBump(vec3 p,vec3 n,vec2 dH,float fd){vec3 sx=normalize(dFdx(p)),sy=normalize(dFdy(p)),r1=cross(sy,n),r2=cross(n,sx);float det=dot(sx,r1)*fd;return normalize(abs(det)*n-sign(det)*(dH.x*r1+dH.y*r2));}`)
   .replace('#include <color_fragment>',`#include <color_fragment>
 vec3 dP=vWPos-uOrigin,dN=normalize(vWNrm),dc=vColor.rgb;float dUp=abs(dN.y);
@@ -424,7 +440,7 @@ if(dUp>.6){ // ground and roofs: grain and broad patches; cracks on asphalt; win
   dH=tF.g;
 }
 diffuseColor.rgb*=mix(1.0,dMod,dFade);`)
-  .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));')
+  .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));\nfloat dAs=(1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat))*step(.6,dUp),dDst=length(vViewPosition),dGz=1.0-smoothstep(.015,.07,abs(normalize(cameraPosition-vWPos).y));\nroughnessFactor=mix(roughnessFactor,.04,dAs*smoothstep(80.0,200.0,dDst)*(1.0-smoothstep(450.0,700.0,dDst))*dGz*(.55+.45*sin(uTime*2.3+vWPos.x*.21+vWPos.z*.17)));')
   .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
 };
 const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
@@ -436,17 +452,17 @@ for(const m of[MAT_CAR,MAT_Q])m.onBeforeCompile=sh=>{
 };
 const _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_e=new THREE.Euler(),_v=new THREE.Vector3(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_n3=new THREE.Matrix3(),_c=new THREE.Color();
 class Builder{
-  constructor(){this.pos=[];this.nor=[];this.col=[];this.sw=null;this.gain=1} // sw: per-vertex wind sway (palms); gain: brighter-than-white colours for glowing parts
+  constructor(){this.pos=[];this.nor=[];this.col=[];this.sw=null;this.gain=1;this.bob=0} // bob<0: bob on the swell (value encodes the phase) // sw: per-vertex wind sway (palms); gain: brighter-than-white colours for glowing parts
   add(geo,color,x,y,z,sx=1,sy=1,sz=1,ry=0,rx=0,rz=0){
     _e.set(rx,ry,rz,'YXZ');_q.setFromEuler(_e);_m.compose(_p.set(x,y,z),_q,_s.set(sx,sy,sz));_n3.getNormalMatrix(_m);
     const P=geo.attributes.position.array,N=geo.attributes.normal.array,C=color==null?geo.attributes.color.array:null,SW=geo.attributes.sway?geo.attributes.sway.array:null,gn=this.gain;
     if(!C)_c.set(color).multiplyScalar(gn);
-    if(SW&&!this.sw)this.sw=new Array(this.pos.length/3).fill(0);
+    const bob=this.bob;if((SW||bob)&&!this.sw)this.sw=new Array(this.pos.length/3).fill(0);
     for(let k=0;k<P.length;k+=3){
       _v.set(P[k],P[k+1],P[k+2]).applyMatrix4(_m);this.pos.push(_v.x,_v.y,_v.z);
       _v.set(N[k],N[k+1],N[k+2]).applyMatrix3(_n3).normalize();this.nor.push(_v.x,_v.y,_v.z);
       if(C)this.col.push(C[k]*gn,C[k+1]*gn,C[k+2]*gn);else this.col.push(_c.r,_c.g,_c.b);
-      if(this.sw)this.sw.push(SW?SW[k/3]:0);
+      if(this.sw)this.sw.push(SW?SW[k/3]:bob);
     }
   }
   tri2(a,b,c,col){this.tri(a,b,c,col,col,col);this.tri(a,c,b,col,col,col)} // visible from both sides
@@ -456,7 +472,7 @@ class Builder{
     this.pos.push(a[0],a[1],a[2],b[0],b[1],b[2],c[0],c[1],c[2]);
     for(let k=0;k<3;k++)this.nor.push(nx/l,ny/l,nz/l);
     for(const col of[ca,cb,cc]){_c.set(col).multiplyScalar(this.gain);this.col.push(_c.r,_c.g,_c.b)}
-    if(this.sw)this.sw.push(0,0,0);
+    if(this.sw)this.sw.push(this.bob,this.bob,this.bob);
   }
   quad(p0,p1,p2,p3,c0,c1=c0,c2=c0,c3=c0){ // wound so the face points up
     const ny=(p1[2]-p0[2])*(p2[0]-p0[0])-(p1[0]-p0[0])*(p2[2]-p0[2]);
@@ -740,6 +756,8 @@ function buildBlock(i,j,d){
     const L=(x,z)=>[x-x0,z-z0];
     for(let z=jz+4;z<jz+B;z+=12){const [u,v]=L(xe-2,z);palm(u,v,13+rnd()*5)}
     grp.add(foamStrip([[xw-19.3,jz,-1,0],[xw-19.3,jz+B/2,-1,0],[xw-19.3,jz+B,-1,0]],9)); // surf on the town beach
+    if(rnd()<.55)for(let k=0;k<1+Math.floor(rnd()*3);k++)surfer(b,xw-32-rnd()*30,jz+rnd()*B,rnd);
+    if(rnd()<.45)bonfire(b,gb,grp,xw+14,.3,jz+B*.3,rnd);else if(rnd()<.4)volleyball(b,xw+19,.3,jz+B*.72,rnd);
     const tw=townOfRow(j);if(tw&&j===tw.a+Math.floor(tw.TL/2)&&hash(tw.k,9,3)<.65)buildPier(b,gb,grp,xw,jz+B/2);
     if(rnd()<.7){ // lifeguard tower
       const tx=xw+16,tz=jz+B/2;
@@ -872,6 +890,8 @@ function inlandY(x,z){
 }
 const inlandCol=(x,z,y)=>y<1?TC.scrub:y<8?((Math.floor(x/37+z/53)&1)?TC.scrub:TC.grass):y<30?TC.hill:TC.hill2;
 const NEAR=[13,24,45,80,140],FAR=[150,260,400,XE,XE+30,XE+80,XE+160,XE+300,XE+500,XE+700];
+function waterDx(z){const pr=westProfile(z);for(let k=0;k+1<pr.length;k++){const [d0,y0]=pr[k],[d1,y1]=pr[k+1];if(y0<=SEA&&y1>SEA)return d0+(SEA-y0)/(y1-y0)*(d1-d0)}return-60} // where the sea meets the shore, from the road
+const shoreX=z=>townOfRow(Math.floor(z/B))?XMIN*B-B-19.3:roadX(z)+waterDx(z);
 function westProfile(z){ // [dx,y,color] from far offshore to the shoulder
   const c=coastType(z),L=(a,b)=>a+(b-a)*c,cl=c>.5;
   // beaches shelve gently into the sea (so the surf runs up a wide, wet slope); cliffs drop away steeply
@@ -884,7 +904,7 @@ function signTex(top,bottom){
   return sTex(c);
 }
 function buildTerrain(j){
-  const b=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
+  const b=new Builder(),gb=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
   for(let s=0;s<=NZ;s++){
     const z=z0+s*B/NZ,rc=roadX(z),o1=(off(z+1)-off(z-1))/2,len=Math.hypot(1,o1),nx=1/len,nz=-o1/len,pts=[];
     const P=(dx,y,col,along)=>pts.push([along?rc+dx*nx:rc+dx,y,along?z+dx*nz:z,col]);
@@ -927,6 +947,9 @@ function buildTerrain(j){
         if(hillMul(z0+zo+30)>.3)for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
     }
     if(c<.35){
+      gb.gain=2.6;const wx=roadX(zm)+waterDx(zm); // surfers past the breakers, a bonfire or a volleyball game on the sand
+      if(rnd()<.3)for(let k=0;k<1+Math.floor(rnd()*3);k++)surfer(b,wx-14-rnd()*26,z0+rnd()*B,rnd);
+      if(rnd()<.16)bonfire(b,gb,grp,roadX(zm)-36,.22,zm,rnd);else if(rnd()<.1)volleyball(b,roadX(zm)-32,.22,zm,rnd);
       if(rnd()<.6)for(let k=0;k<2;k++){const z=z0+10+rnd()*40,x=roadX(z)-15-rnd()*4;b.add(rnd()<.4?pick(FANPALMS,rnd):pick(PALMS,rnd),null,x,.2,z,1,1,1,rnd()*6.28)}
       if(rnd()<.45)for(let k=0;k<3;k++){const z=z0+5+rnd()*50,x=roadX(z)-28-rnd()*20;b.add(G.box,0xf2efe6,x,1.5,z,.1,2.6,.1);b.add(G.cone,pick(SIGNS,rnd),x,2.9,z,1.7,.7,1.7);b.add(G.box,pick(SIGNS,rnd),x+1.4,.27,z,1,.04,2);if(rnd()<.8)lyer(b,x+1.4,.29,z,0,rnd)}
       if(rnd()<.3)stander(b,roadX(zm)-41,.2,zm,-Math.PI/2,rnd,true);
@@ -955,6 +978,7 @@ function buildTerrain(j){
     if(t2&&j+12===t2.a)sign(t2,false);      // southbound driver, town ahead to the south
   }
   const mesh=b.mesh();grp.add(mesh);grp.userData={mesh,j};
+  if(gb.pos.length)grp.add(new THREE.Mesh(gb.geo(),MAT_GLOW));
   return grp;
 }
 
@@ -1372,6 +1396,74 @@ function updateSkyline(cx,cz,dir,clock){
   updateFar(cx,cz);
 }
 
+// ---------- beach life
+// bonfire smoke: points that rise, drift and fade, worked out on the graphics card from each puff's seed and the time
+const smokeU={uTime:{value:0},uPx:{value:400}};
+const SMOKE_MAT=new THREE.ShaderMaterial({uniforms:smokeU,transparent:true,depthWrite:false,
+  vertexShader:'attribute float seed;uniform float uTime,uPx;varying float vA;\nvoid main(){float t=fract(uTime*.06+seed);vec3 p=position+vec3(sin(seed*41.0)*.5+t*t*7.0,t*13.0,cos(seed*23.0)*.5+t*2.0);\nvec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=(1.2+t*7.0)*uPx/-mv.z;vA=(1.0-t)*smoothstep(0.0,.12,t)*.32;}',
+  fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.78,.72,.7),vA*smoothstep(.5,.1,d));\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'});
+function smokeAt(x,y,z){const n=14,p=new Float32Array(n*3),s=new Float32Array(n);for(let i=0;i<n;i++){p[i*3]=x;p[i*3+1]=y;p[i*3+2]=z;s[i]=i/n}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));g.setAttribute('seed',new THREE.BufferAttribute(s,1));const m=new THREE.Points(g,SMOKE_MAT);m.frustumCulled=false;return m}
+function bonfire(b,gb,grp,x,y,z,r){ // a ring of stones, logs, flames, friends around it, smoke
+  for(let k=0;k<8;k++){const a=k/8*Math.PI*2;b.add(BLOB,0x6f6a66,x+Math.cos(a)*1.1,y+.12,z+Math.sin(a)*1.1,.32,.22,.32)}
+  for(let k=0;k<3;k++)b.add(G.box,0x5a3e2a,x,y+.2,z,.18,.18,1.5,k*1.05);
+  gb.add(G.cone,0xff7a1e,x,y+1,z,.75,1.7,.75);gb.add(G.cone,0xffc040,x+.12,y+.85,z-.06,.45,1.2,.45,.6);gb.add(G.cone,0xff9a30,x-.2,y+.75,z+.1,.35,.9,.35,1.7);
+  for(let k=0;k<3;k++){const a=k/3*Math.PI*2+r();sitter(b,x+Math.cos(a)*2.6,y,z+Math.sin(a)*2.6,Math.atan2(-Math.cos(a),-Math.sin(a)),r)}
+  grp.add(smokeAt(x,y+1.6,z));
+}
+function surfer(b,x,z,r){ // sitting on the board past the breakers, facing out to sea, bobbing with the swell
+  b.bob=-(1+r()*.99);const ry=Math.PI/2+(r()-.5)*.8;
+  b.add(G.box,pick([0xf2efe6,0xf2a541,0x2fb3a8,0xe8505b],r),x,SEA+.12,z,.6,.09,2.3,ry);b.add(G.box,0x1c1c22,x,SEA+.55,z,.48,.6,.3,ry);b.add(BLOB,pick(SKIN,r),x,SEA+1.02,z,.2,.22,.2);b.bob=0;
+}
+function volleyball(b,x,y,z,r){ // a net, two to four players, the ball in the air
+  for(const s of[-1,1])b.add(G.box,0xf2efe6,x,y+1.3,z+s*4.5,.12,2.6,.12);b.add(G.box,0x34343a,x,y+2.15,z,.03,.9,9);
+  for(const s of[-1,1])for(let k=0;k<1+Math.floor(r()*2);k++)stander(b,x+s*(3+r()*3),y,z+(r()-.5)*6,s>0?-Math.PI/2:Math.PI/2,r,false);
+  b.bob=-(1+r()*.99);b.add(BLOB,0xf6f1e4,x+(r()-.5)*3,y+3.6,z+(r()-.5)*4,.17,.17,.17);b.bob=0;
+}
+// pelicans gliding in a line over the surf, gulls circling the beach, joggers and dog walkers on the sand, fog wisps offshore
+const LIFE=new THREE.Group();scene.add(LIFE);
+function birdGeo(pel){const b=new Builder(),c=pel?0x7a7068:0xf4f2ee,h=pel?0xeee6d4:0xf8f8f8;
+  b.add(BLOB,c,0,0,0,pel?.32:.16,pel?.3:.15,pel?1:.45);b.add(BLOB,h,0,pel?.18:.08,pel?.95:.42,pel?.17:.09,pel?.17:.09,pel?.2:.1);
+  b.add(G.box,pel?0xd9a35a:0xf2c230,0,pel?.12:.07,pel?1.45:.55,pel?.09:.04,pel?.07:.03,pel?.75:.18);b.add(G.box,c,0,0,pel?-.9:-.42,pel?.35:.18,.04,pel?.4:.2);return b.geo()}
+function wingGeo(pel){const b=new Builder(),c=pel?0x6b625a:0xf2f0ec,L=pel?1.9:.8,w=pel?.55:.22;b.add(G.box,c,L/2,0,0,L,.05,w);b.add(G.box,pel?0x2a2624:0x55575c,L*.92,0,0,L*.18,.055,w*.95);return b.geo()}
+const BIRD={pel:[birdGeo(true),wingGeo(true)],gull:[birdGeo(false),wingGeo(false)]};
+function makeBird(pel){
+  const [bg,wg]=pel?BIRD.pel:BIRD.gull,g=new THREE.Group(),L=new THREE.Group(),R=new THREE.Group(),rm=new THREE.Mesh(wg,MAT_PED);
+  g.add(new THREE.Mesh(bg,MAT_PED));L.add(new THREE.Mesh(wg,MAT_PED));rm.rotation.y=Math.PI;R.add(rm);L.position.set(.12,.08,0);R.position.set(-.12,.08,0);g.add(L,R);
+  g.userData={L,R};LIFE.add(g);return g;
+}
+const flock={birds:[...Array(6)].map(()=>makeBird(true)),dir:-1,z:1e9},gulls=[...Array(5)].map(()=>makeBird(false));
+function personGeo(jog){const b=new Builder(),r=Math.random;b.add(G.box,pick(PANTSC,r),0,.45,0,.38,.9,.22);b.add(G.box,pick(SHIRT,r),0,1.25,0,.5,.66,.3);b.add(BLOB,pick(SKIN,r),0,1.8,0,.2,.22,.2);if(jog)b.add(G.box,pick(SKIN,r),0,1.2,.18,.5,.12,.12);return b.geo()}
+function dogGeo(){const b=new Builder(),c=pick([0xc8a070,0x3a2a20,0xe8dcc4,0x8a6a4a]);b.add(G.box,c,0,.42,0,.28,.3,.8);b.add(G.box,c,0,.62,.45,.24,.24,.3);for(const s of[-1,1])for(const t of[-1,1])b.add(G.box,c,s*.1,.15,t*.3,.08,.3,.08);b.add(G.box,c,0,.55,-.45,.05,.05,.3,0,-.6);return b.geo()}
+const movers=[...Array(5)].map((_,k)=>{const jog=k<3,g=new THREE.Group(),m=new THREE.Mesh(personGeo(jog),MAT_PED);m.castShadow=true;g.add(m);
+  if(!jog){const d=new THREE.Mesh(dogGeo(),MAT_PED);d.position.set(.9,0,1.4);d.castShadow=true;g.add(d)}LIFE.add(g);return{g,jog,z:1e9,dir:1,r:Math.random()}});
+const wisps=(()=>{
+  const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d'),r=rng(31);
+  for(let k=0;k<16;k++){const x0=20+r()*216,y0=24+r()*16,rad=14+r()*22,g=x.createRadialGradient(x0,y0,0,x0,y0,rad);g.addColorStop(0,'rgba(255,240,232,.5)');g.addColorStop(1,'rgba(255,240,232,0)');x.fillStyle=g;x.fillRect(0,0,256,64)}
+  const mat=new THREE.SpriteMaterial({map:sTex(c),transparent:true,depthWrite:false,opacity:.3});
+  return[...Array(12)].map(()=>{const s=new THREE.Sprite(mat);s.scale.set(400+r()*500,35+r()*30,1);s.userData={dx:-300-r()*1400,z:(r()-.5)*3000,y:SEA+12+r()*28,v:1+r()*2};LIFE.add(s);return s});
+})();
+function updateLife(dt,t){
+  // pelicans pass you every so often, one flock at a time
+  if(Math.abs(flock.z-car.z)>650){flock.dir=Math.random()<.5?-1:1;flock.z=car.z-flock.dir*520}
+  flock.z+=flock.dir*11*dt;
+  flock.birds.forEach((g,k)=>{const z=flock.z-flock.dir*k*5.5;g.position.set(shoreX(z)-32+k*2.2,SEA+4.5+Math.sin(t*.6+k)*.5,z);g.rotation.y=flock.dir<0?Math.PI:0;
+    const cyc=(t*.12+k*.03)%1,f=cyc<.18?Math.sin(t*6.4+k*.5)*.55:.08;g.userData.L.rotation.z=f;g.userData.R.rotation.z=-f});
+  // gulls wheel over the beach just ahead
+  gulls.forEach((g,k)=>{const u=g.userData;
+    if(!u.c||Math.hypot(u.c[0]-car.x,u.c[1]-car.z)>260){const z=car.z+Math.cos(car.yaw)*(40+Math.random()*180);u.c=[shoreX(z)+6+Math.random()*20,z];u.y=13+Math.random()*10;u.r=10+Math.random()*14;u.w=(.35+Math.random()*.3)*(Math.random()<.5?-1:1);u.ph=Math.random()*6}
+    const a=u.ph+t*u.w;g.position.set(u.c[0]+Math.cos(a)*u.r,u.y+Math.sin(t*.7+k)*1.5,u.c[1]+Math.sin(a)*u.r);g.rotation.set(0,Math.atan2(-Math.sin(a)*u.w,Math.cos(a)*u.w),u.w>0?-.3:.3);
+    const f=Math.sin(t*1.3+k*2)>.3?Math.sin(t*14+k)*.6:.12;u.L.rotation.z=f;u.R.rotation.z=-f});
+  // joggers and dog walkers on the dry sand
+  for(const o of movers){
+    if(Math.abs(o.z-car.z)>260){o.z=car.z+(Math.random()*300-150);o.dir=Math.random()<.5?-1:1;o.r=Math.random()}
+    o.z+=o.dir*(o.jog?3.1:1.3)*dt;
+    const town=!!townOfRow(Math.floor(o.z/B)),ok=town||coastType(o.z)<.3;o.g.visible=ok;if(!ok)continue;
+    o.g.position.set(shoreX(o.z)+(town?22+o.r*16:28+o.r*12),(town?.3:.22)+Math.abs(Math.sin(t*(o.jog?9:5)+o.r*6))*(o.jog?.12:.04),o.z);o.g.rotation.y=o.dir>0?0:Math.PI;
+  }
+  // low fog wisps drifting offshore
+  for(const s of wisps){const u=s.userData;u.z+=u.v*dt;if(u.z-car.z>1500)u.z-=3000;else if(u.z-car.z<-1500)u.z+=3000;s.position.set(car.x+u.dx,u.y,u.z)}
+}
 // ---------- the convertible (model faces +z; driver on the left, which is +x)
 const carG=new THREE.Group(),body=new THREE.Group(),shell=new THREE.Group(),driver=new THREE.Group();carG.add(body);body.add(shell,driver);scene.add(carG); // shell: the generated body, replaced by the Corvette model once it loads
 const wheels=[],blink={L:[],R:[]},blinkGlow={L:[],R:[]},blinkLens={L:[],R:[]};let wheelR=.42;
@@ -2449,7 +2541,8 @@ function loop(now){
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
-  updateSkyline(car.x,car.z,car.d,clock);
+  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();
+  smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
