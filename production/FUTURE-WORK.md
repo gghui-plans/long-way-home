@@ -4,17 +4,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 
 ## Hosting
 
-**Custom address: longwayhome.itsgordonhui.com**
-Both this game and itsgordonhui.com are on GitHub Pages under `gghui-plans`. The domain's DNS is on Google nameservers (likely managed in Squarespace Domains).
-1. Gordon adds the DNS record: host `longwayhome`, type `CNAME`, value `gghui-plans.github.io`. The `www` record already points the same way.
-2. Once it resolves, Claude:
-   - sets the custom domain on the long-way-home repo and adds `docs/CNAME`;
-   - rebuilds with `-SiteUrl https://longwayhome.itsgordonhui.com/` (share card, postcard link, social preview tags);
-   - turns on HTTPS after GitHub issues the certificate.
-- Do it in that order. Setting the domain before DNS works breaks the current link until DNS catches up.
-- The old gghui-plans.github.io/long-way-home link redirects automatically.
-- Saved settings and records start fresh on the new address, because browsers store them per site.
-- Optional: verify itsgordonhui.com in GitHub (Settings → Pages → Add a domain) so no one else can claim a subdomain.
+- **Verify itsgordonhui.com in GitHub** (account Settings → Pages → Add a domain, then a TXT record in Squarespace) so no one else can claim a subdomain. The game moved to longwayhome.itsgordonhui.com on 2026-10-05.
 
 ## Radio
 - **Fast Lane Facts jingle**: a short sting from a remaining Suno credit.

@@ -30,7 +30,7 @@ Open the GitHub Pages link in a phone or desktop browser and tap **Tap to drive*
 To rebuild the site after changing `index.html`:
 
 ```
-powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://<username>.github.io/long-way-home/
+powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://longwayhome.itsgordonhui.com/
 ```
 
 The world is generated in the browser from rules, with no real maps or brands. Songs were made with Suno, voices with ElevenLabs, and nature sounds are CC0 recordings from Freesound (see `production/NATURE-SOURCES.md`).

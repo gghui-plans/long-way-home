@@ -1,5 +1,5 @@
 # Builds the GitHub Pages site in docs/ from index.html (the artifact-format source).
-# Usage: powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://<user>.github.io/long-way-home/
+# Usage: powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://longwayhome.itsgordonhui.com/
 param([Parameter(Mandatory=$true)][string]$SiteUrl)
 $ErrorActionPreference = 'Stop'
 $root = $PSScriptRoot
@@ -46,4 +46,7 @@ New-Item -ItemType Directory -Force $docs | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $docs 'index.html'), $head + $body + "`n</body>`n</html>`n", (New-Object System.Text.UTF8Encoding($false)))
 foreach ($f in 'share.png','icon.svg','icon-180.png') { if (Test-Path (Join-Path $root $f)) { Copy-Item (Join-Path $root $f) $docs -Force } }
 New-Item -ItemType File -Force (Join-Path $docs '.nojekyll') | Out-Null
+# A custom domain (anything not on github.io) needs a CNAME file in the published folder.
+$siteHost = ([Uri]$SiteUrl).Host
+if ($siteHost -notlike '*.github.io') { [System.IO.File]::WriteAllText((Join-Path $docs 'CNAME'), $siteHost, (New-Object System.Text.UTF8Encoding($false))) }
 "Built docs/ for $SiteUrl"
