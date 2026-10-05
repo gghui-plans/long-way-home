@@ -13,8 +13,8 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
   - Desert: desert and psych rock, twangy surf-western guitars. A late-night conspiracy host with tumbleweed alerts and UFO call-ins.
   - Tahoe: 70s/80s ski-lodge rock. A ski-bum host with chain-control drama.
 - **A second station**: a Toronto hip hop station on the SEEK knob, with its own hosts and Toronto traffic jokes.
-- **Budget for region audio**: the 5,500 ElevenLabs credits left won't cover a full station (the last 44 clips cost about 8,200). Plan another month of ElevenLabs and Suno, and record several regions in one session.
-- **Cancel the ElevenLabs and Suno subscriptions** once retakes and region audio are done.
+- **Budget for region audio**: ElevenLabs shows 37,307 credits remaining (checked 2026-10-05; my running estimate of 5,500 was wrong). At about 186 credits a clip that's about 200 clips, roughly 5 region stations of 25–40 clips. Check the renewal date on the Subscription page; unused credits only carry over while the plan stays active, so record before cancelling.
+- **Cancel the ElevenLabs and Suno subscriptions** once retakes and region audio are done (37,307 ElevenLabs credits left as of 2026-10-05).
 
 ## Game
 - **Regions (map button)**: pick a California region from a fold-out road map. The car drives there: the next open-coast stretch blends into the new region over a minute or two (sky, fog, ground colours, trees, signs). Also offer a quick fade-and-skip.
