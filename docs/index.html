@@ -1079,37 +1079,87 @@ const terr=new Map();
 // ---------- people: one instanced crowd (4 draw calls) that walks blocks, waits at corners and crosses on the walk signal
 const SKIN=[0x8d5a3b,0xc68863,0xe8b996,0x5a3a28,0xf1c9a5],SHIRT=[0xe8505b,0x2fb3a8,0xf2a541,0xf2efe6,0x5b6ee1,0xd14fa1,0x58b368,0xf6e3a8,0x2b2b30];
 const PANTSC=[0x2f3b5a,0x3b3b3f,0x6b5a45,0xe6e0d4,0x2e5b4a,0x8a6a4a],HAIRC=[0x2a1d16,0x5a3a20,0xd9b36a,0x1b1b1f,0x8a8a8a];
-// static figures baked into block geometry: sitting at cafés and bus stops, lying on towels, standing with surfboards
-function sitter(b,x,y,z,ry,r){const s=Math.sin(ry),c=Math.cos(ry);b.add(G.box,pick(SHIRT,r),x,y+.45,z,.5,.6,.3,ry);b.add(BLOB,pick(SKIN,r),x,y+1,z,.2,.22,.2);b.add(G.box,pick(PANTSC,r),x+s*.25,y+.12,z+c*.25,.42,.2,.5,ry)}
-function lyer(b,x,y,z,ry,r){const s=Math.sin(ry),c=Math.cos(ry);b.add(G.box,pick(SHIRT,r),x,y+.15,z,.5,.22,.8,ry);b.add(G.box,pick(SKIN,r),x-s*.75,y+.13,z-c*.75,.4,.18,.8,ry);b.add(BLOB,pick(SKIN,r),x+s*.55,y+.2,z+c*.55,.2,.2,.2)}
-function stander(b,x,y,z,ry,r,board){b.add(G.box,pick(PANTSC,r),x,y+.45,z,.38,.9,.22,ry);b.add(G.box,pick(SHIRT,r),x,y+1.25,z,.55,.7,.3,ry);b.add(BLOB,pick(SKIN,r),x,y+1.82,z,.2,.22,.2);
-  if(board)b.add(G.box,pick([0xf2efe6,0x2fb3a8,0xf2a541,0xe8505b],r),x+Math.cos(ry)*.5,y+1.3,z-Math.sin(ry)*.5,.5,2.6,.1,ry,0,.12)}
+// ---------- people: one figure design for everyone (rounded body, head, hair, nose, optional sunglasses and sun hat).
+// Parts carry a slot number so walkers can take each person's colours per instance: 1 shirt, 2 skin, 3 hair, 4 shorts or
+// trousers, 5 shins (skin under shorts), 6 sunglasses (skin when none). Slot 0 keeps its own colour (shoes).
+HAIRC.push(0xc9c4bb,0xe6e2da); // grey and white, for older folks
+const SHORTS=[0x3b5b8a,0xc9b48a,0x2f3b5a,0x6b8f5a,0xe8505b,0x2fb3a8,0xf2a541],SWIM=[0xe8505b,0x2fb3a8,0xf2a541,0x5b6ee1,0xd14fa1,0x1b1b1f],HATC=[0xf1e2c6,0xe8505b,0x2fb3a8,0xf2efe6,0x2b2b30,0xd9b36a],BOARDC=[0xf2efe6,0x2fb3a8,0xf2a541,0xe8505b];
+G.sph=ni(new THREE.SphereGeometry(1,8,6));G.hsph=ni(new THREE.SphereGeometry(1,8,3,0,Math.PI*2,0,Math.PI/2));
+const SHOULDER=[.25,1.55],HIP=[.1,.92];
+const PBODY=[[G.sph,4,0,.98,0,.19,.15,.12],[G.sph,1,0,1.33,0,.22,.31,.13],[G.cyl,2,0,1.65,0,.06,.1,.06],[G.sph,2,0,1.82,0,.15,.18,.16],
+  [G.hsph,3,0,1.85,-.01,.16,.15,.17],[G.sph,3,0,1.8,-.07,.14,.14,.11],[G.box,2,0,1.8,.16,.035,.05,.05],[G.box,6,0,1.85,.15,.24,.05,.03]];
+const PARM=[[G.cyl,1,0,-.15,0,.06,.3,.06],[G.cyl,2,0,-.43,0,.05,.27,.05],[G.box,2,0,-.6,0,.08,.1,.06]];
+const PLEG=[[G.cyl,4,0,-.22,0,.08,.44,.08],[G.cyl,5,0,-.65,0,.066,.42,.066],[G.box,0,0,-.88,.05,.11,.07,.24]];
+const PSHIN=[[G.cyl,5,0,-.21,0,.066,.42,.066],[G.box,0,0,-.44,.05,.11,.07,.24]]; // below a bent knee
+const PHAT=[[G.cyl,7,0,1.97,0,.3,.02,.3],[G.cyl,7,0,2.04,0,.15,.13,.15]];
+function partGeo(list){ // walkers: white parts plus a slot number per vertex
+  const b=new Builder(),pa=[];for(const [g,pt,x,y,z,sx,sy,sz,rx=0] of list){const n0=b.pos.length/3;b.add(g,pt?0xffffff:0x2b2b30,x,y,z,sx,sy,sz,0,rx);for(let q=b.pos.length/3-n0;q>0;q--)pa.push(pt)}
+  const g=b.geo();g.setAttribute('part',new THREE.Float32BufferAttribute(pa,1));return g;
+}
+const MAT_PERSON=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.75,metalness:0});
+MAT_PERSON.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float part;attribute vec3 iShirt;attribute vec3 iSkin;attribute vec3 iHair;attribute vec3 iPants;attribute vec3 iShin;attribute vec3 iGlass;')
+  .replace('#include <color_vertex>','#include <color_vertex>\nif(part>.5)vColor.rgb=part<1.5?iShirt:part<2.5?iSkin:part<3.5?iHair:part<4.5?iPants:part<5.5?iShin:iGlass;')};
+function outfit(r,beach,kind){ // a look: beach clothes or town clothes; kids and older folks
+  const skin=pick(SKIN,r),swim=beach&&r()<.5,shorts=beach||r()<.6,c={2:skin,3:kind==='old'?pick([0xc9c4bb,0xe6e2da],r):pick(HAIRC.slice(0,5),r)};
+  c[1]=swim?(r()<.5?skin:pick(SWIM,r)):pick(SHIRT,r);c[4]=shorts?pick(SHORTS,r):pick(PANTSC,r);c[5]=shorts?skin:c[4];
+  c[6]=r()<(beach?.5:.3)?0x15151a:skin;c[7]=r()<(kind==='old'?.5:beach?.35:.18)?pick(HATC,r):null;return c;
+}
+// static figures, baked into block geometry with their own colours
+const _pm=new THREE.Matrix4(),_pm2=new THREE.Matrix4(),_pm3=new THREE.Matrix4(),_pq=new THREE.Quaternion(),_pv=new THREE.Vector3(),_ps2=new THREE.Vector3(),_pe=new THREE.Euler();
+const mat4=(x,y,z,ry=0,rx=0,s=1)=>new THREE.Matrix4().compose(new THREE.Vector3(x,y,z),new THREE.Quaternion().setFromEuler(new THREE.Euler(rx,ry,0,'YXZ')),new THREE.Vector3(s,s,s));
+function putParts(b,M,list,c){
+  for(const [g,pt,x,y,z,sx,sy,sz,rx=0] of list){if(pt===7&&!c[7])continue;
+    _pm2.compose(_pv.set(x,y,z),_pq.setFromEuler(_pe.set(rx,0,0,'YXZ')),_ps2.set(sx,sy,sz));_pm3.multiplyMatrices(M,_pm2).decompose(_pv,_pq,_ps2);_pe.setFromQuaternion(_pq,'YXZ');
+    b.add(g,pt?c[pt]:0x2b2b30,_pv.x,_pv.y,_pv.z,_ps2.x,_ps2.y,_ps2.z,_pe.y,_pe.x,_pe.z);}
+}
+function person(b,x,y,z,ry,r,pose,c){ // pose: stand, sit (on a seat), ground (on the sand, legs out) or lie (on a towel)
+  c=c||outfit(r,pose!=='sit');
+  const M=pose==='lie'?mat4(x,y+.13,z,ry).multiply(mat4(0,0,0,0,-Math.PI/2)).multiply(mat4(0,-.95,0)):pose==='sit'?mat4(x,y+.1-.98,z,ry):pose==='ground'?mat4(x,y+.12-.98,z,ry):mat4(x,y,z,ry);
+  putParts(b,M,PBODY,c);if(pose!=='lie')putParts(b,M,PHAT,c);
+  const arm=pose==='sit'?-.55:pose==='ground'?.45:(r()-.5)*.2;
+  for(const s of[-1,1]){
+    putParts(b,_pm.copy(M).multiply(mat4(s*SHOULDER[0],SHOULDER[1],0,0,arm)),PARM,c);
+    if(pose==='sit'){const T=_pm.copy(M).multiply(mat4(s*HIP[0],HIP[1],0,0,-Math.PI/2));putParts(b,T,[PLEG[0]],c);putParts(b,T.multiply(mat4(0,-.44,0,0,Math.PI/2)),PSHIN,c)}
+    else putParts(b,_pm.copy(M).multiply(mat4(s*HIP[0],HIP[1],0,0,pose==='ground'?-Math.PI/2+.12:0)),PLEG,c);
+  }
+}
+function sitter(b,x,y,z,ry,r){person(b,x,y,z,ry,r,y<.5?'ground':'sit')} // on a café chair or bench, or on the sand
+function lyer(b,x,y,z,ry,r){const t=pick(SWIM,r),hx=-Math.sin(ry+Math.PI),hz=-Math.cos(ry+Math.PI);b.add(G.box,t,x+hx*.35,y+.015,z+hz*.35,.95,.03,2.05,ry);b.add(G.box,0xf6f1e4,x+hx*.35,y+.032,z+hz*.35,.95,.005,.25,ry);person(b,x,y,z,ry+Math.PI,r,'lie')}
+function stander(b,x,y,z,ry,r,board){person(b,x,y,z,ry,r,'stand');
+  if(board)b.add(G.box,pick(BOARDC,r),x+Math.cos(ry)*.5,y+1.3,z-Math.sin(ry)*.5,.5,2.6,.1,ry,0,.12)}
 
 const PEDN=56,RING=S-3.2,LP=RING*4,peds=[];
-const pedGeo={
-  torso:(()=>{const b=new Builder();b.add(G.box,0xffffff,0,1.25,0,.55,.7,.32);for(const s of[-1,1])b.add(G.box,0xffffff,s*.34,1.25,0,.14,.6,.16);return b.geo()})(),
-  head:(()=>{const b=new Builder();b.add(BLOB,0xffffff,0,1.82,0,.2,.22,.2);return b.geo()})(),
-  hair:(()=>{const b=new Builder();b.add(G.box,0xffffff,0,1.98,-.03,.36,.12,.36);return b.geo()})(),
-  leg:(()=>{const b=new Builder();b.add(G.box,0xffffff,0,-.45,0,.2,.9,.2);return b.geo()})(),
-};
-const pedMesh={};
-for(const [k,g] of Object.entries(pedGeo)){const n=k==='leg'?PEDN*2:PEDN,m=new THREE.InstancedMesh(g,MAT_PED,n);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<n;i++)m.setColorAt(i,_c.set(0xffffff));scene.add(m);pedMesh[k]=m}
+// walkers: bodies, arms and legs are three instanced meshes (arms and legs swing); hats, dogs and surfboards ride along
+function pedInst(g,n,mat,slots){for(const k of slots)g.setAttribute(k,new THREE.InstancedBufferAttribute(new Float32Array(n*3),3));
+  const m=new THREE.InstancedMesh(g,mat,n);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  if(!slots.length)for(let i=0;i<n;i++)m.setColorAt(i,_c.set(0xffffff));scene.add(m);return m}
+const hatGeo=(()=>{const b=new Builder();for(const [g,,x,y,z,sx,sy,sz] of PHAT)b.add(g,0xffffff,x,y,z,sx,sy,sz);return b.geo()})();
+const pedDogGeo=(()=>{const b=new Builder();b.add(G.sph,0xffffff,0,.42,0,.15,.15,.38);b.add(G.sph,0xffffff,0,.6,.42,.12,.12,.15);b.add(G.box,0x1b1b1f,0,.6,.58,.05,.04,.05);for(const s of[-1,1])b.add(G.box,0xffffff,s*.06,.72,.4,.05,.1,.04);
+  for(const s of[-1,1])for(const t of[-1,1])b.add(G.cyl,0xffffff,s*.09,.16,t*.26,.035,.32,.035);b.add(G.cyl,0xffffff,0,.52,-.42,.025,.28,.025,0,-.8);return b.geo()})();
+const pedBoardGeo=(()=>{const b=new Builder();b.add(G.sph,0xffffff,0,0,0,.25,.035,1.05);return b.geo()})();
+const pedMesh={body:pedInst(partGeo(PBODY),PEDN,MAT_PERSON,['iShirt','iSkin','iHair','iPants','iGlass']),arm:pedInst(partGeo(PARM),PEDN*2,MAT_PERSON,['iShirt','iSkin']),
+  leg:pedInst(partGeo(PLEG),PEDN*2,MAT_PERSON,['iPants','iShin']),hat:pedInst(hatGeo,PEDN,MAT_PED,[]),dog:pedInst(pedDogGeo,PEDN,MAT_PED,[]),board:pedInst(pedBoardGeo,PEDN,MAT_PED,[])};
 const _d=new THREE.Object3D(),_zero=new THREE.Matrix4().makeScale(0,0,0);
-for(let k=0;k<PEDN;k++){
-  const p={k,on:false,mode:'ring',i:0,j:0,u:0,dir:1,sp:1.2,ph:Math.random()*6,x:0,z:0,y:.3,yaw:0,wait:0,from:null,to:null,t:0,len:0,next:null};
-  pedMesh.torso.setColorAt(k,_c.set(pick(SHIRT)));pedMesh.head.setColorAt(k,_c.set(pick(SKIN)));pedMesh.hair.setColorAt(k,_c.set(pick(HAIRC)));
-  const pc=pick(PANTSC);pedMesh.leg.setColorAt(k*2,_c.set(pc));pedMesh.leg.setColorAt(k*2+1,_c.set(pc));
-  peds.push(p);
+function setLook(p,beach){ // a fresh person each time someone is placed: who they are, what they wear, what they carry
+  const r=Math.random,kind=r()<.12?'kid':r()<.14?'old':'adult',c=outfit(r,beach,kind),k=p.k;
+  p.sc=kind==='kid'?.62:.9+r()*.1;p.slow=kind==='old'?.75:1;p.hat=!!c[7];p.dog=kind!=='kid'&&r()<.15;p.board=beach&&kind==='adult'&&r()<.35;
+  const set=(m,name,i,col)=>{_c.set(col);m.geometry.attributes[name].setXYZ(i,_c.r,_c.g,_c.b)};
+  set(pedMesh.body,'iShirt',k,c[1]);set(pedMesh.body,'iSkin',k,c[2]);set(pedMesh.body,'iHair',k,c[3]);set(pedMesh.body,'iPants',k,c[4]);set(pedMesh.body,'iGlass',k,c[6]);
+  for(const n of[k*2,k*2+1]){set(pedMesh.arm,'iShirt',n,c[1]);set(pedMesh.arm,'iSkin',n,c[2]);set(pedMesh.leg,'iPants',n,c[4]);set(pedMesh.leg,'iShin',n,c[5])}
+  if(p.hat)pedMesh.hat.setColorAt(k,_c.set(c[7]));if(p.dog)pedMesh.dog.setColorAt(k,_c.set(pick([0xc8a070,0x3a2a20,0xe8dcc4,0x8a6a4a,0x1b1b1f])));if(p.board)pedMesh.board.setColorAt(k,_c.set(pick(BOARDC)));
+  for(const m of Object.values(pedMesh)){for(const a of Object.values(m.geometry.attributes))if(a.isInstancedBufferAttribute)a.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
 }
+for(let k=0;k<PEDN;k++)peds.push({k,on:false,mode:'ring',i:0,j:0,u:0,dir:1,sp:1.2,ph:Math.random()*6,x:0,z:0,y:.3,yaw:0,wait:0,from:null,to:null,t:0,len:0,next:null,sc:1,slow:1});
 const isLot=(i,j)=>lotRow(j)&&i>=XMIN&&i<=XMAX-1&&district(i,j)!=='beach';
 function placePed(p,ci,cj){
   p.on=false;
   for(let tries=0;tries<10;tries++){
     const i=ci+Math.floor(Math.random()*7)-3,j=cj+Math.floor(Math.random()*7)-3;
     if(lotRow(j)&&i===XMIN-1){ // beach: joggers and walkers on the bike path
-      p.mode='line';p.i=i;p.j=j;p.x=i*B+B-HW-6+(Math.random()-.5)*1.5;p.z=j*B+Math.random()*B;p.dir=Math.random()<.5?1:-1;p.sp=Math.random()<.5?3.2:1.3;p.y=.32;p.on=true;break;
+      p.mode='line';p.i=i;p.j=j;p.x=i*B+B-HW-6+(Math.random()-.5)*1.5;p.z=j*B+Math.random()*B;p.dir=Math.random()<.5?1:-1;p.sp=Math.random()<.5?3.2:1.3;p.y=.32;p.on=true;
+      setLook(p,true);if(p.board||p.dog||p.slow<1||p.sc<.8)p.sp=1.3*p.slow;break; // nobody jogs with a surfboard, a dog or a cane
     }
-    if(isLot(i,j)){p.mode='ring';p.i=i;p.j=j;p.u=Math.random()*LP;p.dir=Math.random()<.5?1:-1;p.sp=1+Math.random()*.7;p.y=.3;p.on=true;break}
+    if(isLot(i,j)){p.mode='ring';p.i=i;p.j=j;p.u=Math.random()*LP;p.dir=Math.random()<.5?1:-1;p.y=.3;p.on=true;setLook(p,false);p.board=false;p.sp=(1+Math.random()*.7)*p.slow;break}
   }
 }
 function ringPos(p){
@@ -1134,7 +1184,7 @@ function updatePeds(dt,px,pz,frame){
   for(let r=0;r<2;r++){const q=peds[(frame*2+r)%PEDN];if(!q.on||Math.abs(q.i-ci)>3||Math.abs(q.j-cj)>3)placePed(q,ci,cj)}
   crossing.length=0;
   for(const p of peds){
-    if(!p.on){pedMesh.torso.setMatrixAt(p.k,_zero);pedMesh.head.setMatrixAt(p.k,_zero);pedMesh.hair.setMatrixAt(p.k,_zero);pedMesh.leg.setMatrixAt(p.k*2,_zero);pedMesh.leg.setMatrixAt(p.k*2+1,_zero);continue}
+    if(!p.on){for(const m of[pedMesh.body,pedMesh.hat,pedMesh.dog,pedMesh.board])m.setMatrixAt(p.k,_zero);for(const n of[p.k*2,p.k*2+1]){pedMesh.arm.setMatrixAt(n,_zero);pedMesh.leg.setMatrixAt(n,_zero)}continue}
     let moving=true;
     if(p.mode==='ring'){
       const before=Math.floor(p.u/RING);
@@ -1167,13 +1217,20 @@ function updatePeds(dt,px,pz,frame){
     }
     if(moving)p.ph+=dt*p.sp*5;
     const sw=moving?Math.sin(p.ph)*(p.sp>2?.8:.5):0,bob=moving?Math.abs(Math.cos(p.ph))*.04:0;
-    _d.position.set(p.x,p.y+bob,p.z);_d.rotation.set(0,p.yaw,0);_d.scale.set(1,1,1);_d.updateMatrix();
-    pedMesh.torso.setMatrixAt(p.k,_d.matrix);pedMesh.head.setMatrixAt(p.k,_d.matrix);pedMesh.hair.setMatrixAt(p.k,_d.matrix);
-    const c=Math.cos(p.yaw),s=Math.sin(p.yaw);
-    for(const [n,side,ang] of[[0,1,sw],[1,-1,-sw]]){_d.position.set(p.x+c*.13*side,p.y+.9,p.z-s*.13*side);_d.rotation.set(ang,p.yaw,0,'YXZ');_d.updateMatrix();pedMesh.leg.setMatrixAt(p.k*2+n,_d.matrix)}
+    const sc=p.sc,c=Math.cos(p.yaw),s=Math.sin(p.yaw),Y=p.y+bob*sc;
+    _d.position.set(p.x,Y,p.z);_d.rotation.set(0,p.yaw,0);_d.scale.setScalar(sc);_d.updateMatrix();
+    pedMesh.body.setMatrixAt(p.k,_d.matrix);pedMesh.hat.setMatrixAt(p.k,p.hat?_d.matrix:_zero);
+    for(const [n,side,ang] of[[0,1,sw],[1,-1,-sw]]){ // legs swing, arms swing the other way
+      _d.position.set(p.x+c*HIP[0]*side*sc,Y+HIP[1]*sc,p.z-s*HIP[0]*side*sc);_d.rotation.set(ang,p.yaw,0,'YXZ');_d.updateMatrix();pedMesh.leg.setMatrixAt(p.k*2+n,_d.matrix);
+      const carry=p.board&&side<0; // the board arm stays down
+      _d.position.set(p.x+c*SHOULDER[0]*side*sc,Y+SHOULDER[1]*sc,p.z-s*SHOULDER[0]*side*sc);_d.rotation.set(carry?-.15:-ang*.8,p.yaw,0,'YXZ');_d.updateMatrix();pedMesh.arm.setMatrixAt(p.k*2+n,_d.matrix);
+    }
+    if(p.dog){_d.position.set(p.x+c*.85+s*.4,p.y+Math.abs(Math.sin(p.ph*1.6))*.04,p.z-s*.85+c*.4);_d.rotation.set(0,p.yaw,0);_d.scale.setScalar(1);_d.updateMatrix();pedMesh.dog.setMatrixAt(p.k,_d.matrix)}else pedMesh.dog.setMatrixAt(p.k,_zero);
+    if(p.board){_d.position.set(p.x-c*.42*sc,Y+1.08*sc,p.z+s*.42*sc);_d.rotation.set(0,p.yaw,Math.PI/2,'YXZ');_d.scale.setScalar(1);_d.updateMatrix();pedMesh.board.setMatrixAt(p.k,_d.matrix)}else pedMesh.board.setMatrixAt(p.k,_zero);
   }
   for(const m of Object.values(pedMesh))m.instanceMatrix.needsUpdate=true;
 }
+for(const m of[pedMesh.hat,pedMesh.dog,pedMesh.board])m.instanceColor.needsUpdate=true;
 
 // ---------- traffic: a pool of vehicles that drive the same lanes, lights and highway as you
 const RB_CACHE={};
@@ -1483,10 +1540,11 @@ function bonfire(b,gb,grp,x,y,z,r){ // a ring of stones, logs, flames, friends a
 }
 function surfer(b,x,z,r){ // sitting on the board past the breakers, facing out to sea, bobbing with the swell
   b.bob=-(1+r()*.99);const ry=Math.PI/2+(r()-.5)*.8;
-  b.add(G.box,pick([0xf2efe6,0xf2a541,0x2fb3a8,0xe8505b],r),x,SEA+.12,z,.6,.09,2.3,ry);b.add(G.box,0x1c1c22,x,SEA+.55,z,.48,.6,.3,ry);b.add(BLOB,pick(SKIN,r),x,SEA+1.02,z,.2,.22,.2);b.bob=0;
+  b.add(G.sph,pick(BOARDC,r),x,SEA+.12,z,.3,.05,1.15,ry);const sk=pick(SKIN,r),ws=0x1c1c22; // in a wetsuit, sitting astride the board
+  person(b,x,SEA+.1,z,ry,r,'ground',{1:ws,2:sk,3:pick(HAIRC.slice(0,5),r),4:ws,5:ws,6:sk,7:null});b.bob=0;
 }
 function volleyball(b,x,y,z,r){ // a net, two to four players, the ball in the air
-  for(const s of[-1,1])b.add(G.box,0xf2efe6,x,y+1.3,z+s*4.5,.12,2.6,.12);b.add(G.box,0x34343a,x,y+2.15,z,.03,.9,9);
+  for(const s of[-1,1])b.add(G.box,0xf2efe6,x,y+1.3,z+s*4.5,.12,2.6,.12);b.add(G.box,0x8a8a92,x,y+2.1,z,.02,.75,9);b.add(G.box,0xf6f1e4,x,y+2.5,z,.04,.08,9.05); // net with a white top band
   for(const s of[-1,1])for(let k=0;k<1+Math.floor(r()*2);k++)stander(b,x+s*(3+r()*3),y,z+(r()-.5)*6,s>0?-Math.PI/2:Math.PI/2,r,false);
   b.bob=-(1+r()*.99);b.add(BLOB,0xf6f1e4,x+(r()-.5)*3,y+3.6,z+(r()-.5)*4,.17,.17,.17);b.bob=0;
 }
@@ -1503,8 +1561,8 @@ function makeBird(pel){
   g.userData={L,R};LIFE.add(g);return g;
 }
 const flock={birds:[...Array(6)].map(()=>makeBird(true)),dir:-1,z:1e9},gulls=[...Array(5)].map(()=>makeBird(false));
-function personGeo(jog){const b=new Builder(),r=Math.random;b.add(G.box,pick(PANTSC,r),0,.45,0,.38,.9,.22);b.add(G.box,pick(SHIRT,r),0,1.25,0,.5,.66,.3);b.add(BLOB,pick(SKIN,r),0,1.8,0,.2,.22,.2);if(jog)b.add(G.box,pick(SKIN,r),0,1.2,.18,.5,.12,.12);return b.geo()}
-function dogGeo(){const b=new Builder(),c=pick([0xc8a070,0x3a2a20,0xe8dcc4,0x8a6a4a]);b.add(G.box,c,0,.42,0,.28,.3,.8);b.add(G.box,c,0,.62,.45,.24,.24,.3);for(const s of[-1,1])for(const t of[-1,1])b.add(G.box,c,s*.1,.15,t*.3,.08,.3,.08);b.add(G.box,c,0,.55,-.45,.05,.05,.3,0,-.6);return b.geo()}
+function personGeo(jog){const b=new Builder();person(b,0,0,0,0,Math.random,'stand',outfit(Math.random,true,'adult'));return b.geo()}
+function dogGeo(){const b=new Builder(),g=pedDogGeo,c=pick([0xc8a070,0x3a2a20,0xe8dcc4,0x8a6a4a]);b.add(g,c,0,0,0);return b.geo()}
 const movers=[...Array(5)].map((_,k)=>{const jog=k<3,g=new THREE.Group(),m=new THREE.Mesh(personGeo(jog),MAT_PED);m.castShadow=true;g.add(m);
   if(!jog){const d=new THREE.Mesh(dogGeo(),MAT_PED);d.position.set(.9,0,1.4);d.castShadow=true;g.add(d)}LIFE.add(g);return{g,jog,z:1e9,dir:1,r:Math.random()}});
 const wisps=(()=>{
