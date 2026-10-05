@@ -2449,8 +2449,10 @@ function talk(kind){
   try{speechSynthesis.cancel()}catch(e){}
   playBits(list,tok,()=>startSong(tok,song));
 }
-onRedStop=()=>{
-  if(Show.on&&Show.phase==='song'&&AC&&AC.currentTime-M.start>35){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('red')})}
+let lastRed=-1e12;
+onRedStop=()=>{ // a red light only cuts in on a song's last 40 s (in place of its fade-out), and at most every 10 minutes
+  const left=M.real&&isFinite(songEl.duration)?songEl.duration-songEl.currentTime:Infinity;
+  if(Show.on&&Show.phase==='song'&&AC&&left<40&&performance.now()-lastRed>600000){lastRed=performance.now();Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('red')})}
 };
 onTownCue=()=>{ // approaching a town on Highway 1
   if(Show.on&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('town')})}
