@@ -6,7 +6,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 - **Fast Lane Facts jingle**: a short sting from a remaining Suno credit.
 - **Dana's Traffic-scopes**: written and skipped for now; the script is in RADIO-SCRIPTS-DRAFT.md (about 950 credits).
 - **Station system**: make stations data (hosts, bits, songs, idents) and let the SEEK knob switch between them. Regions and the Toronto station both build on it.
-- **Region stations**: as you drive out of LA, K-JAM breaks up into static (with a Rick and Dana gag), then a local station comes in. Rick and Dana can still "call in" from the road. Each station needs about 8–12 Suno songs and 25–40 clips.
+- **Region stations**: as you drive out of LA, K-JAM breaks up into static (with a Rick and Dana gag), then a local station comes in. Rick and Dana can still "call in" from the road. Each station gets 16 Suno songs (like K-JAM) and 25–40 clips. Suno Pro gives 20 downloads a month (resets on the 3rd), so Pro covers about one region a month.
   - Redwood Coast: acoustic folk and Americana. A sleepy community-radio host doing fog reports instead of traffic ("a log truck has been spotted").
   - Big Sur: late-60s folk-rock with dreamy harmonies. A hippie DJ who talks about sunsets for far too long.
   - Wine Country: yacht rock and smooth soft rock. A fancy host doing tasting notes on the traffic.
