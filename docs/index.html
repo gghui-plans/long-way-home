@@ -2387,11 +2387,11 @@ function startSong(tok,song){
   const onEnd=()=>{if(tok===Show.token&&Show.on)nextBreak()};
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);Show.current=song;updateMediaSession(song);refreshPlaylist();playRealSong(song,onEnd,synth)}else synth();
-  maybeReqTip();if(++songsThisDrive===2)maybeOffTip();
+  maybeReqTip();
 }
 // first couple of drives: once the first song starts, point at the display so people find the request list
-let reqTipDone=false,reqTipT=0,songsThisDrive=0,offTipT=0;
-// first couple of drives, on the second song: point at the power knob so people find the ocean sounds
+let reqTipDone=false,reqTipT=0,offTipT=0;
+// first couple of drives, 2 s in (during Rick's welcome): point at the power knob so people find the ocean sounds
 function maybeOffTip(){
   if(settings.triedOff||settings.offTips>=2)return;
   settings.offTips++;saveSettings();
@@ -2401,7 +2401,7 @@ function maybeOffTip(){
     tip.style.left=Math.max(8,k.left+k.width/2-h.left-31)+'px';
     tip.hidden=false;requestAnimationFrame(()=>tip.classList.add('show'));
     $('pwr').classList.add('pulse');offTipT=setTimeout(hideOffTip,6000);
-  },1500);
+  },2000);
 }
 function hideOffTip(){
   clearTimeout(offTipT);const tip=$('offTip');tip.classList.remove('show');$('pwr').classList.remove('pulse');
@@ -2974,7 +2974,7 @@ $('go').addEventListener('click',()=>{
   if(settings.focus)startFocus(settings.focus);
   Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
   const cb=clockBit();if(cb)Show.queue.push(cb); // and the real time of day the next one
-  power(true);keepAwake();startStreak();
+  power(true);keepAwake();startStreak();maybeOffTip();
 });
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){if(AC)AC.suspend();streakPaused()}
