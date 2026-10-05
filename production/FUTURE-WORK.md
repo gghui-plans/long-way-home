@@ -25,7 +25,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
   - No trademarked or named landmark structures (a generic arch bridge is fine; no Golden Gate lookalike).
 - **Battery saver and auto quality** (do before redwoods): a friend's phone got warm after 40 min on HQ.
   - A 30 fps cap option.
-  - Turn HQ off automatically if frames struggle. Consider HQ off by default on phones.
+  - HQ stays on by default (the user's call). Auto-drop only: turn HQ effects off quietly if frames struggle.
   - Redwoods drawn cheaply: instanced trees, far versions, simple trunks, and fog for forest depth.
 - **Night drives**: these suit the Desert region (stars).
 - **Installable app (PWA)**: home-screen icon, offline play.
