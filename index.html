@@ -46,7 +46,25 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .dash .best{font-size:10px;color:var(--muted);font-variant-numeric:tabular-nums;letter-spacing:.04em}
 .dash .best:empty{display:none}
 .btncol{display:grid;gap:6px}
+.dash .focusT{background:transparent;padding:0;-webkit-backdrop-filter:none;backdrop-filter:none}
+.focusT b{color:#9fe0ff;text-shadow:0 0 6px rgba(120,210,255,.5)}
+.focusrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;font-weight:800;color:#e6d8e0;letter-spacing:.02em}
+.focusrow .seg button{padding:7px 12px;font-size:13px}
+.pcsheet{position:fixed;inset:0;z-index:6;background:rgba(15,8,20,.75);display:flex;align-items:center;justify-content:center;padding:16px;padding-top:calc(env(safe-area-inset-top,0px) + 16px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
+.pcpanel{width:100%;max-width:760px;display:grid;gap:14px;justify-items:center}
+.pcpanel img{width:100%;height:auto;max-height:70vh;object-fit:contain;border-radius:4px;box-shadow:0 18px 44px rgba(0,0,0,.55);transform:rotate(-1.2deg);background:#f4ead6;min-height:120px}
+.pcrow{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.pcnote{margin:0;color:var(--sun);font-weight:800;font-size:16px;text-align:center}
+.pcnote:empty{display:none}
+.focuscard{position:fixed;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 118px);z-index:4;background:rgba(20,12,24,.84);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid var(--face-edge);border-radius:16px;padding:14px 16px;display:grid;gap:6px;justify-items:center;color:var(--ink);text-align:center;width:min(calc(100vw - 32px),420px);box-sizing:border-box}
+.fctitle{font-size:17px}
+.fcstats{font-size:13px;color:var(--muted)}
+.fcbreak{font-size:13px;color:var(--muted)}
+.fcbreak b{font-family:var(--f-lcd);font-weight:400;font-size:28px;color:#9fe0ff;margin-left:4px}
+.fcrow{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+.fcrow .pill{padding:9px 14px;font-size:14px}
 .btncol .iconbtn{width:40px;height:40px}
+@media (max-height:520px){.btncol{grid-template-columns:repeat(2,40px)}} /* short screens: two across, clear of the arrows */
 /* next turn / next town, folded into the street sign as a small last line */
 .sign .nextline{display:block;margin-top:4px;padding-top:3px;border-top:1px solid rgba(246,243,232,.35);font-size:12px;font-weight:600;letter-spacing:0}
 .sign .nextline b{font-weight:800}
@@ -166,6 +184,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
         <div class="speedo" aria-label="Speed"><i class="sig" id="sigL" aria-hidden="true"></i><b id="kmh">0</b><span>km/h</span><i class="sig r" id="sigR" aria-hidden="true"></i></div>
         <div class="streak" id="streak" aria-label="Hands-free streak"><span class="lbl">HANDS-FREE</span><b id="stTime">0:00</b><span class="dist" id="stDist">0.0 km</span></div>
         <div class="best" id="stBest"></div>
+        <div class="streak focusT" id="focusT" hidden aria-label="Focus drive time left"><span class="lbl" id="focusLbl">FOCUS</span><b id="focusTime">20:00</b></div>
       </div>
       <div class="btncol">
         <button class="iconbtn" id="gear" aria-label="Settings">
@@ -173,6 +192,9 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
         </button>
         <button class="iconbtn" id="mapBtn" aria-label="Map">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></svg>
+        </button>
+        <button class="iconbtn" id="camBtn" aria-label="Make a postcard">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
         </button>
       </div>
     </div>
@@ -214,6 +236,8 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <p class="note">Turn off to keep just the music, with Rick and Dana as subtitles on the radio display. No sound on iPhone? Check the silent switch.</p>
     <div class="row"><label class="lbl" for="calm">Calm mode</label><input type="checkbox" id="calm"></div>
     <p class="note">Fades the signs and buttons after 10 seconds without touching anything. The hands-free timer stays. Tap anywhere to bring everything back.</p>
+    <div class="row"><span class="lbl">Focus drive</span><div class="seg focusseg"><button data-m="0">Off</button><button data-m="20">20 min</button><button data-m="30">30 min</button></div></div>
+    <p class="note">A focus timer while you work. When it's up, the car pulls over for a 5-minute break by the ocean, then the next session starts.</p>
     <div class="row"><label class="lbl" for="hq">High-quality graphics</label><input type="checkbox" id="hq" checked></div>
     <p class="note">Soft glow and sharper shadows. Turn off to save battery on long drives.</p>
     <p class="note credits">Your car: <a href="https://sketchfab.com/3d-models/1962-corvette-c1-f52ad070ec12455981d4ba63f21bcf0e" target="_blank" rel="noopener">"1962 Corvette c1"</a> by <a href="https://sketchfab.com/platemodels" target="_blank" rel="noopener">Plate Models</a>, <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> (top down and repainted). Traffic cars by Quaternius (CC0).</p>
@@ -221,6 +245,15 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
   </div>
 </div>
 
+<div class="pcsheet" id="pcSheet" hidden role="dialog" aria-label="Postcard"><div class="pcpanel">
+  <p class="pcnote" id="pcNote"></p>
+  <img id="pcImg" alt="Your postcard from the drive">
+  <div class="pcrow"><div class="seg" id="pcView"><button data-v="scenic" class="on">Scenic</button><button data-v="mine">My view</button></div>
+    <button class="pill" id="pcShare">Share</button><button class="pill ghost" id="pcSave">Save</button>
+    <button class="iconbtn" id="pcClose" aria-label="Close the postcard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+</div></div>
+<div class="focuscard" id="focusCard" hidden><b class="fctitle" id="fcTitle">Focus drive done</b><span class="fcstats" id="fcStats"></span><span class="fcbreak">Break <b id="fcBreak">5:00</b></span>
+  <div class="fcrow"><button class="pill" id="fcSkip">Skip break</button><button class="pill ghost" id="fcCard">Postcard</button><button class="pill ghost" id="fcEnd">End focus</button></div></div>
 <div class="mapsheet" id="mapSheet" hidden role="dialog" aria-label="Map">
   <div class="mappanel">
     <div class="maphead">
@@ -259,6 +292,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <h1>Long Way Home<span class="sub">in California</span></h1>
     <p class="tagline">Top down, sun low, take it slow.</p>
     <button class="go" id="go">Tap to drive</button>
+    <div class="focusrow"><span>Focus drive</span><div class="seg focusseg"><button data-m="0">Off</button><button data-m="20">20 min</button><button data-m="30">30 min</button></div></div>
     <p class="hint lead">How long can you leave your phone alone? The hands-free timer counts up while you drive. Switch apps or lock your screen and it starts over. Rick and Dana notice.</p>
     <p class="hint" id="hint">Turn the sound on. Steer with ◀ ↑ ▶ or the arrow keys. Tap the radio display to request a song. More in settings.</p>
     <p class="byline">A game by <b>gghui</b></p>
@@ -1631,6 +1665,11 @@ function updateCar(dt){
       else if(ds>-.5){vmax=Math.min(vmax,Math.sqrt(2*DEC*Math.max(0,ds)));car.waitRed=true}
     }
     vmax=Math.min(vmax,obstacleLimit(null,car.x,car.z,Math.sin(car.yaw),Math.cos(car.yaw),car.v,2.4)); // follow traffic, yield to people
+    // focus break: on the highway, ease onto the shoulder and stop (traffic flows past); merge back when it's over
+    const pullT=car.pullOver&&hw&&(car.pullOff>.1||toEnd>300)?4.3:0;
+    car.pullOff+=Math.sign(pullT-car.pullOff)*Math.min(Math.abs(pullT-car.pullOff),Math.max(car.v,1.5)*dt*.1);
+    if(pullT)vmax=car.pullOff>3.9?0:Math.min(vmax,13);
+    else if(car.pullOver&&!hw)vmax=Math.min(vmax,6); // in town (curbs full of parked cars) the break is a slow cruise instead
     car.v=ease(car.v,vmax,dt);
     let step=car.v*dt;if(car.waitRed)step=Math.min(step,Math.max(0,toEnd-STOP));
     if(hw){const o1=(off(car.hz+1)-off(car.hz-1))/2;car.hz+=sgn*step/Math.hypot(1,o1)}else car.s+=step;
@@ -1644,7 +1683,7 @@ function updateCar(dt){
   }
   let x,z,dx,dz;
   if(car.piece==='straight'){const D=DIRS[car.d];x=car.sx+D[0]*car.s;z=car.sz+D[1]*car.s;dx=D[0];dz=D[1]}
-  else if(car.piece==='hwy'){const sgn=car.d===0?-1:1,o1=(off(car.hz+1)-off(car.hz-1))/2,L=Math.hypot(1,o1),tx=o1/L*sgn,tz=sgn/L;x=roadX(car.hz)-tz*LANE;z=car.hz+tx*LANE;dx=tx;dz=tz}
+  else if(car.piece==='hwy'){const sgn=car.d===0?-1:1,o1=(off(car.hz+1)-off(car.hz-1))/2,L=Math.hypot(1,o1),tx=o1/L*sgn,tz=sgn/L;const ln=LANE+car.pullOff;x=roadX(car.hz)-tz*ln;z=car.hz+tx*ln;dx=tx;dz=tz}
   else{const q=bez(car.t),a=bez(Math.min(1,car.t+.02)),b0=bez(Math.max(0,car.t-.02));x=q[0];z=q[1];dx=a[0]-b0[0];dz=a[1]-b0[1]}
   const yaw=Math.atan2(dx,dz);let dy=yaw-car.yaw;dy=Math.atan2(Math.sin(dy),Math.cos(dy));
   car.yaw+=dy;car.yawRate=dt>0?dy/dt:0;car.x=x;car.z=z;
@@ -1653,7 +1692,8 @@ function updateCar(dt){
   body.rotation.z+=(clamp(car.yawRate*car.v*.012,-.07,.07)-body.rotation.z)*Math.min(1,dt*5);
   // turn signals: autopilot signals its own choice too, about 4 seconds before the turn
   const c=choice()[0],turning=car.piece==='turn',showing=turning?car.final!=='S':(c&&c!=='S'&&toEndNow()<Math.max(40,car.v*4));
-  const side=showing?(turning?car.final:c):null,on=!!side&&Math.floor(clock*2.8)%2===0;
+  const pullSig=car.pullOver&&car.piece==='hwy'&&car.pullOff>.05&&car.pullOff<3.9?'R':!car.pullOver&&car.pullOff>.3?'L':null; // signal onto the shoulder and back out
+  const side=pullSig||(showing?(turning?car.final:c):null),on=!!side&&Math.floor(clock*2.8)%2===0;
   blink.L.color.setHex(on&&side==='L'?0xffb030:0x5a3a10);blink.R.color.setHex(on&&side==='R'?0xffb030:0x5a3a10);
   for(const s of['L','R'])for(const g of blinkGlow[s])g.visible=on&&side===s;
   if(side!==signal.side||on!==signal.on){if(side)blinkerTick(on);signal={side,on}}
@@ -1675,7 +1715,7 @@ function placeKey(){
   const d=district(ci,cj);return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true};
+const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
@@ -1976,6 +2016,12 @@ const spoken=t=>t.replace(/K-JAM/g,'K Jam').replace(/101\.1/g,'one oh one point 
 // ---------- the recorded show: every bit as it was voiced (from production/PRODUCTION-PACK.md). One audio file per bit.
 const VBITS={
   welcome:{id:'welcome-01',lines:[['R',"Gee-gee-hue-ee welcomes you to Long Way Home in California."],['D',"Top down, sun low, take it slow!"],['R',"No destination. No score. The car drives itself. Your only job is to leave your phone alone."],['D',"And we'll keep the hits coming!"],['R',"One of us will."]]},
+  focus:{
+    20:{id:'focus-20',lines:[['D',"Focus drive! Twenty minutes. Eyes on your work, ears on us."],['R',"We'll keep it down. Mostly."]]},
+    30:{id:'focus-30',lines:[['D',"Thirty-minute focus drive, starting now. You've got this!"],['R',"We'll be quiet. I've been practicing."]]},
+    end:{id:'focus-end',lines:[['D',"Ding ding! That's your focus drive. Pull over, stretch, drink some water."],['R',"Five minutes. Then it's back to work. That's not a threat. It's a schedule."]]},
+    back:{id:'focus-back',lines:[['R',"Break's over. Seatbelts on."],['D',"Back on the road, folks!"]]},
+  },
   plug:{id:'plug-01',lines:[['D',"Want a different song? Tap the radio, we take requests!"],['R',"We take them. We don't enjoy them."]]},
   id:[
     {id:'id-01',lines:[['D',"You're locked in to K-Jam one-oh-one point one, Classic Rock and Gridlock. I'm Dana!"],['R',"And I'm Rick. Somewhere out there, a minivan has had its blinker on since breakfast."],['D',"Let's get you moving, folks!"]]},
@@ -2199,7 +2245,7 @@ function talk(kind){
   Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
-  if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug)} // the request plug, until they've tried it
+  if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug);if(special===VBITS.welcome&&FOCUS.phase==='focus')list.push(VBITS.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
   else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
   else list.push(pickBit(kind,VBITS[kind]));
@@ -2251,7 +2297,7 @@ press($('pwr'),()=>{initAudio();unlockAudio();power(!Show.on)});
 press($('seek'),seek);
 addEventListener('keydown',e=>{
   if(e.repeat)return;
-  if(e.key==='Escape'){$('fbSheet').hidden=true;$('plSheet').hidden=true;closeMap()}
+  if(e.key==='Escape'){$('fbSheet').hidden=true;$('plSheet').hidden=true;closeMap();if(pcOpen)closePostcard()}
   if(/^(TEXTAREA|INPUT)$/.test(e.target.tagName))return;
   if(e.key==='ArrowLeft'||e.key==='a')choose('L');
   else if(e.key==='ArrowRight'||e.key==='d')choose('R');
@@ -2403,6 +2449,7 @@ function updateStreak(dt,frame){
   streak.km+=car.v*dt/1000;
   const ms=Date.now()-streak.t0;
   for(const m of[5,10,30,60,120])if(!streak.fired[m]&&ms>=m*60000){
+    if(m===30||m===60){const rb=m===30?'30 minutes hands-free':'1 hour hands-free';makePostcard('scenic',rb).then(c=>{pendingCard={c,ribbon:rb}})} // a postcard waits for your next tap
     streak.fired[m]=true;toast(m<60?m+' minutes hands-free!':m===60?'1 hour hands-free!':'2 hours hands-free!');onAirSoon(VBITS.milestone[m]);
   }
   if(ms>best.ms){
@@ -2412,13 +2459,134 @@ function updateStreak(dt,frame){
   }
   if(frame%15===0){stTime.textContent=fmtTime(ms);stDist.textContent=streak.km.toFixed(1)+' km';stBest.textContent=best.ms>=60000&&best.ms>ms+1000?'BEST '+fmtTime(best.ms):''}
 }
-function streakPaused(){if(!streak.on)return;streak.lost=Date.now()-streak.t0;streak.on=false;saveBest()}
+function streakPaused(){if(pcOpen&&streak.on){streak.pausedAt=Date.now();return} // sharing a postcard doesn't end the run
+  if(!streak.on)return;streak.lost=Date.now()-streak.t0;streak.on=false;saveBest()}
 function streakResumed(){
+  if(streak.pausedAt){streak.t0+=Date.now()-streak.pausedAt;streak.pausedAt=0;return}
   if(streak.on||!$('start').hidden)return;
   const lost=streak.lost;startStreak();
   if(lost>=60000)toast('Streak ended at '+fmtTime(lost)+'. New streak started');
   if(lost>=120000)onAirSoon(pick(VBITS.back));
 }
+
+// ---------- postcards: the drive dressed as a vintage postcard, with your hands-free time
+const SITE='gghui-plans.github.io/long-way-home';
+let snapReq=null,pendingCard=null,pcOpen=false,pcBlob=null,pcUrl=null,pcLast={view:'scenic',ribbon:''};
+function doSnap(){ // render a shot (a scenic angle, or your view) and copy it, then put the camera back
+  const req=snapReq;snapReq=null;const pos=camera.position.clone(),q=camera.quaternion.clone(),fov=camera.fov;
+  if(req.scenic){ // low, in front of the car on the land side, looking back past it into the sunset
+    const fx=Math.sin(car.yaw),fz=Math.cos(car.yaw),sl=Math.hypot(SUN_VIS.x,SUN_VIS.z);let dx=fx*.85-SUN_VIS.x/sl*.55,dz=fz*.85-SUN_VIS.z/sl*.55;const l=Math.hypot(dx,dz);dx/=l;dz/=l;
+    camera.position.set(car.x+dx*8.5,1.45,car.z+dz*8.5);camera.fov=52;camera.updateProjectionMatrix();camera.lookAt(car.x-dx*2,1.7,car.z-dz*2);
+  }
+  camera.updateMatrixWorld();sky.position.copy(camera.position);updateHaze();updateRays();
+  if(composer&&settings.hq)composer.render();else renderer.render(scene,camera);
+  const src=renderer.domElement,ph=document.createElement('canvas');ph.width=src.width;ph.height=src.height;ph.getContext('2d').drawImage(src,0,0);
+  camera.position.copy(pos);camera.quaternion.copy(q);camera.fov=fov;camera.updateProjectionMatrix();camera.updateMatrixWorld();sky.position.copy(camera.position);updateHaze();updateRays();
+  req.done(ph);
+}
+function postcardInfo(ribbon){
+  const t=mapTown(),ms=streak.on?Date.now()-streak.t0:0,d=new Date();
+  return{town:currentTown()||(t?townName(t.k):'California'),line:'HANDS-FREE '+fmtTime(ms)+'  ·  '+streak.km.toFixed(1)+' KM',ribbon,
+    date:d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase(),year:String(d.getFullYear())};
+}
+function composePostcard(shot,info){
+  const W=1200,H=800,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#f4ead6';x.fillRect(0,0,W,H);
+  const px=34,py=34,pw=W-68,ph=596,s=Math.max(pw/shot.width,ph/shot.height),sw=pw/s,sh=ph/s;
+  x.drawImage(shot,(shot.width-sw)/2,(shot.height-sh)/2,sw,sh,px,py,pw,ph);
+  const vg=x.createRadialGradient(W/2,py+ph*.45,ph*.35,W/2,py+ph*.45,pw*.68);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,18,32,.38)');x.fillStyle=vg;x.fillRect(px,py,pw,ph);
+  x.strokeStyle='rgba(60,40,30,.3)';x.lineWidth=2;x.strokeRect(px,py,pw,ph);
+  // "Greetings from" and the town in big sunset letters
+  x.save();x.translate(px+44,py+ph-58);x.rotate(-.045);x.lineJoin='round';
+  x.font='42px Shrikhand';x.fillStyle='#fff7ec';x.shadowColor='rgba(43,27,74,.85)';x.shadowOffsetX=3;x.shadowOffsetY=3;x.fillText('Greetings from',4,-96);
+  let fs=110;x.font=fs+'px Shrikhand';while(x.measureText(info.town).width>pw*.8&&fs>48){fs-=4;x.font=fs+'px Shrikhand'}
+  x.shadowOffsetX=7;x.shadowOffsetY=7;x.lineWidth=13;x.strokeStyle='#2b1b4a';x.strokeText(info.town,0,0);x.shadowColor='transparent';
+  const tg=x.createLinearGradient(0,-fs*.8,0,0);tg.addColorStop(0,'#ffe58a');tg.addColorStop(.5,'#ff9a4a');tg.addColorStop(1,'#e8506b');x.fillStyle=tg;x.fillText(info.town,0,0);x.restore();
+  // the K-JAM stamp, perforated, top right
+  const st=document.createElement('canvas');st.width=136;st.height=164;const sx=st.getContext('2d');
+  sx.fillStyle='#fffaf0';sx.fillRect(0,0,136,164);
+  const sky=sx.createLinearGradient(0,12,0,120);sky.addColorStop(0,'#6c3f86');sky.addColorStop(.55,'#e8506b');sky.addColorStop(1,'#ffb46a');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
+  sx.fillStyle='#ffe58a';sx.beginPath();sx.arc(68,92,20,Math.PI,0);sx.fill();sx.fillStyle='#2f6d86';sx.fillRect(12,92,112,24);
+  sx.strokeStyle='#2b1b4a';sx.lineWidth=3;sx.beginPath();sx.moveTo(100,116);sx.quadraticCurveTo(96,70,92,44);sx.stroke();
+  sx.fillStyle='#2b1b4a';for(let k=0;k<6;k++){const a=-Math.PI*.95+k*.36;sx.beginPath();sx.ellipse(92+Math.cos(a)*13,44+Math.sin(a)*7,15,4,a,0,Math.PI*2);sx.fill()}
+  sx.fillStyle='#2b1b4a';sx.font='28px VT323';sx.textAlign='center';sx.fillText('K-JAM 101.1',68,146);
+  sx.globalCompositeOperation='destination-out';for(let k=0;k<=12;k++){for(const y of[0,164]){sx.beginPath();sx.arc(k*136/12,y,5,0,7);sx.fill()}}for(let k=0;k<=14;k++){for(const xx of[0,136]){sx.beginPath();sx.arc(xx,k*164/14,5,0,7);sx.fill()}}
+  x.save();x.translate(px+pw-170,py+22);x.rotate(.05);x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=8;x.drawImage(st,0,0);x.restore();
+  // the postmark: a ring with the place and date, wavy cancel lines running left
+  const cx=px+pw-262,cy=py+108;x.save();x.strokeStyle='rgba(43,27,74,.62)';x.fillStyle='rgba(43,27,74,.7)';x.lineWidth=3;
+  x.beginPath();x.arc(cx,cy,60,0,7);x.stroke();x.beginPath();x.arc(cx,cy,44,0,7);x.stroke();
+  const ring='LONG WAY HOME  ·  CALIFORNIA  ·  ';x.font='800 12px Figtree';x.textAlign='center';
+  for(let k=0;k<ring.length;k++){const a=-Math.PI/2+k/ring.length*Math.PI*2;x.save();x.translate(cx+Math.cos(a)*52,cy+Math.sin(a)*52);x.rotate(a+Math.PI/2);x.fillText(ring[k],0,4);x.restore()}
+  x.font='800 17px Figtree';x.fillText(info.date,cx,cy-2);x.font='700 15px Figtree';x.fillText(info.year,cx,cy+17);
+  x.lineWidth=2.6;for(let k=0;k<4;k++){x.beginPath();for(let t=0;t<=220;t+=4){const xx=cx-66-t,yy=cy-27+k*18+Math.sin(t/18)*5;t?x.lineTo(xx,yy):x.moveTo(xx,yy)}x.stroke()}
+  x.restore();
+  // a ribbon for a milestone
+  if(info.ribbon){x.save();x.translate(px+22,py+30);x.rotate(-.06);x.fillStyle='#c2456b';x.fillRect(0,0,x.measureText(info.ribbon).width+300,44);x.fillStyle='#fff7ec';x.font='800 24px Figtree';const t=info.ribbon.toUpperCase()+'!';x.fillText(t,18,31);x.restore()}
+  // the caption
+  x.textAlign='left';x.fillStyle='#2b1b4a';x.font='44px VT323';x.fillText(info.line,px+4,H-94);
+  x.font='italic 600 23px Figtree';x.fillStyle='#6c4f6a';x.fillText('Top down, sun low, take it slow.',px+4,H-52);
+  x.textAlign='right';x.font='34px Shrikhand';x.fillStyle='#c2456b';x.fillText('Long Way Home',W-px,H-88);
+  x.font='800 15px Figtree';x.fillStyle='#6c3f86';x.fillText('IN CALIFORNIA  ·  '+SITE,W-px,H-56);
+  return c;
+}
+function makePostcard(view,ribbon){
+  return new Promise(res=>{snapReq={scenic:view==='scenic',done:async shot=>{try{await Promise.all([document.fonts.load('40px Shrikhand'),document.fonts.load('40px VT323'),document.fonts.load('800 20px Figtree')])}catch(e){}res(composePostcard(shot,postcardInfo(ribbon)))}}});
+}
+async function openPostcard(view='scenic',ribbon='',ready=null){
+  pcOpen=true;pcLast={view,ribbon};$('pcSheet').hidden=false;$('pcNote').textContent=ribbon?ribbon+'! Here\'s a postcard.':'';
+  for(const b of $('pcView').children)b.classList.toggle('on',b.dataset.v===view);
+  const c=ready||await makePostcard(view,ribbon);
+  c.toBlob(b=>{pcBlob=b;if(pcUrl)URL.revokeObjectURL(pcUrl);pcUrl=URL.createObjectURL(b);$('pcImg').src=pcUrl},'image/jpeg',.9);
+}
+function closePostcard(){pcOpen=false;$('pcSheet').hidden=true}
+function savePostcard(){if(!pcBlob)return;const a=document.createElement('a');a.href=pcUrl;a.download='long-way-home-postcard.jpg';document.body.appendChild(a);a.click();a.remove()}
+$('camBtn').addEventListener('click',()=>openPostcard('scenic'));
+$('pcClose').addEventListener('click',closePostcard);
+$('pcSheet').addEventListener('click',e=>{if(e.target===$('pcSheet'))closePostcard()});
+$('pcSave').addEventListener('click',savePostcard);
+$('pcShare').addEventListener('click',()=>{
+  if(!pcBlob)return;const f=new File([pcBlob],'long-way-home-postcard.jpg',{type:'image/jpeg'});
+  if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f],title:'Long Way Home in California',text:'Greetings from the coast! https://'+SITE+'/'}).catch(()=>{});
+  else savePostcard();
+});
+for(const b of $('pcView').children)b.addEventListener('click',()=>{if(b.dataset.v!==pcLast.view)openPostcard(b.dataset.v,pcLast.ribbon)});
+addEventListener('pointerdown',()=>{if(pendingCard&&!pcOpen&&$('start').hidden){const p=pendingCard;pendingCard=null;openPostcard('scenic',p.ribbon,p.c)}},true);
+
+// ---------- focus drive: a 20 or 30 minute session, then the car pulls over for a 5-minute break by the ocean, and round again
+const FOCUS={min:0,phase:'off',endAt:0,km:0,shown:-1};
+car.pullOver=false;car.pullOff=0;
+function showFocusChoice(){for(const seg of document.querySelectorAll('.focusseg'))for(const b of seg.children)b.classList.toggle('on',+b.dataset.m===settings.focus)}
+function startFocus(min){FOCUS.min=min;FOCUS.phase='focus';FOCUS.endAt=Date.now()+min*60000;FOCUS.km=0;$('focusT').hidden=false;$('focusLbl').textContent='FOCUS'}
+function chime(){if(!AC||AC.state!=='running')return;const t=AC.currentTime;[[880,0],[1318.5,.24],[1760,.48]].forEach(([f,d])=>{const o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t+d);g.gain.exponentialRampToValueAtTime(.16,t+d+.02);g.gain.exponentialRampToValueAtTime(.0001,t+d+1.6);o.connect(g);g.connect(master);o.start(t+d);o.stop(t+d+1.7)})}
+function focusDone(){ // time's up: chime, the music fades, Rick and Dana sign off, the car pulls over, the radio rests
+  FOCUS.phase='break';FOCUS.endAt=Date.now()+5*60000;car.pullOver=true;chime();$('focusLbl').textContent='BREAK';
+  $('fcTitle').textContent='Focus drive done. Nice work.';$('fcStats').textContent=FOCUS.min+' minutes  ·  '+FOCUS.km.toFixed(1)+' km';$('focusCard').hidden=false;
+  const tok=++Show.token;Show.phase='talk';stopVoice();try{speechSynthesis.cancel()}catch(e){}
+  stopSong(2.5,()=>{if(tok!==Show.token)return;playBits([VBITS.focus.end],tok,()=>{if(tok!==Show.token)return;power(false);setLCD('BREAK','FIVE MINUTES · LISTENING TO THE COAST')})});
+}
+function breakDone(){ // back on the road for the next session
+  car.pullOver=false;$('focusCard').hidden=true;startFocus(FOCUS.min);Show.queue.push(VBITS.focus.back);power(true);
+}
+function endFocusMode(){
+  const wasBreak=FOCUS.phase==='break';FOCUS.phase='off';car.pullOver=false;$('focusCard').hidden=true;$('focusT').hidden=true;if(wasBreak)power(true);
+}
+function focusTick(dt){
+  if(FOCUS.phase==='off')return;
+  if(FOCUS.phase==='focus')FOCUS.km+=car.v*dt/1000;
+  const left=FOCUS.endAt-Date.now();
+  if(left<=0){if(FOCUS.phase==='focus')focusDone();else breakDone();return}
+  const s=Math.ceil(left/1000);if(s!==FOCUS.shown){FOCUS.shown=s;const t=fmtTime(s*1000);$('focusTime').textContent=t;if(FOCUS.phase==='break')$('fcBreak').textContent=t}
+}
+for(const seg of document.querySelectorAll('.focusseg'))for(const b of seg.children)b.addEventListener('click',()=>{
+  settings.focus=+b.dataset.m;saveSettings();showFocusChoice();
+  if(!$('start').hidden)return; // on the title screen it just sets up the next drive
+  if(settings.focus){startFocus(settings.focus);car.pullOver=false;$('focusCard').hidden=true;onAirSoon(VBITS.focus[settings.focus]);toast('Focus drive: '+settings.focus+' minutes')}
+  else endFocusMode();
+});
+$('fcSkip').addEventListener('click',breakDone);
+$('fcEnd').addEventListener('click',()=>{settings.focus=0;saveSettings();showFocusChoice();endFocusMode()});
+$('fcCard').addEventListener('click',()=>openPostcard('scenic'));
+showFocusChoice();
 
 // ---------- calm mode: fade the extras after 10 s without a touch; the hands-free time stays
 let lastTouch=performance.now();
@@ -2429,7 +2597,7 @@ $('calm').addEventListener('change',e=>{settings.calm=e.target.checked;saveSetti
 for(const ev of['pointerdown','keydown','wheel'])addEventListener(ev,()=>{lastTouch=performance.now();hudEl.classList.remove('calm')},true);
 for(const ev of['touchend','click'])addEventListener(ev,()=>{if(AC&&AC.state!=='running'&&!document.hidden&&$('start').hidden)unlockAudio()},true); // any tap wakes stalled sound
 function updateCalm(now){
-  const quiet=settings.calm&&now-lastTouch>10000&&$('sheet').hidden&&$('plSheet').hidden&&$('fbSheet').hidden&&$('mapSheet').hidden&&$('volPop').hidden;
+  const quiet=settings.calm&&now-lastTouch>10000&&$('sheet').hidden&&$('plSheet').hidden&&$('fbSheet').hidden&&$('mapSheet').hidden&&$('volPop').hidden&&$('pcSheet').hidden;
   if(quiet!==hudEl.classList.contains('calm'))hudEl.classList.toggle('calm',quiet);
 }
 
@@ -2541,7 +2709,7 @@ function loop(now){
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
   ocean.position.set(car.x,SEA,car.z);
   updateAmbience();
-  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();
+  updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
@@ -2551,6 +2719,7 @@ function loop(now){
   updateHaze();
   sky.position.copy(camera.position);
   if(!innerWidth||!innerHeight)return; // no size yet (hidden tab): nothing to draw
+  if(snapReq)doSnap(); // a postcard shot, drawn first so the screen never shows it
   if(composer&&settings.hq)composer.render();else renderer.render(scene,camera);
 }
 requestAnimationFrame(loop);
@@ -2563,6 +2732,7 @@ $('go').addEventListener('click',()=>{
   if(settings.muted||settings.vol===0){settings.muted=false;settings.vol=.05;saveSettings();applyVolume()} // muted last time: start quietly instead of silent
   initAudio();unlockAudio();
   for(const ms of[600,1500,3000])setTimeout(()=>{if(AC&&AC.state!=='running'&&!document.hidden)unlockAudio()},ms); // in case the first try didn't take
+  if(settings.focus)startFocus(settings.focus);
   Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
   power(true);keepAwake();startStreak();
 });

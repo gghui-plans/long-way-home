@@ -37,6 +37,8 @@ Decided 2026-10-03. The planned fix for picking up iPhone Premium voices is drop
 
 ## Log
 
+- 2026-10-04: focus-drive clips added (focus-20, focus-30, focus-end, focus-back) for the pomodoro mode. About 498 credits; the pitch check is clean.
+- 2026-10-04: plug-01 added (Dana: "Want a different song? Tap the radio, we take requests!" / Rick: "We take them. We don't enjoy them."). It plays after the welcome until the player has requested a song once. About 117 credits.
 - 2026-10-04: welcome-01 added (Rick and Dana welcome you on Tap to drive; "Gee-gee-hue-ee" for gghui, approved by ear). About 312 credits.
 - 2026-10-04: AUDIO FINISHED. You listened to Rick's emotional lines and said he sounds fine, so there are no retakes. Only step 7 is left: cancel the ElevenLabs and Suno subscriptions (about 14,700 ElevenLabs credits remain if you want more lines first).
 - 2026-10-03: plan agreed.

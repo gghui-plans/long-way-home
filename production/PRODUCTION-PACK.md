@@ -43,6 +43,19 @@ Tips:
 | plug-01-1 | DANA | Want a different song? Tap the radio, we take requests! | bright, helpful |
 | plug-01-2 | RICK | We take them. We don't enjoy them. | deadpan |
 
+**Focus drive** (pomodoro: a start line for 20 or 30 minutes, time's up, break over)
+
+| Clip id | Voice | Line | Direction |
+|---|---|---|---|
+| focus-20-1 | DANA | Focus drive! Twenty minutes. Eyes on your work, ears on us. | bright, encouraging |
+| focus-20-2 | RICK | We'll keep it down. Mostly. | deadpan |
+| focus-30-1 | DANA | Thirty-minute focus drive, starting now. You've got this! | bright, encouraging |
+| focus-30-2 | RICK | We'll be quiet. I've been practicing. | dry |
+| focus-end-1 | DANA | Ding ding! That's your focus drive. Pull over, stretch, drink some water. | warm, cheerful |
+| focus-end-2 | RICK | Five minutes. Then it's back to work. That's not a threat. It's a schedule. | deadpan |
+| focus-back-1 | RICK | Break's over. Seatbelts on. | announcer, grave |
+| focus-back-2 | DANA | Back on the road, folks! | big, sunny |
+
 **Station IDs**
 
 | Clip id | Voice | Line | Direction |
