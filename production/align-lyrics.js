@@ -1,10 +1,10 @@
-// Builds docs/audio/music/lyrics.json: when each lyric line starts in the part of each song the game plays (the first 1:45).
+// Builds docs/audio/music/lyrics.json: when each lyric line starts in each song (the game plays them in full, about 2:30).
 // Word timings come from whisper.cpp (production/raw/tools/whisper/work/<id>.json, see AUDIO-WORKFLOW.md); the words themselves
 // come from LYRICS.md, so whisper mishearing a word doesn't matter. The two are matched with a forgiving sequence alignment.
 // Usage: node production/align-lyrics.js
 const fs=require('fs'),path=require('path');
 const here=__dirname,work=path.join(here,'raw/tools/whisper/work'),out=path.join(here,'../docs/audio/music/lyrics.json');
-const PLAYED=103; // seconds of each song the game plays before its fade
+const PLAYED=160; // seconds: past the end of every song, so nothing is cut
 
 // lyric blocks from LYRICS.md, keyed by the file each song is saved as
 const md=fs.readFileSync(path.join(here,'LYRICS.md'),'utf8').replace(/\r\n/g,'\n'),blocks={};

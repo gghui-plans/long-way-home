@@ -2028,7 +2028,7 @@ function nextSong(){
 }
 // songs stream through one audio player routed into the radio's volume (decoding them all would be too heavy for phones)
 const songEl=new Audio();songEl.preload='auto';
-// sing-along lyrics: when each line starts in the part of each song we play (production/align-lyrics.js makes the file)
+// sing-along lyrics: when each line starts in each song (production/align-lyrics.js makes the file)
 let LYR=null;fetch('audio/music/lyrics.json').then(r=>r.ok?r.json():null).then(j=>{LYR=j}).catch(()=>{});
 let songNode=null;
 const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYzLjEuMTAyAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAADKQBaWlpaWlpaWlpaWlpaWlpae3t7e3t7e3t7e3t7e3t7e3ucnJycnJycnJycnJycnJycvb29vb29vb29vb29vb29vb3e3t7e3t7e3t7e3t7e3t7e3v////////////////////8AAAAATGF2YzYzLjEuAAAAAAAAAAAAAAAAJAKjAAAAAAAAAymyj8UTAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDBVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
@@ -2192,10 +2192,15 @@ const VBITS={
     'laguna-serena':{id:'townname-laguna-serena',lines:[['D',"Rolling into Laguna Serena!"]]},
   },
 };
-const used={};
-function pickBit(key,pool){
-  const u=used[key]||(used[key]=[]);if(u.length>=pool.length)u.length=0;
-  let k;do k=Math.floor(Math.random()*pool.length);while(u.includes(k));u.push(k);return pool[k];
+// what's been heard, remembered between drives: unheard bits go first, so tomorrow's drive doesn't open with yesterday's joke.
+// Once a pool is used up it starts over, but never with the bit that just played. inOrder plays a series' episodes in order.
+let heard={};try{heard=JSON.parse(localStorage.getItem('la-drive-heard'))||{}}catch(e){}
+const saveHeard=()=>{try{localStorage.setItem('la-drive-heard',JSON.stringify(heard))}catch(e){}};
+function pickBit(key,pool,inOrder){
+  const h=heard[key]||(heard[key]=[]);
+  let fresh=pool.filter(b=>!h.includes(b.id));
+  if(!fresh.length){const last=h[h.length-1];h.length=0;if(last&&pool.length>1)h.push(last);fresh=pool.filter(b=>!h.includes(b.id))}
+  const b=inOrder?fresh[0]:pick(fresh);h.push(b.id);saveHeard();return b;
 }
 
 // ---------- the show: talk, then a song, repeat. Red lights can cue the next bit early.
@@ -2227,6 +2232,21 @@ function playLines(lines,tok,done){
   let n=0;const step=()=>{if(tok!==Show.token)return;if(n>=lines.length)return done();sayLine(lines[n++],tok,step)};step();
 }
 function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place']);while(k===Show.lastKind);return k}
+// not every song gets a full segment: sometimes two songs in a row, sometimes just a quick ID, so the talk doesn't wear thin
+let lastBreak='';
+function nextBreak(){
+  const r=Math.random();
+  if(Show.queue.length)lastBreak='full';
+  else if(r<.2&&lastBreak!=='music'){lastBreak='music';return backToBack()}
+  else if(r<.45&&lastBreak!=='short'){lastBreak='short';return talk('short')}
+  else lastBreak='full';
+  talk(nextKind());
+}
+function backToBack(){
+  Show.phase='talk';const tok=++Show.token,song=nextSong();Show.pending=song; // 'talk' so the seek button still skips straight in
+  stopVoice();cueSong(song);setLCD('K-JAM','TWO IN A ROW ON K-JAM 101.1');
+  setTimeout(()=>{if(tok===Show.token&&Show.on)startSong(tok,song)},1500);
+}
 // a song picked from the playlist: fade out whatever's on, play a request bit and the song's intro, then the song
 function requestSong(s){
   if(!settings.requested){settings.requested=true;saveSettings();hideReqTip()}
@@ -2258,7 +2278,7 @@ if('mediaSession' in navigator){
 function startSong(tok,song){
   Show.phase='song';
   const show=s=>setLCD('STEREO','♪ '+s.title.toUpperCase()+' · '+s.band.toUpperCase());
-  const onEnd=()=>{if(tok===Show.token&&Show.on)talk(nextKind())};
+  const onEnd=()=>{if(tok===Show.token&&Show.on)nextBreak()};
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);Show.current=song;updateMediaSession(song);refreshPlaylist();playRealSong(song,onEnd,synth)}else synth();
   maybeReqTip();
@@ -2313,15 +2333,16 @@ function playBits(list,tok,done){let i=0;const next=()=>{if(tok!==Show.token)ret
 const townSlug=n=>(n||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-');
 function talk(kind){
   if(!Show.on)return;
-  Show.phase='talk';Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
+  Show.phase='talk';if(kind!=='short')Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
   if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug);if(special===VBITS.welcome&&FOCUS.phase==='focus')list.push(VBITS.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
   else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
+  else if(kind==='short'){if(Math.random()<.4)list.push(pickBit('id',VBITS.id))} // a quick break: maybe the station ID, then the song
   else list.push(pickBit(kind,VBITS[kind]));
   list.push({id:'intro-'+song.id,lines:[song.intro]});
-  if(Math.random()<.35)list.push(pick(VBITS.after));
+  if(Math.random()<.35)list.push(pickBit('after',VBITS.after));
   list.forEach(b=>loadVoice(b.id)); // fetch the whole segment up front
   try{speechSynthesis.cancel()}catch(e){}
   playBits(list,tok,()=>startSong(tok,song));
@@ -2553,7 +2574,7 @@ function streakResumed(){
   if(streak.on||!$('start').hidden)return;
   const lost=streak.lost;startStreak();
   if(lost>=60000)toast('Streak ended at '+fmtTime(lost)+'. New streak started');
-  if(lost>=120000)onAirSoon(pick(VBITS.back));
+  if(lost>=120000)onAirSoon(pickBit('back',VBITS.back));
 }
 
 // ---------- postcards: the drive dressed as a vintage postcard, with your hands-free time
