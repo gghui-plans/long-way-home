@@ -23,6 +23,12 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
   - Road trip mode: the destination changes on its own every 20–30 min, so the drive stays hands-free.
   - Postcard title and stamp per region. Ambient sound per region: forest birds, desert wind.
   - No trademarked or named landmark structures (a generic arch bridge is fine; no Golden Gate lookalike).
+  - **Style rule (consistent immersion across regions):**
+    1. Scenery is drawn in code with the existing Builder shapes and materials (trees, buildings, people, animals). No scenery packs; they would clash with the code-drawn palms.
+    2. Outside models are only for vehicles (log trucks, RVs, camper vans), are CC0 or CC-BY, and get baked onto the shared faceted material like `bake-traffic.js` does. If no model fits, draw it in code.
+    3. Each region changes colours, props and fog, never the materials, lighting rules or level of detail.
+  - **Hero models:** 1–2 detailed models per region for things seen up close, like the Corvette (e.g. a drive-through redwood, a vintage desert gas station, an Airstream at a campsite). Every region gets them, LA included, so none stands out. They make postcards better. Pilot it on Redwood Coast to check the mix looks right first.
+  - Later, only if a matching high-quality set turns up: a detail tier inside HQ that upgrades every region at once. Not a single showcase region (it would make the others look worse by comparison).
 - **Battery saver and auto quality** (do before redwoods): a friend's phone got warm after 40 min on HQ.
   - A 30 fps cap option.
   - HQ stays on by default (the user's call). Auto-drop only: turn HQ effects off quietly if frames struggle.
