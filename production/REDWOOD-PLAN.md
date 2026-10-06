@@ -118,6 +118,21 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 - **Street names:** Spruce St, Alder Ave, Madrone Dr, Sitka St, Huckleberry Ln, Mill St, Harbor Rd, Grange Rd, Tanoak Way, Salal St, Hemlock Ave, Fir Crest Dr.
 - **Between towns:** honey and fruit stands, the carving stand, campgrounds, vista pull-outs.
 
+## Build batches
+
+1. **Foundation (code, LA only):** a station table (K-JAM becomes entry #1) and a region table (LA becomes entry #1). LA looks and sounds exactly the same afterward.
+2. **Writing (runs alongside batch 1):** station and host names, the 15 remaining songs, the radio script, and the farewell and welcome-back clips. The user then generates the audio. Buy the Suno month only once all 16 lyrics are final.
+3. **Redwood world (code):** grove and coast stretches, trunks, ferns, fog, towns, districts, outfits, signs and names.
+4. **Map and handoff (code):** the map button, the road trip toggle, the 30-minute timer, the focus hold, the scenery blend, the radio static and the return trip. Uses text-to-speech placeholders until the real clips arrive.
+5. **Audio and polish:** drop in the songs and clips (the music and voice processing scripts, plus whisper for the lyrics), ambient sound per stretch, hero models (the drive-through tree and the log truck), and the region's postcard title and stamp.
+
+## Shipping
+
+- **Ship once, when it's all done.** Nothing goes live early.
+- All five batches go on a `redwoods` branch. `main` stays exactly what's live; fixes to K-JAM or LA go on `main` and ship as usual, and get merged into `redwoods` now and then.
+- Test locally with `serve.js`, on a phone over wifi too. A local-only `#redwoods` URL shortcut jumps straight to the region for testing.
+- To release: merge `redwoods` into `main`, then run `build.ps1`. The Pages site and the artifact update together.
+
 ## Open
 
 - Final names for the station and hosts.
