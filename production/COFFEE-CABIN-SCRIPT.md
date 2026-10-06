@@ -44,7 +44,7 @@ Mirrors K-JAM's set (about 150 clips) so the game code can reuse the same slots.
 | 3 | sigalert | Elk Alert | 4 | **drafted below** |
 | 3 | shortcut | Walt's "There Is One Road" | 4 | **drafted below** |
 | 3 | ad | Community Bulletin Board | 4 | **drafted below** |
-| 4 | facts | Nature Notes (real redwood and coast facts) | 16 | not written |
+| 4 | facts | Nature Notes (real redwood and coast facts) | 16 | **drafted below** |
 | 5 | call | Callers | 13 | not written |
 | 6 | town, townname, place, pier | Town and scenery reactions (pier becomes harbour) | ~22 | not written |
 | 6 | steer, speed, postcard | Player reactions | 6 | not written |
@@ -642,3 +642,131 @@ Notices from around town, read out between songs.
 - WALT: Forty-two.
 - MARJ: And they're all in your handwriting.
 - WALT: He's shy, Marj. He only comes out for me.
+
+---
+
+## Batch 4: Nature Notes (in place of Fast Lane Facts)
+
+A real, checkable fact about the redwoods or the coast. Marj delights in it; Walt turns it into a tall tale, a callback or himself. Like Fast Lane Facts, they play in order and are remembered between drives. About 20–30 s each.
+
+The numbers are rounded to what's widely published. Hedged wording ("up to", "about") is deliberate; keep it if lines get edited.
+
+**nature-01 · The tall one**
+- MARJ: Nature Notes! The tallest tree in the world is a coast redwood, right up here. They call it Hyperion. Three hundred and eighty feet!
+- WALT: Taller than a thirty-five-story building.
+- MARJ: And where it is is a secret. The rangers won't say. You can get fined just for going near it.
+- WALT: I know where it is.
+- MARJ: You do not.
+- WALT: It's the tall one.
+
+**nature-02 · Drinking the fog**
+- MARJ: Nature Notes! Redwoods drink the fog. It collects on the needles and drips down to the roots, and some of it soaks right in through the leaves. In summer, fog can be up to a third of their water.
+- WALT: So the fog's useful.
+- MARJ: Very useful.
+- WALT: Told you that kettle was a good idea.
+
+**nature-03 · Somebody licked Lou**
+- MARJ: Nature Notes! Banana slugs can grow up to ten inches long. They're bright yellow, and their slime can numb your tongue.
+- WALT: How do we know that?
+- MARJ: ...Somebody licked one.
+- WALT: Somebody licked Lou.
+- MARJ: Becky was four, Walter.
+
+**nature-04 · Mostly fog**
+- WALT: Nature Notes. Some coast redwoods are over two thousand years old.
+- MARJ: Alive since the Roman Empire! Think of everything they've seen.
+- WALT: Mostly fog.
+- MARJ: ...Mostly fog.
+
+**nature-05 · Thick-skinned**
+- MARJ: Nature Notes! Redwood bark can be a foot thick. It's spongy and it hardly burns, so most redwoods live right through a forest fire.
+- WALT: And there's no sap in it, so the bugs leave it alone.
+- MARJ: Thick-skinned, doesn't burn, nothing bothers it.
+- WALT: That's me.
+- MARJ: That's Walt.
+
+**nature-06 · Fairy rings**
+- MARJ: Nature Notes! When an old redwood falls, new trees sprout from its roots in a circle around where it stood. They call it a fairy ring.
+- WALT: Same roots. Same tree, really.
+- MARJ: All the little ones grow up around where the parent was.
+- WALT: ...That's nice.
+- MARJ: Walt's having a moment.
+- WALT: I'm having allergies.
+
+**nature-07 · Holding hands**
+- WALT: Nature Notes. Redwood roots only go down about six to twelve feet.
+- MARJ: For a tree three hundred feet tall?
+- WALT: But they spread out a hundred feet, and they grab onto the neighbors' roots. Whole grove holds on together. Wind can't knock 'em over.
+- MARJ: Oh, Walt. They hold hands.
+- WALT: I didn't say hands.
+- MARJ: They hold hands.
+- WALT: ...Fine. They hold hands.
+
+**nature-08 · Big-boned**
+- MARJ: Nature Notes! The elk around here are Roosevelt elk. The biggest elk in North America, named after President Theodore Roosevelt.
+- WALT: Bulls get up to about a thousand pounds.
+- MARJ: So Harold's a normal size!
+- WALT: Harold's big-boned.
+
+**nature-09 · Seal or sea lion**
+- WALT: Nature Notes. How to tell a seal from a sea lion.
+- MARJ: Ooh.
+- WALT: Sea lion's got little ear flaps, walks on its flippers and barks. Seal's got no ear flaps, wiggles on its belly and keeps quiet.
+- MARJ: So which one are you?
+- WALT: Seal. Quiet. Keeps to himself.
+- MARJ: You snore like a sea lion.
+- WALT: ...Sea lion.
+
+**nature-10 · The keys**
+- MARJ: Nature Notes! The tallest trees on Earth start from a seed about the size of a tomato seed. And the cones are about the size of an olive.
+- WALT: Huh.
+- MARJ: The tallest living thing in the world, from something you could lose in your pocket!
+- WALT: That's how I lost the house keys.
+- MARJ: You lost the house keys in the couch.
+- WALT: Something's growing in there.
+
+**nature-11 · No elk**
+- MARJ: Nature Notes! Way up in the tops of the old redwoods, there are whole gardens. Ferns, huckleberry bushes, even little trees growing right on the branches.
+- WALT: And salamanders. Some of 'em spend their whole lives up there. Never touch the ground.
+- MARJ: Never come down at all?
+- WALT: Why would they. Nice view. No elk.
+
+**nature-12 · The secret nest**
+- WALT: Nature Notes. The marbled murrelet. Little seabird. Fishes in the ocean, but nests way up in the old trees, miles inland.
+- MARJ: For the longest time, nobody could find their nests.
+- WALT: First one wasn't found till 1974. A tree trimmer spotted it.
+- MARJ: Kept its secret all those years.
+- WALT: Like me and your mother's porch light.
+- MARJ: ...Like that.
+
+**nature-13 · Picky**
+- MARJ: Nature Notes! Coast redwoods only grow in one skinny strip, from Big Sur up to the bottom of Oregon. About 450 miles long, and never far from the ocean.
+- WALT: They follow the fog.
+- MARJ: No fog, no redwoods.
+- WALT: Picky.
+- MARJ: Like somebody with his coffee.
+- WALT: I'm not picky. I just like it the one way.
+
+**nature-14 · Three hundred and twelve** (the sincere one)
+- WALT: Nature Notes. About ninety-five percent of the old-growth redwoods were cut down. Most of what's left is protected now.
+- MARJ: That's a hard one, hon.
+- WALT: I hauled some of them, you know. Thirty years.
+- MARJ: And he's planted over three hundred since he retired. Every spring.
+- WALT: Three hundred and twelve.
+- MARJ: You count everything.
+- WALT: They'll be big in about five hundred years. I'll check on them.
+
+**nature-15 · Ghost trees**
+- MARJ: Nature Notes! There are albino redwoods. Pure white needles, no green at all. Folks call them ghost trees.
+- WALT: Can't make their own food. They live off the roots of the tree they sprouted from.
+- MARJ: There are only a few hundred known in the whole world.
+- WALT: Lives off the family, doesn't feed itself.
+- MARJ: Sounds like your brother.
+- WALT: He's coming this weekend.
+
+**nature-16 · Too bright**
+- MARJ: Nature Notes! Redwood sorrel. That little clover-looking plant all over the forest floor. When sunlight hits it, it folds its leaves down in just a few minutes.
+- WALT: Too bright. Goes back to sleep.
+- MARJ: And when the shade comes back, it opens right up again.
+- WALT: That's me in the morning.
+- MARJ: That's you all day, hon.
