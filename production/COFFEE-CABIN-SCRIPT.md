@@ -39,7 +39,7 @@ Mirrors K-JAM's set (about 150 clips) so the game code can reuse the same slots.
 | 1 | clock | Time of day | 4 | **drafted below** |
 | 1 | after | After a song | 3 | **drafted below** |
 | 1 | red | Stopped at a light | 3 | **drafted below** |
-| 2 | intro + introb | Song intros, 2 per song | 32 | not written |
+| 2 | intro + introb | Song intros: a short one and a story one per song | 32 | **drafted below** |
 | 3 | traffic | Fog Report | 6 | not written |
 | 3 | sigalert | Elk Alert | 4 | not written |
 | 3 | shortcut | Walt's "There Is One Road" | 4 | not written |
@@ -217,3 +217,266 @@ The game adds the static and dropouts. `[cut]` marks where the signal dies mid-l
 - WALT: That stoplight went in in 1987. Town took a vote.
 - MARJ: You voted against it.
 - WALT: I still do. Every morning.
+
+---
+
+## Batch 2: song intros
+
+Every break ends with a song intro, so they can't all be long. Each song gets two:
+
+- **Short intro** (`intro-…`, about 3–8 s): the band, the title, one quick joke.
+- **Story intro** (`introb-…`, about 15–25 s): a small Marj-and-Walt memory that sets up the song's feeling. It's funny, but lands warm, so the sincere songs hit harder. Walt never admits a song got to him.
+
+The game already alternates the two and prefers the one you haven't heard, so a story comes about every other time a song plays.
+
+**Code note for batch 5:** K-JAM's first intro is a single line stored on the song. These short intros have up to three lines, so they'll be stored like `introb` instead.
+
+**Timeline the stories share** (kept consistent across the whole script):
+- 1983: first dance at the Grange Hall
+- 1985: married; drove away in her father's borrowed pickup
+- 1987: Walt paints the fog line to Mossbridge; the stoplight goes in
+- About 1990: Becky is born and Walt plants a redwood in the yard
+- 30 years driving log trucks, mostly nights
+- Today: Becky is grown with kids of her own
+
+### 1. Fog Line (The Fogbank Family Band)
+
+**intro-fog-line**
+- MARJ: Here's the Fogbank Family Band. Fog Line. Headlights on, hon.
+
+**introb-fog-line · Happy Birthday at mile twelve**
+- MARJ: You know what a fog line is, hon? That white line along the edge of the road.
+- WALT: Follow it in the fog, you get home.
+- MARJ: Walt painted that line. The whole way to Mossbridge. Summer of '87.
+- WALT: '86.
+- MARJ: '87. You missed my birthday doing it.
+- WALT: I painted "Happy Birthday" on the shoulder at mile twelve.
+- MARJ: ...He did. It's still there if you squint. The Fogbank Family Band. Fog Line.
+
+### 2. Headlights Home (Elliot Shore)
+
+**intro-headlights-home**
+- WALT: Elliot Shore. Headlights Home.
+- MARJ: Walt drove nights for thirty years. He says this one doesn't get him.
+- WALT: It doesn't.
+
+**introb-headlights-home · Sawdust on the stairs**
+- WALT: Thirty years I drove a log truck. Nights, mostly.
+- MARJ: And every night I left the porch light on, and Becky tried to wait up.
+- WALT: Fell asleep on the stairs. Every time. Little blanket.
+- MARJ: And he'd carry her up still in his boots. Sawdust on every step.
+- WALT: Worth it.
+- MARJ: ...It was. Here's Elliot Shore. Headlights Home.
+
+### 3. Little Rain Boots (Kai Morrow)
+
+**intro-little-rain-boots**
+- MARJ: Kai Morrow. Little Rain Boots. Puddles are free, folks.
+
+**introb-little-rain-boots · Lou**
+- MARJ: When Becky was four, she wore her rain boots every single day for a year.
+- WALT: To bed.
+- MARJ: To bed! To church! To the dentist!
+- WALT: Then she found a banana slug, named it Lou, and wouldn't leave the porch for a week.
+- MARJ: Walt says Lou's still out there.
+- WALT: Lou's still out there.
+- MARJ: Walt, that was thirty years ago.
+- WALT: Lou's very slow.
+- MARJ: Kai Morrow. Little Rain Boots.
+
+### 4. Pie All Day (Ruby & the Roadhouse)
+
+**intro-pie-all-day**
+- WALT: Ruby and the Roadhouse. Pie All Day. Which is also my schedule.
+
+**introb-pie-all-day · The pie situation**
+- WALT: Small update on the pie situation.
+- MARJ: Oh no.
+- WALT: The diner in Gull Harbor put up a new sign. "Best Pie on the Coast."
+- MARJ: Walt.
+- WALT: Our diner's sign says "Pie All Day." That's a quantity, Marj. That's a commitment.
+- MARJ: You are not driving over there.
+- WALT: I'm not driving over there. ...I'm sending Biscuit.
+- MARJ: Ruby and the Roadhouse. Pie All Day.
+
+### 5. Elk Crossing (Hollow Pine Revival)
+
+**intro-elk-crossing**
+- MARJ: Hollow Pine Revival. Elk Crossing. If you're stuck behind a herd right now, this one's for you.
+- WALT: They don't care. They never care.
+
+**introb-elk-crossing · Locked antlers**
+- MARJ: Walt has a story about the elk.
+- WALT: Arm-wrestled one.
+- MARJ: He did not.
+- WALT: Big bull, out by the meadow. 1982. We locked antlers.
+- MARJ: You don't have antlers, Walter.
+- WALT: I had a hat with antlers on it.
+- MARJ: ...He did have the hat. Hollow Pine Revival. Elk Crossing.
+
+### 6. Second Cup (Theo Lane)
+
+**intro-second-cup**
+- WALT: Theo Lane. Second Cup. I'm on my fourth.
+- MARJ: He's on his fourth.
+
+**introb-second-cup · The morning of the flood**
+- MARJ: Forty-one years, Walt's brought me coffee in bed every single morning.
+- WALT: Not every morning.
+- MARJ: Every morning.
+- WALT: There was the morning of the flood.
+- MARJ: He waded to the kitchen in his fishing waders and brought it anyway.
+- WALT: Cold, though.
+- MARJ: Best cup I ever had. Theo Lane. Second Cup.
+
+### 7. Two-Lane Hymn (The Evening Pines)
+
+**intro-two-lane-hymn**
+- MARJ: The Evening Pines. Two-Lane Hymn. Roll the window down for this one.
+
+**introb-two-lane-hymn · Daddy's pickup**
+- WALT: First car we had was a borrowed pickup. Her father's.
+- MARJ: Daddy didn't know we'd borrowed it.
+- WALT: Found out when we drove it back with "Just Married" on the tailgate.
+- MARJ: Then he made us keep it. Said it didn't feel like his anymore.
+- WALT: That truck's still out back.
+- MARJ: Biscuit lives in it now. The Evening Pines. Two-Lane Hymn.
+
+### 8. Driftwood Fire (Low Tide Lanterns)
+
+**intro-driftwood-fire**
+- WALT: Low Tide Lanterns. Driftwood Fire. The fire chief says, put it out when you're done.
+- MARJ: You are the fire chief.
+- WALT: I know what he says.
+
+**introb-driftwood-fire · Well supervised**
+- MARJ: Every Fourth of July, the whole town builds a driftwood fire down on the beach.
+- WALT: Fire chief supervises.
+- MARJ: You're the fire chief.
+- WALT: That's why it's well supervised.
+- MARJ: Last year he brought an extinguisher, two buckets, a hose and a lawn chair.
+- WALT: Chair's for supervising.
+- MARJ: He was asleep in it by nine. Low Tide Lanterns. Driftwood Fire.
+
+### 9. Forty Miles to You (The Mile Markers)
+
+**intro-forty-miles-to-you**
+- MARJ: The Mile Markers. Forty Miles to You. Somebody out there's almost home.
+
+**introb-forty-miles-to-you · Long weather**
+- WALT: When Becky was at college, she'd call every Sunday from the road home.
+- MARJ: "Mom, I'm forty miles out." "Mom, I'm thirty." "Mom, I'm at the elk."
+- WALT: There's always the elk.
+- MARJ: And Walt would stand at the window the whole time.
+- WALT: I was checking the weather.
+- MARJ: For two hours.
+- WALT: Long weather.
+- MARJ: The Mile Markers. Forty Miles to You.
+
+### 10. Woodstove Waltz (Annie & Cal)
+
+**intro-woodstove-waltz**
+- WALT: Annie and Cal. Woodstove Waltz.
+- MARJ: Walt, are you getting up?
+- WALT: My knees are thinking about it.
+
+**introb-woodstove-waltz · Keeping score**
+- MARJ: Our first dance was at the Grange Hall. 1983.
+- WALT: '84.
+- MARJ: '83, Walter. You stepped on my foot eleven times.
+- WALT: You counted.
+- MARJ: I've counted every time since. We're at about four thousand.
+- WALT: Four thousand and twelve.
+- MARJ: ...You count too?
+- WALT: Somebody has to keep score.
+- MARJ: Annie and Cal. Woodstove Waltz.
+
+### 11. Sea Stack Serenade (Stella Rae)
+
+**intro-sea-stack-serenade**
+- MARJ: Stella Rae. Sea Stack Serenade. Pull into the next turnout if you can, hon. Just for a minute.
+
+**introb-sea-stack-serenade · Strategy**
+- WALT: There's a turnout past Driftwood Bay. Three big rocks in the water.
+- MARJ: That's where he proposed.
+- WALT: Tried to. Ring fell in a tide pool.
+- MARJ: So he went in after it. In November.
+- WALT: Found it in a sea anemone.
+- MARJ: And I said yes before he even got out of the water, because he was turning blue.
+- WALT: Strategy.
+- MARJ: Stella Rae. Sea Stack Serenade.
+
+### 12. Flannel Weather (Wren Holloway)
+
+**intro-flannel-weather**
+- WALT: Wren Holloway. Flannel Weather. I'm wearing flannel.
+- MARJ: You're always wearing flannel.
+- WALT: It's always flannel weather.
+
+**introb-flannel-weather · Twelve pies**
+- MARJ: First cold snap of the year, and Becky's bringing the grandkids up this weekend!
+- WALT: Marj has made eleven pies.
+- MARJ: Twelve.
+- WALT: For five people.
+- MARJ: Your brother's coming.
+- WALT: ...Twelve's about right. Wren Holloway. Flannel Weather.
+
+### 13. Old Growth (Tall Timber)
+
+**intro-old-growth**
+- MARJ: Tall Timber. Old Growth. Grab a tissue.
+- WALT: I'm fine.
+- MARJ: I didn't say it was for you.
+
+**introb-old-growth · Size of a pencil**
+- WALT: Some of these trees were here two thousand years before anybody.
+- MARJ: Walt planted one in the yard the day Becky was born.
+- WALT: Little redwood. Size of a pencil.
+- MARJ: It's taller than the house now.
+- WALT: So's Becky. Practically.
+- MARJ: She's five foot two.
+- WALT: It's a small house.
+- MARJ: Tall Timber. Old Growth.
+
+### 14. Porch Light (Hazel Quinn)
+
+**intro-porch-light**
+- WALT: Hazel Quinn. Porch Light. Ours has been on since the day we moved in.
+- MARJ: The bulb hasn't. He changes it every spring.
+
+**introb-porch-light · The long way home**
+- MARJ: My mother left her porch light on every night of her life.
+- WALT: Kept a spare bulb in her purse. Just in case.
+- MARJ: In case of what, I never knew.
+- WALT: In case of me. Back when I was courting you, I took the long way home every night. Just to drive past it.
+- MARJ: ...You never told me that.
+- WALT: Forty-one years. Gotta save something.
+- MARJ: Hazel Quinn. Porch Light.
+
+### 15. Fiddlehead (The Coffee Cabin House Band)
+
+**intro-fiddlehead**
+- MARJ: No words on this one. Here's the house band. Fiddlehead.
+- WALT: The house band is a fella named Ernie and his cousin.
+
+**introb-fiddlehead · Chewy**
+- WALT: A fiddlehead's a baby fern. Before it unrolls.
+- MARJ: You can eat them, you know. I sautéed some once.
+- WALT: They were chewy.
+- MARJ: They were lovely.
+- WALT: They were lovely and chewy.
+- MARJ: Here's the house band, with a fiddlehead you can't eat. Fiddlehead.
+
+### 16. Morning Burn-off (The Coffee Cabin House Band)
+
+**intro-morning-burn-off**
+- WALT: Morning Burn-off. Just guitar. Like the fog lifting.
+- MARJ: That was almost poetic, Walt.
+- WALT: Don't get used to it.
+
+**introb-morning-burn-off · Making sure it leaves**
+- MARJ: You know how the fog burns off around ten? Comes up off the road like steam off a cup?
+- WALT: Every morning I sit on the porch and watch it go.
+- MARJ: Every single morning.
+- WALT: Somebody's got to make sure it leaves.
+- MARJ: ...Here's the house band. Morning Burn-off.
