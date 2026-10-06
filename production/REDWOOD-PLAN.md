@@ -49,26 +49,26 @@ Title ideas:
 
 Suno Pro's 20 downloads a month covers 16 songs plus 4 retakes.
 
-## 3. Radio: The Clearing
+## 3. Radio: The Coffee Cabin
 
 **Tone:** a cozy, deadpan small-town community station. K-JAM is loud, and the joke is panic over traffic. Here nothing happens, and the hosts treat tiny things as huge news. It still has to be funny: escalation, twist endings, and callbacks to station lore.
 
-**Station:** "88.3 The Clearing. Listener-supported, generator-powered." (working name)
+**Station:** "89.3, The Coffee Cabin. Best served with a cozy sweater and hot coffee."
 
-**Hosts** (placeholder names):
-- **Willa**: a former park ranger. Earnest and hushed; gets genuinely emotional about trees.
-- **Hank**: a retired log-truck driver and volunteer fire chief. Bone-dry, few words.
+**Hosts:** Marj and Walt, married 41 years, broadcasting from their cabin. Gentle bickering; she corrects every story he tells.
+- **Marj**: warm, sharp, keeps the show running. Gets emotional about trees and her garden.
+- **Walt**: bone-dry, few words, tall tales (he claims he invented fog). Retired log-truck driver.
 
 **Lore to call back to:** the generator cutting out, a station dog, the one stoplight in the county, a feud with the next town over, the Bigfoot sighting log.
 
 **Segments, mapped from K-JAM (about 150 clips):**
 
-| K-JAM | The Clearing | Count |
+| K-JAM | The Coffee Cabin | Count |
 |---|---|---|
 | Song intros (intro + introb) | Same | 32 |
 | Traffic report | Fog report ("visibility: one cow") | 6 |
 | Sig Alert | Elk Alert (a herd is blocking the road) | 4 |
-| Dana's shortcut | Hank's "there is one road" | 4 |
+| Dana's shortcut | Walt's "there is one road" | 4 |
 | Ads | Community bulletin board (lost goat, potluck, firewood for sale) | 4 |
 | Fast Lane Facts | Nature Notes (real redwood facts) | 16 |
 | Callers | Locals: the slug-race organizer, the lighthouse keeper, a lost LA tourist, the Bigfoot guy, and others | 13 |
@@ -99,9 +99,9 @@ Crossfades by stretch, the same way the ocean sound works now. The sourcing work
   1. K-JAM crackles and drops out over about 60–90 seconds, cutting into the current song.
   2. Rick and Dana say goodbye through the static. Rick gets cut off mid-sentence ("Dana, if I don't make it—").
   3. A few seconds of tuning noise.
-  4. The Clearing fades in with a station ID and a "welcome, you just drove in from the south" bit.
+  4. The Coffee Cabin fades in with a station ID and a "welcome, you just drove in from the south" bit.
 - **Visuals:** sky, fog, ground and trees blend over the open stretch (a minute or two).
-- **The return trip** needs a mirror set: Willa and Hank say goodbye, and Rick and Dana say "welcome back". That's about 6–8 extra clips, with a few variants so repeats don't wear thin.
+- **The return trip** needs a mirror set: Marj and Walt say goodbye, and Rick and Dana say "welcome back". That's about 6–8 extra clips, with a few variants so repeats don't wear thin.
 
 ## 6. Towns
 
@@ -135,7 +135,7 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 
 ## Open
 
-- Final names for the station and hosts.
-- Voices for Willa and Hank (ElevenLabs).
+
+- Voices for Marj and Walt (ElevenLabs).
 - Write the 15 remaining songs.
 - Write the radio script.
