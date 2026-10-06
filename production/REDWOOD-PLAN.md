@@ -139,5 +139,5 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 
 
 - Voices for Marj and Walt (ElevenLabs).
-- Write songs 11–16 (1–10 are written).
+- All 16 songs are written; next is generating them in Suno.
 - Write the radio script.

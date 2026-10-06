@@ -34,12 +34,12 @@ Suno won't accept artist names, so each Style of Music describes the sound inste
 | 8 | Driftwood Fire | Low Tide Lanterns | Duet | written, not generated |
 | 9 | Forty Miles to You | The Mile Markers | M | written, not generated |
 | 10 | Woodstove Waltz | Annie & Cal | Duet | written, not generated |
-| 11 | Sea Stack Serenade | | F | not written |
-| 12 | Flannel Weather | | F | not written |
-| 13 | Old Growth | | M | not written |
-| 14 | Porch Light | | F | not written |
-| 15 | Fiddlehead | (house band) | Instrumental | not written |
-| 16 | Morning Burn-off | (house band) | Instrumental | not written |
+| 11 | Sea Stack Serenade | Stella Rae | F | written, not generated |
+| 12 | Flannel Weather | Wren Holloway | F + gang | written, not generated |
+| 13 | Old Growth | Tall Timber | M | written, not generated |
+| 14 | Porch Light | Hazel Quinn | F | written, not generated |
+| 15 | Fiddlehead | The Coffee Cabin House Band | Instrumental | written, not generated |
+| 16 | Morning Burn-off | The Coffee Cabin House Band | Instrumental | written, not generated |
 
 ### 1. Fog Line
 
@@ -636,3 +636,271 @@ Never mind the time on the clock
 You and me, and the little one too
 Woodstove waltz for three
 ```
+
+### 11. Sea Stack Serenade
+
+- **Save as:** sea-stack-serenade.mp3
+- **Title:** Sea Stack Serenade
+- **Band (for the radio):** Stella Rae
+- **Style of Music:** dreamy nostalgic indie folk, reverb-washed acoustic and clean electric guitar, soft airy female vocals, gentle harmonies, slow swaying drums, warm, romantic, ocean at sunset
+- **Vocal Gender:** Female
+- **Theme:** back at the coastal turnout where you first kissed, now with your daughter sailing a driftwood boat in the tide pools. Every visit you fall for each other again.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+Same old turnout on the ocean side
+Same three rocks standing in the tide
+You parked the car where you parked it then
+Said "Remember?" and I laughed again
+
+[Chorus]
+Sea stack serenade
+The ocean's singing the song it played
+The night you kissed me on this very stone
+And I knew that I'd found my home
+Some things change, some things stay
+Sea stack serenade
+
+[Verse 2]
+Now there's a little one in a too-big coat
+Sailing the tide pools with a driftwood boat
+She asks us "Is this where you fell in love?"
+And we just point to the rocks above
+
+[Chorus]
+Sea stack serenade
+The ocean's singing the song it played
+The night you kissed me on this very stone
+And I knew that I'd found my home
+Some things change, some things stay
+Sea stack serenade
+
+[Bridge]
+The rocks stand still while the tide rolls through
+Every year the sunset's new
+And every time we come back here
+I fall for you again, my dear
+
+[Chorus]
+Sea stack serenade
+The ocean's singing the song it played
+The night you kissed me on this very stone
+And I knew that I'd found my home
+Some things change, some things stay
+Sea stack serenade
+
+[Outro]
+Some things stay
+Sea stack serenade
+```
+
+### 12. Flannel Weather
+
+- **Save as:** flannel-weather.mp3
+- **Title:** Flannel Weather
+- **Band (for the radio):** Wren Holloway
+- **Style of Music:** stomp and clap indie folk, banjo, strummed acoustic guitar, foot stomps, handclaps, warm female vocals, gang vocal harmonies, small-town nostalgia, joyful, cozy autumn
+- **Vocal Gender:** Female
+- **Theme:** the first cold snap, and the whole family comes home to the small town. Three generations in one too-small kitchen. Goes with the station's sweater tagline.
+- **Lyrics:** paste the block below. The words in brackets like (Hey!) are backing shouts.
+
+```
+[Intro]
+
+[Verse 1]
+Cold snap rolling in off the bay
+Everybody's coming home today
+Mama's got the soup on, Dad's chopping wood
+Hometown never looked this good
+
+[Chorus]
+It's flannel weather (Hey!)
+Pull your sweater on
+We're all together (Hey!)
+Where we all belong
+The fog rolls in and the fire's lit
+Kitchen's too small and nobody minds a bit
+It's flannel weather
+And I'm home
+
+[Verse 2]
+Grandpa's telling the fish story again
+It gets bigger every year since then
+Cousins racing round the old oak tree
+And my little girl's on his knee where I used to be
+
+[Chorus]
+It's flannel weather (Hey!)
+Pull your sweater on
+We're all together (Hey!)
+Where we all belong
+The fog rolls in and the fire's lit
+Kitchen's too small and nobody minds a bit
+It's flannel weather
+And I'm home
+
+[Bridge]
+Same porch, same light, same old town
+Same faces when the sun goes down
+Wherever we go, whatever we do
+This is the place that we come back to
+
+[Chorus]
+It's flannel weather (Hey!)
+Pull your sweater on
+We're all together (Hey!)
+Where we all belong
+The fog rolls in and the fire's lit
+Kitchen's too small and nobody minds a bit
+It's flannel weather
+And I'm home
+
+[Outro]
+Flannel weather
+And I'm home
+```
+
+### 13. Old Growth
+
+- **Save as:** old-growth.mp3
+- **Title:** Old Growth
+- **Band (for the radio):** Tall Timber
+- **Style of Music:** emotional piano ballad, warm grand piano, gentle male vocals with soaring falsetto, soft strings swelling, sincere, tender, hopeful, uplifting
+- **Vocal Gender:** Male
+- **Theme:** a parent to their daughter. The redwoods took a thousand years to grow, so take your time: I'll be your roots.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+You were small enough to fit in my arms
+Sleeping sound through the thunderstorms
+Now you're climbing every tree in sight
+Asking why the stars come out at night
+
+[Chorus]
+Grow tall, little one, grow tall
+Reach up past the canopy, past it all
+I'll be your old growth, I'll be your ground
+Roots running deep when the wind comes round
+Grow tall, little one
+I'll be your old growth
+
+[Verse 2]
+These trees were seeds a thousand years ago
+Patient and slow, they took their time to grow
+So take your time, there's no need to rush
+I'll be right here through the rain and the hush
+
+[Chorus]
+Grow tall, little one, grow tall
+Reach up past the canopy, past it all
+I'll be your old growth, I'll be your ground
+Roots running deep when the wind comes round
+Grow tall, little one
+I'll be your old growth
+
+[Bridge]
+And someday you'll stand taller than me
+Giving your own shade, wild and free
+And if the wind ever starts to blow
+You'll know just how deep your roots go
+
+[Chorus]
+Grow tall, little one, grow tall
+Reach up past the canopy, past it all
+I'll be your old growth, I'll be your ground
+Roots running deep when the wind comes round
+Grow tall, little one
+I'll be your old growth
+
+[Outro]
+Grow tall
+I'll be your old growth
+```
+
+### 14. Porch Light
+
+- **Save as:** porch-light.mp3
+- **Title:** Porch Light
+- **Band (for the radio):** Hazel Quinn
+- **Style of Music:** warm acoustic singer-songwriter, fingerpicked and strummed acoustic guitar, soft piano, gentle female vocals, light brushed drums, cozy, sincere, comforting, hopeful
+- **Vocal Gender:** Female
+- **Theme:** her mother always left the porch light on, and now she does it for her family. Ties together the porch lights in Headlights Home and Two-Lane Hymn.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+My mama left it burning every night
+A little yellow bulb, a little light
+No matter how late, no matter how far
+She'd say "It'll guide you back to where we are"
+
+[Chorus]
+I'll leave the porch light on
+Shining through the fog till dawn
+However long the road you're on
+There's a light here, keep coming home
+I'll leave the porch light on
+For you
+
+[Verse 2]
+Now I'm the one who flips it on at dusk
+Moths in the glow and the evening hush
+Our little girl asks me why it's always lit
+"So everyone we love can find their way to it"
+
+[Chorus]
+I'll leave the porch light on
+Shining through the fog till dawn
+However long the road you're on
+There's a light here, keep coming home
+I'll leave the porch light on
+For you
+
+[Bridge]
+And someday when she's grown and gone
+Driving roads I've never been on
+I'll be here when the night comes down
+Keeping the light on in this old town
+
+[Chorus]
+I'll leave the porch light on
+Shining through the fog till dawn
+However long the road you're on
+There's a light here, keep coming home
+I'll leave the porch light on
+For you
+
+[Outro]
+The porch light's on
+For you
+```
+
+### 15. Fiddlehead
+
+- **Save as:** fiddlehead.mp3
+- **Title:** Fiddlehead
+- **Band (for the radio):** The Coffee Cabin House Band
+- **Style of Music:** instrumental acoustic folk, bright fingerpicked acoustic guitar, playful melody, light mandolin, upright bass, soft hand percussion, sunny, carefree, morning walk in the forest
+- **Vocal Gender:** leave unset (instrumental)
+- **Instrumental:** On (leave the Lyrics box empty)
+- **Exclude styles:** add "vocals" as well
+- **Theme:** a fiddlehead is a young fern still curled up, about to unroll. Quietly echoes the "watching her grow" songs.
+
+### 16. Morning Burn-off
+
+- **Save as:** morning-burn-off.mp3
+- **Title:** Morning Burn-off
+- **Band (for the radio):** The Coffee Cabin House Band
+- **Style of Music:** instrumental ambient acoustic, slow warm acoustic guitar and clean electric guitar with soft reverb swells, gentle piano, soft brushed drums entering halfway, peaceful, sunrise, fog lifting, cinematic
+- **Vocal Gender:** leave unset (instrumental)
+- **Instrumental:** On (leave the Lyrics box empty)
+- **Exclude styles:** add "vocals" as well
+- **Theme:** "burn-off" is when the sun burns the morning fog away. Slow and calm at first, opening up as the sun breaks through.
