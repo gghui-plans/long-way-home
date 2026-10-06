@@ -48,11 +48,11 @@ Mirrors K-JAM's set (about 150 clips) so the game code can reuse the same slots.
 | 3 | ad | Community Bulletin Board | 4 | **drafted below** |
 | 4 | facts | Nature Notes (real redwood and coast facts) | 16 | **drafted below** |
 | 5 | call | Callers | 13 | **drafted below** |
-| 6 | town, townname, place, pier | Town and scenery reactions (pier becomes harbour) | ~22 | not written |
-| 6 | steer, speed, postcard | Player reactions | 6 | not written |
-| 6 | milestone, record, back | Hands-free streak | 9 | not written |
-| 6 | request, plug | Song requests | 7 | not written |
-| 6 | focus (20, 30, end, back) | Focus drive | 4 | not written |
+| 6 | town, townname, place, pier | Town and scenery reactions (the pier slot becomes the drive-through tree) | 30 | **drafted below** |
+| 6 | steer, speed, postcard | Player reactions | 6 | **drafted below** |
+| 6 | milestone, record, back | Hands-free streak | 9 | **drafted below** |
+| 6 | request, plug | Song requests | 7 | **drafted below** |
+| 6 | focus (20, 30, end, back) | Focus drive | 4 | **drafted below** |
 | 6 | welcome | Not needed: the drive always starts on K-JAM, and the arrival clips do this job | 0 | |
 
 ---
@@ -979,3 +979,265 @@ Small scenes that escalate and end on a twist (about 30–45 s), like K-JAM's ne
 - GLEN: He knows, Walt. He's always known.
 - MARJ: Well, safe travels to you both!
 - GLEN: We'll be back Tuesday. He gets carsick.
+
+---
+
+## Batch 6: reactions and short bits
+
+Mostly short (3–10 s). These fill the same slots as K-JAM's, so the game logic stays the same.
+
+### Town names (one per town, played on the way in)
+
+| Slug | Line |
+|---|---|
+| fern-hollow | MARJ: Rolling into Fern Hollow! |
+| cedar-landing | MARJ: Here's Cedar Landing! |
+| mossbridge | WALT: Mossbridge. Fog line starts here. |
+| driftwood-bay | MARJ: Coming into Driftwood Bay! |
+| gull-harbor | WALT: Gull Harbor. *(pause)* Hmph. |
+| elkhorn-flat | MARJ: Rolling into Elkhorn Flat! |
+| sawdust-junction | WALT: Sawdust Junction. Used to haul out of here. |
+| tidewater | MARJ: Here's Tidewater! |
+| bramble-point | MARJ: Coming into Bramble Point! |
+| lantern-cove | MARJ: Rolling into Lantern Cove! |
+| hemlock | WALT: Hemlock. |
+| old-mill | MARJ: Here's Old Mill! |
+
+### Town reactions (after the town name)
+
+**town-01 · Waving**
+- MARJ: Oh, it's a sweet little town. Everybody waves.
+- WALT: They're not waving. They're wondering where your roof went.
+
+**town-02 · Next to the bait**
+- WALT: General store's got everything. Bait, coffee, wedding dresses.
+- MARJ: That's true. I got mine there.
+- WALT: Next to the bait.
+
+**town-03 · The landmark**
+- MARJ: Main Street's three blocks long.
+- WALT: Four if you count the dog.
+- MARJ: That dog's been lying there since 2009.
+- WALT: Town council made him a landmark.
+
+**town-04 · Phyllis**
+- WALT: Library's open Tuesdays.
+- MARJ: And Thursdays.
+- WALT: Thursdays is just Phyllis reading out loud on the steps.
+- MARJ: People come for miles.
+
+### Scenery reactions
+
+K-JAM's `place` keys get Redwood versions: `grove` (new), `coast`, `mainstreet`, `homes`, `harbor`, `mill` and `campground`.
+
+**grove-01 · Look up**
+- MARJ: Into the big trees now, hon. Look up, if you're not driving.
+- WALT: Nobody's driving. The car drives itself.
+- MARJ: Then everybody look up!
+
+**grove-02 · Quieter**
+- WALT: Grove's quiet today.
+- MARJ: It's always quiet.
+- WALT: Quieter.
+- MARJ: *(pause)* ...It is quieter.
+
+**grove-03 · Tuesday**
+- MARJ: See that light coming down through the branches? Folks call those god rays.
+- WALT: I call them Tuesday.
+
+**grove-04 · Breathe harder**
+- WALT: If you're in the grove right now, roll down your window. That air's two thousand years old.
+- MARJ: It's a convertible, hon. There's no window.
+- WALT: Then breathe harder.
+
+**coast-01 · Living the dream**
+- MARJ: Back out on the coast! Look at those big rocks standing out in the water.
+- WALT: Sea stacks. Been there longer than the trees.
+- MARJ: And they don't have to do a thing.
+- WALT: Living the dream.
+
+**coast-02 · Mostly "fish"**
+- WALT: Coast advisory. Sea lions on the rocks. Very loud.
+- MARJ: What are they saying?
+- WALT: Same as Biscuit. Mostly "fish."
+
+**coast-03 · The fort**
+- MARJ: Driftwood beach coming up. Folks build little forts down there.
+- WALT: Built one in '72. Still standing.
+- MARJ: That's the ranger station, Walter.
+- WALT: They added a roof.
+
+**mainstreet-01 · Lifts**
+- WALT: Main Street. Every building's got a big false front. Makes 'em look taller.
+- MARJ: Like Walt's boots.
+- WALT: They're lifts, Marj. It's different.
+
+**homes-01 · The longest day**
+- MARJ: Oh, look at those old Victorian houses. All the colors!
+- WALT: Painted ours purple once.
+- MARJ: For one day.
+- WALT: Longest day of my life.
+
+**harbor-01 · Sea lion told him**
+- MARJ: Down by the harbor! The fishing boats are in.
+- WALT: Gus says the fish are biting.
+- MARJ: Gus runs the lighthouse. How would he know?
+- WALT: Sea lion told him.
+
+**mill-01 · Marshmallows**
+- WALT: Old mill on your right. That big cone is the teepee burner.
+- MARJ: They haven't lit it in thirty years.
+- WALT: And she still won't let me roast a marshmallow in it.
+- MARJ: It's three stories tall, Walter.
+
+**campground-01 · Burning pancakes**
+- MARJ: Passing the campground! Somebody's making pancakes.
+- WALT: Somebody's burning pancakes.
+- MARJ: You can't smell that from here.
+- WALT: I can smell that from here.
+
+### Drive-through tree (in place of K-JAM's pier reaction; plays when the hero tree is near)
+
+**tree-01 · Duck**
+- MARJ: Ooh, drive-through tree coming up! Duck, hon!
+- WALT: They don't have to duck.
+- MARJ: Duck anyway. It's tradition.
+
+**tree-02 · Most of it**
+- WALT: That's the drive-through tree. Took my log truck through there once.
+- MARJ: You did not.
+- WALT: Most of it.
+
+### Player reactions
+
+**steer-01 · A few roads** (the player picked a turn)
+- MARJ: Oh, somebody's picking their own way today!
+- WALT: There is one road.
+- MARJ: In town there are a few, Walt.
+- WALT: ...I'm aware.
+
+**steer-02 · Watch for Harold**
+- WALT: Turned off, huh.
+- MARJ: Exploring! Good for you, hon.
+- WALT: Watch for Harold.
+
+**speed-fast · Still works**
+- WALT: Somebody's in a hurry.
+- MARJ: The trees aren't going anywhere, hon.
+- WALT: And Dot's got radar.
+- MARJ: Dot's got a radar gun from 1979.
+- WALT: Still works.
+
+**speed-slow · The speed of fog**
+- MARJ: Somebody's taking it nice and slow. That's the way, hon.
+- WALT: Speed of the fog.
+
+**postcard-01 · The freezer**
+- MARJ: Did somebody just take a postcard? Oh, send us one! We've got a fridge.
+- WALT: Fridge is full, Marj.
+- MARJ: There's room on the freezer.
+
+**postcard-02 · Lie down**
+- WALT: Postcard. Get the trees in.
+- MARJ: You can't fit a whole redwood in a postcard, Walt.
+- WALT: Then lie down.
+
+### Hands-free streak
+
+**milestone-05**
+- MARJ: Five minutes, no phone! Look at you, hon.
+- WALT: Five minutes. That's one cup of coffee.
+
+**milestone-10**
+- WALT: Ten minutes hands-free.
+- MARJ: Walt's proud of you.
+- WALT: I'm mildly impressed.
+- MARJ: That's proud, for Walt.
+
+**milestone-30**
+- MARJ: Thirty minutes without your phone! That deserves a slice of pie.
+- WALT: Two slices.
+- MARJ: You just want pie.
+- WALT: I always want pie.
+
+**milestone-60**
+- WALT: One hour. No phone.
+- MARJ: Walt, say something nice.
+- WALT: *(pause)* ...You'd make a good log truck driver.
+- MARJ: That's the nicest thing he's ever said to anybody.
+
+**milestone-120**
+- MARJ: Two hours, hon! Two whole hours, no phone!
+- WALT: We should name a tree after you.
+- MARJ: Walt's going out to plant one right now.
+- WALT: Three hundred and thirteen.
+
+**record-01**
+- MARJ: That's a new personal record! Walt, ring the bell!
+- WALT: We don't have a bell.
+- MARJ: Then do the foghorn!
+- WALT: *(deep)* Bwaaaah.
+
+**back-01**
+- WALT: Oh. You're back.
+- MARJ: Everybody checks their phone sometimes, hon. New streak starts now!
+
+**back-02**
+- MARJ: Welcome back, hon! The trees waited for you.
+- WALT: Trees wait for everybody. That's their whole thing.
+
+**back-03**
+- WALT: Phone, huh.
+- MARJ: Walt doesn't have a cell phone.
+- WALT: Got the porch phone.
+- MARJ: It's on a cord.
+- WALT: Never lost it once.
+
+### Song requests
+
+**request-01**
+- MARJ: Ooh, we've got a request!
+
+**request-02**
+- WALT: Request came in. Somebody wants something different.
+- MARJ: Happy to oblige, hon.
+
+**request-03**
+- MARJ: This one's going out to somebody driving through the redwoods. You know who you are.
+
+**request-04**
+- WALT: Request from a red convertible. No roof. In the fog.
+- MARJ: Brave.
+
+**request-05**
+- MARJ: The request line's ringing off the hook!
+- WALT: It's Ernie. He wants us to play "Fog."
+
+**request-06**
+- WALT: We were going to play something else. Marj overruled me.
+- MARJ: I always overrule you.
+- WALT: Forty-one years.
+
+**plug-01** (until the player has tried requests)
+- MARJ: Want to hear something else, hon? Tap the radio. We take requests.
+- WALT: We take 'em. We play 'em. Marj insists.
+
+### Focus drive
+
+**focus-20**
+- MARJ: Focus drive! Twenty minutes. You get to work, hon. We'll keep it quiet.
+- WALT: I'm always quiet.
+
+**focus-30**
+- WALT: Thirty-minute focus drive. Starting now.
+- MARJ: We'll whisper.
+- WALT: Marj can't whisper.
+- MARJ: *(whispering loudly)* I can whisper!
+
+**focus-end**
+- MARJ: That's your focus drive, hon! Pull over, stretch your legs, get yourself a cup of coffee.
+- WALT: Five minutes. Then back to it.
+
+**focus-back**
+- WALT: Break's over.
+- MARJ: Back on the road, hon. Coffee in hand.
