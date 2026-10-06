@@ -29,11 +29,11 @@ Suno won't accept artist names, so each Style of Music describes the sound inste
 | 3 | Little Rain Boots | Kai Morrow | M | written, not generated |
 | 4 | Pie All Day | Ruby & the Roadhouse | F | written, not generated |
 | 5 | Elk Crossing | Hollow Pine Revival | M + gang | written, not generated |
-| 6 | Second Cup | | M | not written |
-| 7 | Two-Lane Hymn | | M | not written |
-| 8 | Driftwood Fire | | Duet | not written |
-| 9 | Forty Miles to You | | M | not written |
-| 10 | Woodstove Waltz | | Duet | not written |
+| 6 | Second Cup | Theo Lane | M | written, not generated |
+| 7 | Two-Lane Hymn | The Evening Pines | M | written, not generated |
+| 8 | Driftwood Fire | Low Tide Lanterns | Duet | written, not generated |
+| 9 | Forty Miles to You | The Mile Markers | M | written, not generated |
+| 10 | Woodstove Waltz | Annie & Cal | Duet | written, not generated |
 | 11 | Sea Stack Serenade | | F | not written |
 | 12 | Flannel Weather | | F | not written |
 | 13 | Old Growth | | M | not written |
@@ -339,4 +339,300 @@ We'll get there when we get there, and that's alright
 [Outro]
 We'll get there when we get there
 And that's alright
+```
+
+### 6. Second Cup
+
+- **Save as:** second-cup.mp3
+- **Title:** Second Cup
+- **Band (for the radio):** Theo Lane
+- **Style of Music:** sunny acoustic pop, playful syncopated strummed acoustic guitar, smooth warm male vocals, light percussion, upright bass, relaxed groove, romantic, feel-good, lazy Sunday morning
+- **Vocal Gender:** Male
+- **Theme:** a slow Sunday morning with your wife, then your daughter climbs in. "You're in my sweater" and the percolator nod to the station's tagline.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+Sun's coming slow through the kitchen blind
+You're in my sweater and you don't mind
+Percolator humming its morning tune
+Nowhere to be till the afternoon
+
+[Chorus]
+Pour me a second cup
+Let's take this morning slow
+The world can wait outside
+There's nowhere else to go
+You and me and the steam on the glass
+Sunday morning, make it last
+
+[Verse 2]
+Little footsteps coming down the hall
+Blanket trailing like a royal shawl
+She climbs between us with a cereal bowl
+Now it's three of us and the morning's whole
+
+[Chorus]
+Pour me a second cup
+Let's take this morning slow
+The world can wait outside
+There's nowhere else to go
+You and me and the steam on the glass
+Sunday morning, make it last
+
+[Bridge]
+All these years and I've lost count
+Of all the cups that we've poured out
+But I still get up before you do
+Just to bring the first one to you
+
+[Chorus]
+Pour me a second cup
+Let's take this morning slow
+The world can wait outside
+There's nowhere else to go
+You and me and the steam on the glass
+Sunday morning, make it last
+
+[Outro]
+Pour me a second cup
+Sunday morning, make it last
+```
+
+### 7. Two-Lane Hymn
+
+- **Save as:** two-lane-hymn.mp3
+- **Title:** Two-Lane Hymn
+- **Band (for the radio):** The Evening Pines
+- **Style of Music:** dreamy reverb-soaked indie folk, clean twangy electric guitar and acoustic guitar, echoing male vocals, wide atmospheric harmonies, steady gentle drums, nostalgic, warm, cinematic, twilight drive
+- **Vocal Gender:** Male
+- **Theme:** the same road, driven together for years: young in a borrowed car, now with a booster seat in the back, someday old and grey. Gratitude, not loss.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+We drove this road in a borrowed car
+Back when the whole night sky was ours
+Your bare feet up on the dash
+Singing to whatever we could catch
+
+[Chorus]
+Oh, the two-lane hymn
+Of the wheels and the wind
+Every curve that we've known
+Every mile carried us home
+Through the trees, through the years
+I'm still glad you're here
+Singing the two-lane hymn
+
+[Verse 2]
+Now there's a booster seat in the back
+Crayons rolling in a paper sack
+Same old curves and the same tall pines
+She's asleep by the county line
+
+[Chorus]
+Oh, the two-lane hymn
+Of the wheels and the wind
+Every curve that we've known
+Every mile carried us home
+Through the trees, through the years
+I'm still glad you're here
+Singing the two-lane hymn
+
+[Bridge]
+Someday we'll be old and grey
+Still driving out this same old way
+She'll have a road of her own to roam
+And we'll keep the porch light on at home
+
+[Chorus]
+Oh, the two-lane hymn
+Of the wheels and the wind
+Every curve that we've known
+Every mile carried us home
+Through the trees, through the years
+I'm still glad you're here
+Singing the two-lane hymn
+
+[Outro]
+Through the trees, through the years
+Singing the two-lane hymn
+```
+
+### 8. Driftwood Fire
+
+- **Save as:** driftwood-fire.mp3
+- **Title:** Driftwood Fire
+- **Band (for the radio):** Low Tide Lanterns
+- **Style of Music:** stomp and clap indie folk duet, male and female vocals trading lines, strummed acoustic guitar, foot stomps, handclaps, tambourine, warm harmonies, campfire singalong, joyful, upbeat
+- **Vocal Gender:** leave unset (duet)
+- **Theme:** a family bonfire on the beach at dusk: marshmallows, a made-up story, the kid asleep by the embers.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1 - Male]
+Gathered up the driftwood, stacked it on the shore
+She keeps bringing sticks back, "Daddy, need some more?"
+
+[Verse 1 - Female]
+Blankets and a thermos full of cocoa, hot and sweet
+Sea lions barking somewhere out past the reef
+
+[Chorus - Both]
+Light the driftwood fire, let it crackle and climb
+Faces in the orange glow, we got nothing but time
+Marshmallows on a stick and the ocean keeping beat
+(Hey!) Sparks up to the stars and the sand between our feet
+Light the driftwood fire
+Light the driftwood fire
+
+[Verse 2 - Female]
+You burn every marshmallow and you swear it's on purpose
+
+[Verse 2 - Male]
+She's telling us a story that's half mermaid, half circus
+
+[Chorus - Both]
+Light the driftwood fire, let it crackle and climb
+Faces in the orange glow, we got nothing but time
+Marshmallows on a stick and the ocean keeping beat
+(Hey!) Sparks up to the stars and the sand between our feet
+Light the driftwood fire
+Light the driftwood fire
+
+[Bridge - Both]
+When the fire's down to embers and she's sleeping on my arm
+We'll sit and watch the tide come in, all of us safe and warm
+
+[Final Chorus - Both]
+Light the driftwood fire, let it crackle and climb
+Faces in the orange glow, we got nothing but time
+Marshmallows on a stick and the ocean keeping beat
+(Hey!) Sparks up to the stars and the sand between our feet
+Light the driftwood fire
+Light the driftwood fire
+```
+
+### 9. Forty Miles to You
+
+- **Save as:** forty-miles-to-you.mp3
+- **Title:** Forty Miles to You
+- **Band (for the radio):** The Mile Markers
+- **Style of Music:** 2000s acoustic pop rock, strummed acoustic guitar and clean electric guitar, earnest warm male vocals, building drums, big singalong chorus, hopeful, heartfelt, driving
+- **Vocal Gender:** Male
+- **Theme:** the last stretch home after a week away. Verse 2 counts the miles down, and the outro lands at zero.
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1]
+Mile marker sixty and the sun's sinking low
+Every sign I pass says there's not far to go
+Called you from the gas stop just to hear you say
+"There's a little someone here who's been asking all day"
+
+[Chorus]
+Forty miles to you
+And I'm counting every one
+Through the fog and the giants
+Chasing down the setting sun
+There's a door I know by heart
+And a light that's shining through
+Forty miles, forty miles to you
+
+[Verse 2]
+Thirty miles and I'm singing out of key
+Twenty miles and the ocean's next to me
+Ten miles and I can almost see the light
+Five more minutes and I'm home tonight
+
+[Chorus]
+Forty miles to you
+And I'm counting every one
+Through the fog and the giants
+Chasing down the setting sun
+There's a door I know by heart
+And a light that's shining through
+Forty miles, forty miles to you
+
+[Bridge]
+Been gone a week and it felt like a year
+But every road I take just brings me here
+
+[Chorus]
+Forty miles to you
+And I'm counting every one
+Through the fog and the giants
+Chasing down the setting sun
+There's a door I know by heart
+And a light that's shining through
+Forty miles, forty miles to you
+
+[Outro]
+Zero miles to you
+I'm home
+```
+
+### 10. Woodstove Waltz
+
+- **Save as:** woodstove-waltz.mp3
+- **Title:** Woodstove Waltz
+- **Band (for the radio):** Annie & Cal
+- **Style of Music:** tender acoustic waltz in 3/4 time, fingerpicked acoustic guitar, soft male and female duet vocals, gentle fiddle, warm, intimate, sincere, cozy cabin
+- **Vocal Gender:** leave unset (duet)
+- **Theme:** dancing in the kitchen after supper. In the bridge their daughter climbs onto her dad's shoes, and the last line turns "for two" into "for three".
+- **Lyrics:** paste the block below
+
+```
+[Intro]
+
+[Verse 1 - Male]
+Rain on the roof and the kettle's on
+Dishes are drying, the day is done
+Old radio playing a song we know
+Come here, darling, let's dance real slow
+
+[Chorus - Both]
+Round and round by the woodstove light
+One, two, three on a Tuesday night
+Kitchen floor in our woolen socks
+Never mind the time on the clock
+You and me, me and you
+Woodstove waltz for two
+
+[Verse 2 - Female]
+You still step on my toes like you did way back then
+And I still laugh and we start it again
+Fire's low and the window's grey
+I wouldn't trade it for a thousand days
+
+[Chorus - Both]
+Round and round by the woodstove light
+One, two, three on a Tuesday night
+Kitchen floor in our woolen socks
+Never mind the time on the clock
+You and me, me and you
+Woodstove waltz for two
+
+[Bridge - Both]
+Little feet in pajamas come sliding in
+"Can I dance?" with a sleepy grin
+Up on her daddy's shoes she climbs
+Now it's a waltz for three this time
+
+[Final Chorus - Both]
+Round and round by the woodstove light
+One, two, three on a Tuesday night
+Kitchen floor in our woolen socks
+Never mind the time on the clock
+You and me, and the little one too
+Woodstove waltz for three
 ```
