@@ -128,3 +128,6 @@ foreach ($b in $bits.Keys) {
 }
 ($timings | ConvertTo-Json -Depth 4 -Compress) | Set-Content -Encoding ASCII (Join-Path $out 'timings.json')
 "wrote timings for $($timings.Count) bits"
+# the pause splitter loses track past ~8 lines (long caller scenes): re-time those from the spoken words with whisper
+$long = @($bits.Keys | Where-Object { $bits[$_].Count -gt 8 -and $timings.Contains($_) })
+if ($long.Count) { & node (Join-Path $PSScriptRoot 'time-voices.js') @long }
