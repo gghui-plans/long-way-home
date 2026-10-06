@@ -40,10 +40,10 @@ Mirrors K-JAM's set (about 150 clips) so the game code can reuse the same slots.
 | 1 | after | After a song | 3 | **drafted below** |
 | 1 | red | Stopped at a light | 3 | **drafted below** |
 | 2 | intro + introb | Song intros: a short one and a story one per song | 32 | **drafted below** |
-| 3 | traffic | Fog Report | 6 | not written |
-| 3 | sigalert | Elk Alert | 4 | not written |
-| 3 | shortcut | Walt's "There Is One Road" | 4 | not written |
-| 3 | ad | Community Bulletin Board | 4 | not written |
+| 3 | traffic | Fog Report | 6 | **drafted below** |
+| 3 | sigalert | Elk Alert | 4 | **drafted below** |
+| 3 | shortcut | Walt's "There Is One Road" | 4 | **drafted below** |
+| 3 | ad | Community Bulletin Board | 4 | **drafted below** |
 | 4 | facts | Nature Notes (real redwood and coast facts) | 16 | not written |
 | 5 | call | Callers | 13 | not written |
 | 6 | town, townname, place, pier | Town and scenery reactions (pier becomes harbour) | ~22 | not written |
@@ -480,3 +480,165 @@ The game already alternates the two and prefers the one you haven't heard, so a 
 - MARJ: Every single morning.
 - WALT: Somebody's got to make sure it leaves.
 - MARJ: ...Here's the house band. Morning Burn-off.
+
+---
+
+## Batch 3: segments
+
+These fill K-JAM's segment slots and rotate the same way (each kind once per round). About 15–30 s each.
+
+### Fog Report (in place of K-JAM's traffic report)
+
+Walt reports the fog from the window, measured in whatever he can still see.
+
+**fog-01 · One cow**
+- MARJ: Time for the Fog Report. Walt?
+- WALT: Visibility is one cow.
+- MARJ: One cow.
+- WALT: I can see one cow. Past the cow, unknown.
+- MARJ: Is it a big cow?
+- WALT: Medium cow. Drive accordingly.
+
+**fog-02 · The mailbox**
+- WALT: Fog Report. I can see the mailbox.
+- MARJ: Oh, that's not bad!
+- WALT: I can't see the post.
+- MARJ: ...Then how is the mailbox—
+- WALT: That's the mystery, Marj. That's the fog.
+
+**fog-03 · The kettle**
+- MARJ: Fog's thick this morning, hon. Walt, anything to add?
+- WALT: I invented this fog.
+- MARJ: You did not.
+- WALT: Summer of '71. Left the kettle on.
+- MARJ: The whole coast, Walter?
+- WALT: It was a big kettle.
+
+**fog-04 · The instrument**
+- MARJ: Fog Report. Walt's out on the porch with the instrument.
+- WALT: Licked my finger. Held it up.
+- MARJ: And?
+- WALT: Wet.
+- MARJ: It's always wet, Walt.
+- WALT: Forecast's consistent. That's good news.
+
+**fog-05 · The woodpile**
+Walt's lines marked *(outside)* get a muffled, far-off filter in processing.
+- MARJ: Fog Report. Walt went out to check the fog about twenty minutes ago. Walt?
+- MARJ: ...Walt?
+- WALT *(outside)*: I'm by the woodpile.
+- MARJ: The woodpile is six feet from the door, Walter.
+- WALT *(outside)*: Visibility, five feet.
+- MARJ: There you have it, folks.
+
+**fog-06 · Next Thursday**
+- WALT: Fog Report. Fog's lifting.
+- MARJ: Oh, lovely!
+- WALT: Going up. Slowly.
+- MARJ: How slowly?
+- WALT: It'll be gone by Thursday.
+- MARJ: It's Friday, hon.
+- WALT: Next Thursday.
+
+### Elk Alert (in place of Sig Alert Theatre)
+
+Breaking news about Harold, a 900-pound bull elk with no respect for traffic. A recurring character, like K-JAM's Gary.
+
+**elk-01 · Harold**
+- MARJ: This is an Elk Alert.
+- WALT: Harold's in the road.
+- MARJ: Harold is a bull elk, for our new listeners. About eight hundred pounds.
+- WALT: Nine hundred. He's been at the diner.
+- MARJ: Harold is standing in the northbound lane, looking at a car.
+- WALT: The car is looking back.
+- MARJ: We'll keep you posted.
+
+**elk-02 · The negotiation**
+- WALT: Elk Alert. Harold's back.
+- MARJ: He's blocking the road by the meadow again.
+- WALT: Fella in a camper van got out to reason with him.
+- MARJ: Oh no. How's that going?
+- WALT: Harold's in the camper van now.
+- MARJ: ...Drive around, folks.
+
+**elk-03 · Thirty-one elk**
+- MARJ: Elk Alert! Harold's crossing with the whole herd. Cows, calves, everybody!
+- WALT: Thirty-one elk.
+- MARJ: You counted?
+- WALT: Thirty-one elk. One Bigfoot.
+- MARJ: Walter.
+- WALT: Writing it down.
+
+**elk-04 · Two parking spots**
+- WALT: Elk Alert. Harold is lying down in the parking lot of the general store.
+- MARJ: In a parking spot?
+- WALT: Two parking spots.
+- MARJ: Is anybody going to ask him to move?
+- WALT: Sheriff gave him a ticket.
+- MARJ: He gave the elk a ticket?
+- WALT: Harold ate it. Case closed.
+
+### Walt's "There Is One Road" (in place of Dana's shortcut of the day)
+
+Marj keeps trying to make it a real segment. Walt's answer never changes.
+
+**road-01 · Never been wrong**
+- MARJ: Time for Walt's shortcut of the day!
+- WALT: There is one road.
+- MARJ: That's it?
+- WALT: Stay on it.
+- MARJ: Every day, folks. Thirty-one years running.
+- WALT: Never been wrong.
+
+**road-02 · One pie**
+- MARJ: We got a letter for Walt's shortcut segment! "Dear Walt, is there a faster way to Gull Harbor?"
+- WALT: There is one road.
+- MARJ: They also asked where to get pie.
+- WALT: There is one pie. It's ours.
+
+**road-03 · The detour**
+- WALT: Shortcut of the day. There is one road.
+- MARJ: Walt, the county put up a detour sign this morning.
+- WALT: ...There are two roads.
+- MARJ: Just for today.
+- WALT: I don't like it, Marj. I don't like it at all.
+
+**road-04 · The old logging trail**
+- MARJ: Shortcut of the day! Walt, folks want to know about the old logging trail.
+- WALT: That's not a road. That's a rumor.
+- MARJ: Becky took it once.
+- WALT: Took her three days.
+- MARJ: She was fifteen. She was on foot.
+- WALT: There is one road.
+
+### Community Bulletin Board (in place of K-JAM's fake ads)
+
+Notices from around town, read out between songs.
+
+**ad-01 · Pepper**
+- MARJ: The Community Bulletin Board! First up, lost goat. Answers to Pepper. Last seen eating a mailbox on Spruce Street.
+- WALT: Second notice. Found mailbox. Partially eaten.
+- MARJ: Third notice. Found goat.
+- WALT: Those three folks should talk.
+
+**ad-02 · Earl's firewood**
+- WALT: Bulletin board. Firewood for sale. Seasoned, stacked. Ask for Earl.
+- MARJ: Earl's firewood is very good.
+- WALT: Earl's firewood is our firewood.
+- MARJ: What?
+- WALT: That's why it's so good. ...I'm going to go talk to Earl.
+
+**ad-03 · Pancake breakfast**
+- MARJ: Bulletin board! The volunteer fire department's pancake breakfast is Saturday at the station.
+- WALT: All you can eat.
+- MARJ: All you can eat, until Walt eats it all.
+- WALT: Last year we ran out at 7:15.
+- MARJ: It started at seven.
+- WALT: I was supervising.
+
+**ad-04 · The sighting log**
+- WALT: Bulletin board. The Bigfoot sighting log is open at the general store. Write down your sightings.
+- MARJ: Walt, there are forty entries in there.
+- WALT: Forty-two.
+- MARJ: And they're all in your handwriting.
+- WALT: He's shy, Marj. He only comes out for me.
