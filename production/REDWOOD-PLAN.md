@@ -61,7 +61,7 @@ Suno Pro's 20 downloads a month covers 16 songs plus 4 retakes.
 - **Marj**: warm, sharp, keeps the show running. Gets emotional about trees and her garden.
 - **Walt**: bone-dry, few words, tall tales (he claims he invented fog). Retired log-truck driver.
 
-**Lore to call back to:** the generator cutting out, a station dog, the one stoplight in the county, a feud with the next town over, the Bigfoot sighting log.
+**Lore to call back to:** the percolator, the generator cutting out, Biscuit the station dog, the coat-hanger antenna, a pie feud with Gull Harbor, the Bigfoot sighting log, Lou the banana slug, their daughter Becky calling in, Rick and Dana calling from L.A. Full list in COFFEE-CABIN-SCRIPT.md.
 
 **Segments, mapped from K-JAM (about 150 clips):**
 
@@ -140,4 +140,4 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 
 - Voices for Marj and Walt (ElevenLabs).
 - All 16 songs are written; next is generating them in Suno.
-- Write the radio script.
+- Write the radio script (in progress in COFFEE-CABIN-SCRIPT.md; batch 1 of 6 drafted).
