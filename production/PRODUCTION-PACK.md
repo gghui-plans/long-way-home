@@ -142,6 +142,114 @@ Tips:
 | call-04-3 | DANA | How long have you been behind it? | sympathetic |
 | call-04-4 | CALLER-M (Marco) | We're on a first-name basis now. His name is Gary. | resigned |
 | call-04-5 | RICK | Gary is never pulling over, Marco. Gary has never pulled over in his life. | grave prophecy |
+| call-05-1 | RICK | Caller, you're on K-Jam. | flat |
+| call-05-2 | CALLER-M (Dale) | Rick! Dale. I'm down on the beach with my metal detector. | laid-back, proud |
+| call-05-3 | DANA | Ooh! Find any treasure? | excited |
+| call-05-4 | CALLER-M (Dale) | Today? Four car keys, two wedding rings, and somebody's retainer. | casual, pleased |
+| call-05-5 | DANA | Those poor people! What are you going to do with the rings? | concerned |
+| call-05-6 | CALLER-M (Dale) | Well, one of them's mine. | hesitant |
+| call-05-7 | DANA | Oh, you found yours! Your wife will be so happy! | thrilled |
+| call-05-8 | CALLER-M (Dale) | She's the one who threw it in the ocean. In twenty nineteen. | flat, matter-of-fact |
+| call-05-9 | RICK | Dale. Put the ring back in the sand. | stern, slow |
+| call-05-10 | CALLER-M (Dale) | I have. Four times. It keeps finding me, Rick. | haunted |
+| call-05-11 | DANA | And the retainer? | curious |
+| call-05-12 | CALLER-M (Dale) | Fits great. | slurred, talking through a retainer |
+| call-06-1 | DANA | Line one, you're on K-Jam! | bright |
+| call-06-2 | CALLER-F (Cheryl) | Don't tell me your names. I'm a psychic. | mystical, breathy |
+| call-06-3 | RICK | Ma'am, we've been saying our names on the radio for three hours. | dry |
+| call-06-4 | CALLER-F (Cheryl) | I'm sensing... a Rick. | dramatic, slow |
+| call-06-5 | RICK | Yes. | flat |
+| call-06-6 | CALLER-F (Cheryl) | And a... Diana. | dramatic, confident |
+| call-06-7 | DANA | So close! | delighted |
+| call-06-8 | CALLER-F (Cheryl) | Rick. The spirits have a message. Someone from your past is trying to reach you. | ominous, mystical |
+| call-06-9 | RICK | It's my dentist. | flat |
+| call-06-10 | CALLER-F (Cheryl) | They say it's been a long time. | mystical |
+| call-06-11 | RICK | Six years. | guilty, quiet |
+| call-06-12 | CALLER-F (Cheryl) | They say the tooth is not going to fix itself. | grave |
+| call-06-13 | DANA | Rick! The spirits are right! Go to the dentist! | scolding, excited |
+| call-06-14 | CALLER-F (Cheryl) | That'll be forty dollars. | suddenly businesslike |
+| call-07-1 | DANA | You're on K-Jam! | bright |
+| call-07-2 | CALLER-M (Doug) | Yes! Am I the ninth caller? | eager, breathless |
+| call-07-3 | DANA | Oh, sweetie, we're not running a contest. | gentle |
+| call-07-4 | CALLER-M (Doug) | I know. I've been calling since Tuesday. Every time, I'm the ninth. | earnest |
+| call-07-5 | RICK | How are you always the ninth? | suspicious |
+| call-07-6 | CALLER-M (Doug) | I call eight times first and hang up on myself. | proud |
+| call-07-7 | DANA | Aww! That's dedication! | touched |
+| call-07-8 | RICK | That's a cry for help. | deadpan |
+| call-07-9 | DANA | You know what, Doug? You win! | excited |
+| call-07-10 | CALLER-M (Doug) | What do I win? | gasping, hopeful |
+| call-07-11 | DANA | You win... the sound of Rick sighing! | game-show host |
+| call-07-12 | RICK | [sighs heavily] Hhhhhh. | a long, tired sigh |
+| call-07-13 | CALLER-M (Doug) | I'm going to frame it. | choked up, emotional |
+| call-08-1 | DANA | Caller, go ahead! | bright |
+| call-08-2 | CALLER-F (Tasha) | Hi! I just wanted Rick to know I named my cactus after him. | bubbly |
+| call-08-3 | DANA | Aww! | delighted |
+| call-08-4 | RICK | Why. | flat |
+| call-08-5 | CALLER-F (Tasha) | He's prickly, he doesn't like to be touched, and he hasn't moved from the same corner in six years. | cheerful, fast |
+| call-08-6 | RICK | Fair. | after a pause, grudging |
+| call-08-7 | CALLER-F (Tasha) | I also named my golden retriever Dana. | giggling |
+| call-08-8 | DANA | Oh, I love that! Why? | flattered |
+| call-08-9 | CALLER-F (Tasha) | She's excited about everything, and she keeps knocking Rick over. | cheerful |
+| call-08-10 | RICK | Also fair. | flat |
+| call-08-11 | CALLER-F (Tasha) | But last week, Rick bloomed! One little pink flower. It lasted twenty minutes. | excited |
+| call-08-12 | DANA | Rick! That's you at the holiday party! | gleeful, teasing |
+| call-08-13 | RICK | We agreed. We never talk about the holiday party. | stern, embarrassed |
+| call-09-1 | RICK | Caller, you're on the air. | flat |
+| call-09-2 | CALLER-F (Linda) | Hi. A pelican has been sitting on my balcony for three days. I named him Steven. | calm, matter-of-fact |
+| call-09-3 | RICK | Linda, you can't keep a pelican. | patient |
+| call-09-4 | CALLER-F (Linda) | I'm not keeping him. He's keeping me. He ate my sandwich this morning. And the plate. | flat |
+| call-09-5 | DANA | The plate?! | shocked |
+| call-09-6 | CALLER-F (Linda) | Then he brought friends. There are six of them now. They take shifts. Steven does mornings. | matter-of-fact |
+| call-09-7 | DANA | Aww, a little pelican family! | charmed |
+| call-09-8 | CALLER-F (Linda) | Today I came home and they'd changed the locks. | flat, defeated |
+| call-09-9 | RICK | Linda, where are you calling from right now? | concerned |
+| call-09-10 | CALLER-F (Linda) | My car. Steven has the apartment. | resigned |
+| call-09-11 | RICK | Steven has a better place than me. | weary |
+| call-10-1 | DANA | Rosa! You're on K-Jam! | warm, bright |
+| call-10-2 | CALLER-F (Rosa) | Hello, dear. I'm calling for Rick. | sweet, slow |
+| call-10-3 | RICK | This is Rick. | flat |
+| call-10-4 | CALLER-F (Rosa) | Oh! Rick. I've listened to you for thirty years. You have the most soothing voice. | adoring |
+| call-10-5 | RICK | Well. Thank you, Rosa. | awkward |
+| call-10-6 | CALLER-F (Rosa) | Like a dishwasher finishing its cycle. | dreamy |
+| call-10-7 | DANA | That's the nicest thing anyone's ever said about Rick! | delighted |
+| call-10-8 | RICK | It's the only thing anyone's ever said about Rick. | deadpan |
+| call-10-9 | CALLER-F (Rosa) | Are you single, dear? | flirty |
+| call-10-10 | DANA | [gasps] He is! | gleeful |
+| call-10-11 | RICK | Dana. | warning |
+| call-10-12 | CALLER-F (Rosa) | I make a very good lasagna. And I still have my license. | flirty, proud |
+| call-10-13 | RICK | We have to go to a song. | quick, flustered |
+| call-10-14 | CALLER-F (Rosa) | That's fine, dear. I'll hold. | sweet, patient |
+| call-11-1 | DANA | Line two! You're on K-Jam! | bright |
+| call-11-2 | CALLER-M (Marcus) | Hey! Marcus here. Just finished my surf lesson. | mellow, happy |
+| call-11-3 | DANA | Stoked! Did you stand up? | excited |
+| call-11-4 | CALLER-M (Marcus) | No. That's year four of not standing up. | cheerful |
+| call-11-5 | RICK | Four years. | flat |
+| call-11-6 | CALLER-M (Marcus) | My instructor stopped trying. Now we just float out there and talk about our feelings. | mellow |
+| call-11-7 | DANA | That's kind of beautiful, actually. | touched |
+| call-11-8 | CALLER-M (Marcus) | He's going through a divorce. Last week he cried so hard he caught a wave. | sincere |
+| call-11-9 | RICK | Marcus, you're not taking surf lessons. You're his therapist. | dry |
+| call-11-10 | CALLER-M (Marcus) | He does pay me now. Is that weird? | after a pause, unsure |
+| call-11-11 | RICK | Charge him more. | flat |
+| call-12-1 | RICK | Go ahead, caller. | flat |
+| call-12-2 | CALLER-F (June) | Hi! Garage sale tomorrow, eight a.m., everybody come! | peppy, fast |
+| call-12-3 | DANA | Ooh! What've you got? | excited |
+| call-12-4 | CALLER-F (June) | A bread maker, never used. A treadmill, never used. A guitar, never used. | cheerful, listing |
+| call-12-5 | RICK | I see a pattern, June. | dry |
+| call-12-6 | CALLER-F (June) | And my husband's golf clubs. | breezy |
+| call-12-7 | DANA | Oh, he doesn't golf? | curious |
+| call-12-8 | CALLER-F (June) | He golfs every weekend. He just doesn't know they're for sale yet. | sly |
+| call-12-9 | RICK | Hold on, June. We've got Hal on line two. | ominous |
+| call-12-10 | CALLER-M (Hal) | June. I'm in the car. I'm listening. | quiet, menacing |
+| call-12-11 | CALLER-F (June) | Everything's half off! | panicked, forced cheer |
+| call-13-1 | DANA | Oh no. Rick, it's Kevin. | dreading |
+| call-13-2 | RICK | Which Kevin? | flat |
+| call-13-3 | CALLER-M (Cousin Kevin) | Cousin Kevin! Hey cuz! Did you play my song yet? | loud, goofy, excited |
+| call-13-4 | DANA | We played it an hour ago! | exasperated |
+| call-13-5 | CALLER-M (Cousin Kevin) | I missed it. I was in the shower. Can you play it again? And can you say it's number one? | fast, pleading |
+| call-13-6 | RICK | It's not number one, Kevin. | flat |
+| call-13-7 | CALLER-M (Cousin Kevin) | Can you say it's number one somewhere? | hopeful |
+| call-13-8 | RICK | [sighs] Bonfire on the Beach is the number one song by Dana's Cousin Kevin. | defeated, monotone |
+| call-13-9 | CALLER-M (Cousin Kevin) | Mom! I'm number one! | shouting away from the phone, ecstatic |
 
 **Dana's shortcut of the day**
 
