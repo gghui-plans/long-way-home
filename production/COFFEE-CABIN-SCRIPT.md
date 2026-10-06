@@ -23,7 +23,9 @@ Numbers are written as digits here and get spelled out for the voices when recor
 - A pie feud with Gull Harbor, the next town over.
 - Walt's Bigfoot sighting log. Every entry is Walt.
 - Lou, the banana slug from *Little Rain Boots*.
-- Their grown daughter Becky calls in now and then.
+- Their grown daughter Becky calls in now and then. Lou may have been a pinecone.
+- Harold, a 900-pound bull elk (Elk Alert).
+- Townsfolk: Earl (firewood), Dolores (the Gull Harbor diner), Sheriff Dot, Gus (the lighthouse), Norm (the slug race), Ernie (half the house band), and Walt's brother Ray.
 - Rick and Dana call in from L.A. sometimes.
 
 ---
@@ -45,7 +47,7 @@ Mirrors K-JAM's set (about 150 clips) so the game code can reuse the same slots.
 | 3 | shortcut | Walt's "There Is One Road" | 4 | **drafted below** |
 | 3 | ad | Community Bulletin Board | 4 | **drafted below** |
 | 4 | facts | Nature Notes (real redwood and coast facts) | 16 | **drafted below** |
-| 5 | call | Callers | 13 | not written |
+| 5 | call | Callers | 13 | **drafted below** |
 | 6 | town, townname, place, pier | Town and scenery reactions (pier becomes harbour) | ~22 | not written |
 | 6 | steer, speed, postcard | Player reactions | 6 | not written |
 | 6 | milestone, record, back | Hands-free streak | 9 | not written |
@@ -770,3 +772,210 @@ The numbers are rounded to what's widely published. Hedged wording ("up to", "ab
 - MARJ: And when the shade comes back, it opens right up again.
 - WALT: That's me in the morning.
 - MARJ: That's you all day, hon.
+
+---
+
+## Batch 5: callers
+
+Small scenes that escalate and end on a twist (about 30–45 s), like K-JAM's newer callers. Most call back to station lore, so they get funnier the longer you listen. Lines in *(italics)* are delivery notes, not spoken.
+
+**Voices:**
+- Rick and Dana use their own voices.
+- Becky calls twice, so she should get her own voice: a woman in her mid-30s, warm and teasing.
+- Everyone else reuses the existing K-JAM caller voices under new names. The phone filter helps them sound different.
+- In call-10, Walt himself is the caller, so his lines there get the phone filter.
+
+**call-01 · Becky and Lou** (BECKY)
+- MARJ: Line one, you're on The Coffee Cabin.
+- BECKY: Hi, Mom.
+- MARJ: Becky! Everybody, it's our daughter!
+- WALT: Hi, kiddo.
+- BECKY: Dad, you're doing the radio voice.
+- WALT: This is my voice.
+- BECKY: At home you just say "huh" and point at things.
+- MARJ: She's not wrong.
+- BECKY: Anyway, the kids want to know if Lou is real.
+- WALT: Lou is real.
+- BECKY: Dad. I made Lou up. I was four. Lou was a pinecone.
+- MARJ: ...Then what did you lick?
+- BECKY: I don't want to talk about it.
+- WALT: Then who's been eating my lettuce for thirty years?
+
+**call-02 · Rick needs this** (RICK, with DANA in the background)
+- MARJ: We've got a long-distance caller! Go ahead, hon.
+- RICK: Is this The Coffee Cabin.
+- MARJ: It is!
+- RICK: Rick. K-JAM. Down in L.A. I'm calling to report a traffic problem.
+- WALT: Here?
+- RICK: Anywhere. I just need to know someone else is suffering.
+- WALT: Harold's in the road.
+- RICK: Who's Harold?
+- WALT: Nine hundred pounds. Antlers.
+- RICK: ...How long has he been there?
+- WALT: Since Tuesday.
+- RICK: *(quietly)* Thank you. That's all I needed.
+- DANA *(in the background)*: Rick, are you calling the tree people again?
+- RICK: Gotta go.
+
+**call-03 · Dana asks for advice** (DANA, with RICK in the background)
+- WALT: Caller.
+- DANA: Hi! It's Dana from K-JAM! Huge fan!
+- MARJ: Oh, Dana! We love your show!
+- DANA: Rick doesn't know I'm calling. I just wanted to ask. Forty-one years! How do you two do it?
+- MARJ: Oh, hon. Patience. Laughing. Separate blankets.
+- WALT: And she counts every time I step on her feet.
+- MARJ: Four thousand and twelve.
+- DANA: Aww! Rick won't even dance.
+- WALT: Smart man.
+- MARJ: Walter!
+- DANA: Oh. Oh no. He's in the next booth. He heard all of it. He's... Rick, are you crying?
+- RICK *(in the background)*: It's allergies.
+- WALT: Good man.
+
+**call-04 · Tyler from L.A.** (TYLER)
+- MARJ: Line two, you're on the air.
+- TYLER: Hi, yeah, um. My GPS stopped working, like, an hour ago?
+- WALT: There is one road.
+- TYLER: Right, but it keeps saying "make a U-turn when possible."
+- WALT: Don't.
+- TYLER: Also there's an elk in front of my car? And he's looking at me?
+- MARJ: Is he a big one?
+- TYLER: He's eating my windshield wiper.
+- WALT: Harold.
+- TYLER: How do you know his name?
+- WALT: Everybody knows Harold.
+- MARJ: Just stay in the car, hon, and stay on the road.
+- TYLER: Okay. Also there's a sign up here that says "Pie All Day." Is that, like, a threat?
+- WALT: It's a promise.
+
+**call-05 · Dolores from Gull Harbor** (DOLORES)
+- WALT: Caller, go ahead.
+- DOLORES: Walter. It's Dolores. From the Gull Harbor diner.
+- WALT: *(long pause)* Dolores.
+- DOLORES: I hear you're sending your dog over here.
+- WALT: I said that on the radio. Not to you.
+- DOLORES: Everybody heard it, Walter. Biscuit came by this morning.
+- MARJ: Oh no. What did he do?
+- DOLORES: Ate a whole blueberry pie off the counter. Then sat down and wagged.
+- WALT: Good boy.
+- DOLORES: Then he came back for a second one.
+- WALT: ...So it's good pie.
+- DOLORES: It's the best pie on the coast.
+- WALT: Biscuit's a dog, Dolores. He doesn't know anything. *(pause)* What's in the crust?
+- DOLORES: Come find out.
+- WALT: I'm going to Gull Harbor.
+- MARJ: There is one road, hon.
+
+**call-06 · Norm and the slug race** (NORM)
+- MARJ: Line one! You're on the air.
+- NORM: Marj! It's Norm, live from the annual banana slug race.
+- MARJ: Oh, Norm! How's it going?
+- NORM: Well, it started Tuesday.
+- WALT: How's it looking?
+- NORM: Very tense. Slimy Pete is in the lead by nearly four inches.
+- MARJ: Four inches!
+- NORM: The crowd is going wild. Well. There's two of us.
+- WALT: Who's in second?
+- NORM: Hard to say. One went under a leaf on Wednesday and nobody's seen him since.
+- MARJ: Oh dear.
+- NORM: Hold on. *(pause)* Oh no. Folks, I'm being told Slimy Pete is a pinecone.
+- WALT: Happens more than you'd think.
+- MARJ: It does around here.
+
+**call-07 · Gus at the lighthouse** (GUS)
+- WALT: Caller.
+- GUS: Walt, it's Gus. Out at the lighthouse.
+- MARJ: Hi, Gus! How's the light?
+- GUS: Light's fine. Foghorn's broke.
+- WALT: How long?
+- GUS: Since Sunday. So I've been doing it myself.
+- MARJ: Doing what yourself?
+- GUS: *(deep, long)* Bwaaaaah.
+- MARJ: Oh my.
+- GUS: Every thirty seconds. Four days.
+- WALT: Ships okay?
+- GUS: Ships are fine. But a sea lion's fallen in love with me. Answers every time.
+- MARJ: Aww.
+- GUS: Brought me a fish this morning.
+- WALT: Leave the horn broke, Gus.
+
+**call-08 · Sheriff Dot** (DOT)
+- MARJ: We've got the sheriff on the line! Hi, Dot.
+- DOT: Marj. Walt. I need to correct a rumor.
+- WALT: Go ahead.
+- DOT: I did not give Harold a ticket.
+- MARJ: You didn't?
+- DOT: I wrote him a warning. He ate the warning. Then he ate my ticket book.
+- WALT: The whole book?
+- DOT: And the pen. So nobody in this county gets a ticket till Thursday.
+- WALT: *(pause)* How fast does the one road go, Dot?
+- DOT: Don't you dare, Walter.
+- MARJ: Dot, he drives a 1985 pickup. It doesn't go over forty.
+- WALT: Forty-two. Downhill.
+
+**call-09 · Earl's apology** (EARL)
+- WALT: Caller.
+- EARL: Walt. It's Earl.
+- WALT: Earl.
+- EARL: About the firewood. I want to say I'm sorry. I thought it was the community woodpile.
+- MARJ: It's our woodpile, Earl. It's next to our house.
+- EARL: It looked very communal.
+- WALT: You sold eleven cords of it.
+- EARL: And I'm bringing you the money. Minus my fee for stacking it.
+- WALT: It was already stacked.
+- EARL: I restacked it. Better.
+- WALT: *(long pause)* ...It is better, Marj.
+
+**call-10 · Bigfoot calls in** (WALT, on the phone)
+- MARJ: Line two, you're on The Coffee Cabin.
+- WALT *(on the phone, deep, disguised)*: Hello. This is... Bigfoot.
+- MARJ: *(sighs)* Walter, I can see you out on the porch phone.
+- WALT *(on the phone)*: No you can't.
+- MARJ: You're wearing the antler hat.
+- WALT *(on the phone)*: Bigfoot also has an antler hat.
+- MARJ: Then come inside, Bigfoot. Your soup's getting cold.
+- WALT *(on the phone, normal voice)*: ...What kind of soup?
+- MARJ: It's soup.
+
+**call-11 · Forty miles out** (BECKY)
+- MARJ: Line one!
+- BECKY: Hi, Mom. Forty miles out.
+- MARJ: Oh! Walt, she's forty miles out!
+- WALT: I'm at the window.
+- MARJ: She's forty miles away, Walter. You can't see her yet.
+- WALT: Checking the weather.
+- BECKY: Mom, the kids want to know if Grandpa's at the window.
+- MARJ: He's at the window.
+- BECKY: Tell him we're at the elk.
+- WALT: There's always the elk.
+- BECKY: Oh, and Uncle Ray's in the car with us. Surprise!
+- WALT: *(pause)* Marj. Make it fourteen pies.
+
+**call-12 · Ernie's new song** (ERNIE)
+- MARJ: We've got Ernie on the line! Ernie's half of our house band.
+- ERNIE: Hey, Marj. Hey, Walt.
+- WALT: Ernie.
+- ERNIE: So my cousin and I wrote a new song. It's got words this time.
+- MARJ: Oh, words!
+- ERNIE: Well. One word.
+- WALT: What's the word?
+- ERNIE: "Fog."
+- MARJ: Just "fog"?
+- ERNIE: We say it a lot of different ways. Like a question. "Fog?" Like we're sad. "Fog." Like we're excited. "Fog!"
+- WALT: *(pause)* We'll play it.
+- MARJ: We will?
+- WALT: It's honest.
+
+**call-13 · The camper van guy** (GLEN)
+- WALT: Caller.
+- GLEN: Hi. You don't know me. I'm the guy with the camper van. From the Elk Alert?
+- MARJ: Oh! Are you all right, hon?
+- GLEN: I'm good. Great, actually. Harold and I worked it out.
+- WALT: Worked what out?
+- GLEN: He's riding shotgun now. We're going to Oregon.
+- MARJ: Harold's going to Oregon?
+- GLEN: He seems to want to. He keeps looking north.
+- WALT: Tell him there's one road.
+- GLEN: He knows, Walt. He's always known.
+- MARJ: Well, safe travels to you both!
+- GLEN: We'll be back Tuesday. He gets carsick.
