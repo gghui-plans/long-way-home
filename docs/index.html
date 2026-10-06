@@ -2325,7 +2325,12 @@ function sayLine(line,tok,next){
 function playLines(lines,tok,done){
   let n=0;const step=()=>{if(tok!==Show.token)return;if(n>=lines.length)return done();sayLine(lines[n++],tok,step)};step();
 }
-function nextKind(){let k;do k=pick(['traffic','sigalert','call','shortcut','ad','place','traffic','place','facts','facts']);while(k===Show.lastKind);return k}
+// full segments rotate: every type once per round, shuffled, so none goes missing for long (random picks left callers at about one an hour)
+const KINDS=['traffic','sigalert','call','shortcut','ad','place','facts'];let kindBag=[];
+function nextKind(){
+  if(!kindBag.length){kindBag=KINDS.slice().sort(()=>Math.random()-.5);if(kindBag[0]===Show.lastKind)kindBag.push(kindBag.shift())}
+  return kindBag.shift();
+}
 // each song has two intros; play whichever was heard less recently
 const introBit=s=>{const a={id:'intro-'+s.id,lines:[s.intro]},b=VBITS.introb[s.id];return b?pickBit('intro-'+s.id,[a,b]):a};
 // reactions to the drive (you steering, the cruise speed, a postcard, a pier ahead): the freshest one gets the next break, if it's still fresh by then
@@ -2459,7 +2464,7 @@ function talk(kind){
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
   if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug);if(special===VBITS.welcome&&FOCUS.phase==='focus')list.push(VBITS.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
-  else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null}
+  else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null;if(KINDS.includes(kind))kindBag.unshift(kind)} // that segment waits for the next break
   else if(kind==='facts')list.push(pickBit('facts',VBITS.facts,true))
   else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
   else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
