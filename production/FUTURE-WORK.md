@@ -20,7 +20,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 - **Regions (map button)**: pick a California region from a fold-out road map. The car drives there: the next open-coast stretch blends into the new region over a minute or two (sky, fog, ground colours, trees, signs). Also offer a quick fade-and-skip.
   - Build it as a `REGION` table: sky palette (SKYC), ground colours (TC), tree and prop builders, coast on or off, town and street names, district mix, outfits, ambient sound, station. Each town and coast cycle carries its own region.
   - **Rollout: build and ship one region at a time**, learning from each. Keep ElevenLabs Starter running through the regions (credits carry over); buy a Suno month only when a region needs songs (one month can cover two regions if they're close together).
-    1. **Redwood Coast** (first release, with the shared foundation: region system, station system and SEEK knob, style rule, battery saver, K-JAM signal-fade handoff). It keeps the ocean, so the shoreline, waves and beaches are reused. It's the biggest visual contrast for the effort (fog, giant trunks, ferns, god rays through the trees). Fog also cuts how far the game draws. Test song: *Fog Line* by the Fogbank Family Band (acoustic folk, female vocal); everything for Suno is in REGION-SONGS.md.
+    1. **Redwood Coast** (first release, with the shared foundation: region system, station system and SEEK knob, style rule, K-JAM signal-fade handoff). It keeps the ocean, so the shoreline, waves and beaches are reused. It's the biggest visual contrast for the effort (fog, giant trunks, ferns, god rays through the trees). Fog also cuts how far the game draws. Test song: *Fog Line* by the Fogbank Family Band (acoustic folk, female vocal); everything for Suno is in REGION-SONGS.md.
     2. **Big Sur**: the cheapest next step, since the cliffs and coast exist (add an arch bridge and a fog bank). It sits between LA and the redwoods on the real Highway 1, so road trip mode can run LA → Big Sur → Redwoods.
     3. **Desert and Wine Country**, together: both need the land-instead-of-ocean west side, so they share that work. Desert: Joshua trees, boulders, mid-century motels, wind turbines. Wine Country: vines, oaks, golden hills.
     4. **Tahoe** last: it needs a lake and snow (pines, granite).
@@ -34,7 +34,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
     3. Each region changes colours, props and fog, never the materials, lighting rules or level of detail.
   - **Hero models:** 1–2 detailed models per region for things seen up close, like the Corvette (e.g. a drive-through redwood, a vintage desert gas station, an Airstream at a campsite). Every region gets them, LA included, so none stands out. They make postcards better. Pilot it on Redwood Coast to check the mix looks right first.
   - Later, only if a matching high-quality set turns up: a detail tier inside HQ that upgrades every region at once. Not a single showcase region (it would make the others look worse by comparison).
-- **Battery saver and auto quality** (do before redwoods): a friend's phone got warm after 40 min on HQ.
+- **Battery saver and auto quality** (idea only, not tied to the redwoods build): a friend's phone got warm after 40 min on HQ.
   - A 30 fps cap option.
   - HQ stays on by default (the user's call). Auto-drop only: turn HQ effects off quietly if frames struggle.
   - Redwoods drawn cheaply: instanced trees, far versions, simple trunks, and fog for forest depth.

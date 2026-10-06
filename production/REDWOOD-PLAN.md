@@ -1,6 +1,6 @@
 # Redwood Coast: region plan
 
-The first region after LA. Planning only; nothing is built. See FUTURE-WORK.md (Regions) for the shared foundation this depends on: the region system, the station system and SEEK knob, the style rule, battery saver, and the K-JAM signal handoff.
+The first region after LA. Planning only; nothing is built. See FUTURE-WORK.md (Regions) for the shared foundation this depends on: the region system, the station system and SEEK knob, the style rule, and the K-JAM signal handoff.
 
 ## Decided
 
@@ -20,7 +20,7 @@ The first region after LA. Planning only; nothing is built. See FUTURE-WORK.md (
   - **Coast stretches:** bluffs, rocks standing in the sea, driftwood beaches. The ocean, waves and shoreline are reused from LA.
 - **Signature props:** elk in meadows, log trucks (the one outside model, baked onto the shared material), a chainsaw-carving stand, vista pull-outs.
 - **Hero model:** a drive-through redwood (the postcard shot).
-- **Performance:** instanced trunks, simple far versions, fog for depth. Battery saver ships first.
+- **Performance:** instanced trunks, simple far versions, fog for depth. (Battery saver and auto quality stay a future-work idea, not part of this build.)
 
 ## 2. Songs (16)
 
