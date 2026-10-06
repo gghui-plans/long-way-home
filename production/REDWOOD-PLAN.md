@@ -24,28 +24,30 @@ The first region after LA. Planning only; nothing is built. See FUTURE-WORK.md (
 
 ## 2. Songs (16)
 
-Acoustic folk and Americana. Like K-JAM: 14 vocal songs and 2 instrumentals, with a mix of female, male and duet vocals. Each gets a fictional band. Suno settings and lyrics go in REGION-SONGS.md.
+**Sound:** 2000s–2010s acoustic pop and indie folk, modelled on the user's "nicee" playlist: sunny strummers, foot-stomping folk, tender acoustic songs, dreamy reverb, piano ballads.
 
-Title ideas:
+**Themes:** happy and sincere: love, family, nostalgia, hometown. No heartbreak, no comic songs; Marj and Walt carry the comedy, which keeps the sweet songs from feeling too sweet.
 
-| # | Title | Notes |
-|---|---|---|
-| 1 | Fog Line | written (Fogbank Family Band, female) |
-| 2 | Log Truck Lullaby | |
-| 3 | Banana Slug Two-Step | |
-| 4 | Pie All Day | |
-| 5 | Elk Crossing | |
-| 6 | Moss on My Mailbox | |
-| 7 | Two-Lane Hymn | |
-| 8 | Driftwood Fire | |
-| 9 | Last Gas for 40 Miles | |
-| 10 | Woodstove Waltz | |
-| 11 | Sea Stack Serenade | |
-| 12 | Old Growth | |
-| 13 | Grey Whale Goodbye | |
-| 14 | Lighthouse Keeper's Daughter | |
-| 15 | Fiddlehead | instrumental |
-| 16 | Morning Burn-off | instrumental |
+Like K-JAM: 14 vocal songs and 2 instrumentals (7 male, 5 female, 2 duets). Each gets a fictional band. Suno settings, lyrics and progress are in REGION-SONGS.md.
+
+| # | Title | Feel | Vocal | About |
+|---|---|---|---|---|
+| 1 | Fog Line | 2000s acoustic pop-rock | F | Driving through the fog toward the people waiting for you |
+| 2 | Headlights Home | Tender, fingerpicked | M | Driving home at night to your wife and daughter |
+| 3 | Little Rain Boots | Sunny, breezy strum | M | Your daughter jumping puddles under the big trees |
+| 4 | Pie All Day | Breezy and upbeat | F | Sunday at the diner, the family sharing one slice |
+| 5 | Elk Crossing | Foot-stomping folk, gang vocals | M | Family road trip; the kid in the back counting elk |
+| 6 | Second Cup | Morning love song | M | A slow Sunday morning with your wife |
+| 7 | Two-Lane Hymn | Dreamy reverb folk | M | The road you've driven together for years |
+| 8 | Driftwood Fire | Foot-stomping duet | Duet | A family bonfire on the beach |
+| 9 | Forty Miles to You | 2000s singalong pop-rock | M | Counting down the miles home |
+| 10 | Woodstove Waltz | Tender acoustic | Duet | Dancing in the kitchen with your wife |
+| 11 | Sea Stack Serenade | Dreamy, nostalgic | F | Back where you fell in love |
+| 12 | Flannel Weather | Foot-stomping folk | F | Sweater season in your hometown, everyone home |
+| 13 | Old Growth | Piano ballad | M | To your daughter: grow tall, I'll be your roots |
+| 14 | Porch Light | Warm singer-songwriter | F | Someone always leaves the light on |
+| 15 | Fiddlehead | Fingerpicked | Instrumental | |
+| 16 | Morning Burn-off | Ambient guitar | Instrumental | Fog lifting |
 
 Suno Pro's 20 downloads a month covers 16 songs plus 4 retakes.
 
@@ -137,5 +139,5 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 
 
 - Voices for Marj and Walt (ElevenLabs).
-- Write the 15 remaining songs.
+- Write songs 6–16 (1–5 are written).
 - Write the radio script.
