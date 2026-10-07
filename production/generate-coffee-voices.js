@@ -50,6 +50,8 @@ fs.mkdirSync(out,{recursive:true});
 const todo=bits.filter(b=>(!ONLY.length||ONLY.includes(b.id))&&(FORCE||!fs.existsSync(path.join(out,b.id+'.mp3'))));
 const chars=todo.reduce((s,b)=>s+b.inputs.reduce((t,i)=>t+i.text.length,0),0);
 console.log(`${todo.length} clips to generate (${bits.length} in the script), ${chars} characters, model ${MODEL}, stability ${STAB}`);
+const SHOW=(arg('--show')||'').split(',').filter(Boolean); // --show a,b prints those clips exactly as they'd be sent, tags and all
+if(SHOW.length){for(const b of bits.filter(b=>SHOW.includes(b.id)))for(const i of b.inputs)console.log(b.id+': '+i.text);process.exit(0)}
 if(DRY){
   console.log('casting: '+Object.entries(CAST).filter(([s,k])=>!['MARJ','WALT','RICK','DANA'].includes(s)).map(([s,k])=>s+' = '+k).join(', '));
   for(const b of todo)console.log('  '+b.id+' ('+b.inputs.length+' lines)');
