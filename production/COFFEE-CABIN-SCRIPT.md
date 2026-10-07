@@ -16,7 +16,7 @@ Numbers are written as digits here and get spelled out for the voices when recor
 - **MARJ**: warm, quick, runs the board. Corrects every story Walt tells, with exact numbers. Gets misty about trees, her garden and the songs. Says "Walter" when he's in trouble. Calls listeners "hon".
 - **WALT**: bone-dry, slow, few words. Tall tales (he invented fog; he once arm-wrestled an elk). Retired log-truck driver and volunteer fire chief. "Fixed" the antenna himself. Loves the percolator. Pretends songs don't get to him.
 
-**Voices (ElevenLabs, chosen 2026-10-07, IDs in voices.json):** Marj in her 60s, warm, a little husky, lively. Walt in his late 60s, low, slow, calm and smooth (Rick is the raspy one, so they stay easy to tell apart). Becky still to pick.
+**Voices (ElevenLabs, chosen 2026-10-07, IDs in voices.json):** Marj in her 60s, warm, a little husky, lively. Walt in his late 60s, low, slow, calm and smooth (Rick is the raspy one, so they stay easy to tell apart). Becky chosen too (her ID is under "Becky").
 
 **Station lore to call back to:**
 - The percolator gurgles on air.
