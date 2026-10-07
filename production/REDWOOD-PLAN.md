@@ -122,7 +122,7 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 
 ## Build batches
 
-1. **Foundation (code, LA only):** a station table (K-JAM becomes entry #1) and a region table (LA becomes entry #1). LA looks and sounds exactly the same afterward.
+1. **Foundation (code, LA only):** a station table (K-JAM becomes entry #1) and a region table (LA becomes entry #1). LA looks and sounds exactly the same afterward. **Done 2026-10-06 on the `redwoods` branch.** The region table holds sky, terrain colours, town and street names, ambient sounds and its station; trees, props, districts and outfits get added in batch 3, when the redwood versions exist. The station table holds name, frequency, songs, bits, segment rotation, host names and its own audio folder (`dir`); `setStation()` switches stations.
 2. **Writing (runs alongside batch 1):** station and host names, the 15 remaining songs, the radio script, and the farewell and welcome-back clips. The user then generates the audio. Buy the Suno month only once all 16 lyrics are final.
 3. **Redwood world (code):** grove and coast stretches, trunks, ferns, fog, towns, districts, outfits, signs and names.
 4. **Map and handoff (code):** the map button, the road trip toggle, the 30-minute timer, the focus hold, the scenery blend, the radio static and the return trip. Uses text-to-speech placeholders until the real clips arrive.

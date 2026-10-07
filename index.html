@@ -343,9 +343,23 @@ const renderer=new THREE.WebGLRenderer({canvas,antialias:devicePixelRatio<2,powe
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
 const scene=new THREE.Scene();
 renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1; // keeps the palette, rolls off bright highlights like film
+// ---------- regions: everything that makes a stretch of California look and sound like itself. LA is the only one so far.
+// Each town (and the open coast after it) asks regionOf(k), so a road trip can hand over from one region to the next town by town.
+// sky: sunset palette for the sky shader and haze. tc: terrain colours. towns, ns, ew: town and street names. nature: ambient recordings. station: what the radio plays there.
+const REGIONS={
+  la:{id:'la',name:'Los Angeles',station:'kjam',
+    sky:{zen:'#2f3570',midA:'#7c6c9e',midS:'#d4617d',horA:'#eaa08e',horS:'#ffb46a',glow:'#ffb070',ground:'#6b4a52'},
+    tc:{asph:0x4b4851,shoulder:0x8d8478,sand:0xe6cf98,wet:0xb99f70,scrub:0xc9a865,grass:0x9aa158,rock:0x9a7b62,rockD:0x6f5a4f,hill:0xb39a62,hill2:0x8f8a58},
+    towns:['Playa Dorada','Costa Linda','Pelican Point','Bahía Vista','Seal Rock','Sunset Cove','Rincón Bay','Las Olas','Marisol','Point Paloma','Coral Mesa','Laguna Serena'],
+    ns:['Pacific Coast Hwy','Ocean Ave','Palisade Dr','Marigold Ave','Jacaranda St','Coyote Canyon Rd','Bougainvillea Ave','Laurel Grove Ave','Sepulvista Blvd','Agave St','Hollyridge Dr','Citrus Ave','Mesa Verde Blvd','Topanga View Rd','Rosewood Ave'],
+    ew:['Sunset Vista Blvd','Del Sol Ave','Avocado Blvd','La Brisa St','Mariposa Ave','Olive Hill Dr','Palm Crest Ave','Orange Grove Blvd','Santa Rita Blvd','Arroyo Seco Ave','Ventana Dr','Cabrillo Ave','Manzanita St','Encino Pl','Fig Tree Ave','Malaga Blvd','Las Flores Ave','Camino Real','Sycamore Dr','Alta Loma Rd','Pepper Tree Ln','Verdugo Ave','Lemon Grove Ave','Wisteria Way'],
+    nature:['ocean','ocean-close','wind','birds','gull-1','gull-2','gull-3','gull-4','gull-5','gull-6','gull-7','gull-8']},
+};
+const regionOf=k=>REGIONS.la; // which region town k belongs to
+let RG=REGIONS.la; // the region the car is in now
+const SKYC=RG.sky;
 // the sky: sunset colours that depend on where you look (gold towards the sun, pink and violet away from it), a glowing sun disc
 const SUN_VIS=new THREE.Vector3(-430,62,40).normalize(); // where the sun disc sits, low over the sea
-const SKYC={zen:'#2f3570',midA:'#7c6c9e',midS:'#d4617d',horA:'#eaa08e',horS:'#ffb46a',glow:'#ffb070',ground:'#6b4a52'};
 const SKYL={};for(const k in SKYC)SKYL[k]=new THREE.Color(SKYC[k]); // linear values for the shader and the haze
 const sunAz=new THREE.Vector2(SUN_VIS.x,SUN_VIS.z).normalize();
 const ss01=(a,b,x)=>{const t=Math.min(1,Math.max(0,(x-a)/(b-a)));return t*t*(3-2*t)};
@@ -670,15 +684,12 @@ const LAMP_MAT=[0,1,2,3].map(()=>{const t=sTex(lampCanvas);t.repeat.x=1/3;return
 const LAMP_GEO=new THREE.PlaneGeometry(.8,2);
 function updateLamps(t){for(let s=0;s<2;s++)for(let a=0;a<2;a++)LAMP_MAT[s*2+a].map.offset.x=lightState(s,a,t)/3}
 // ---------- street names & districts
-const NS_NAMES=['Pacific Coast Hwy','Ocean Ave','Palisade Dr','Marigold Ave','Jacaranda St','Coyote Canyon Rd','Bougainvillea Ave','Laurel Grove Ave','Sepulvista Blvd','Agave St','Hollyridge Dr','Citrus Ave','Mesa Verde Blvd','Topanga View Rd','Rosewood Ave'];
-const EW_NAMES=['Sunset Vista Blvd','Del Sol Ave','Avocado Blvd','La Brisa St','Mariposa Ave','Olive Hill Dr','Palm Crest Ave','Orange Grove Blvd','Santa Rita Blvd','Arroyo Seco Ave','Ventana Dr','Cabrillo Ave','Manzanita St','Encino Pl','Fig Tree Ave','Malaga Blvd','Las Flores Ave','Camino Real','Sycamore Dr','Alta Loma Rd','Pepper Tree Ln','Verdugo Ave','Lemon Grove Ave','Wisteria Way'];
-const nsName=i=>NS_NAMES[((i-XMIN)%NS_NAMES.length+NS_NAMES.length)%NS_NAMES.length];
-const ewName=j=>EW_NAMES[((j%EW_NAMES.length)+EW_NAMES.length)%EW_NAMES.length];
+const nsName=i=>{const a=RG.ns;return a[((i-XMIN)%a.length+a.length)%a.length]};
+const ewName=j=>{const a=RG.ew;return a[((j%a.length)+a.length)%a.length]};
 // ---------- the coast: towns every PER rows, open Highway 1 in between
 // Town k has node rows a..a+TL (a=k*PER) and lot rows a..a+TL-1. Highway 1 is the PCH column, winding between towns.
-const TOWNS=['Playa Dorada','Costa Linda','Pelican Point','Bahía Vista','Seal Rock','Sunset Cove','Rincón Bay','Las Olas','Marisol','Point Paloma','Coral Mesa','Laguna Serena'];
 const townLen=k=>4+Math.floor(hash(k,0,21)*3);
-const townName=k=>TOWNS[((k%TOWNS.length)+TOWNS.length)%TOWNS.length];
+const townName=k=>{const a=regionOf(k).towns;return a[((k%a.length)+a.length)%a.length]};
 function townOfRow(j){const k=Math.floor(j/PER),a=k*PER,TL=townLen(k);return j>=a&&j<=a+TL?{k,a,TL}:null}
 const lotRow=j=>{const t=townOfRow(j);return!!t&&j<t.a+t.TL};
 const nodeExists=(i,j)=>i>=XMIN&&i<=XMAX&&!!townOfRow(j);
@@ -748,7 +759,7 @@ function buildPier(b,gb,grp,xw,zc){
 }
 const piers=new Map(),piersCued=new Set(); // Ferris wheels by z, so the radio can mention one coming up
 function pierCheck(){
-  for(const [z,x] of piers){const d=Math.hypot(car.x-x,car.z-z);if(d<420&&d>120&&!piersCued.has(z)){piersCued.add(z);react('pier',pickBit('pier',VBITS.pier),40,300,true)}}
+  for(const [z,x] of piers){const d=Math.hypot(car.x-x,car.z-z);if(d<420&&d>120&&!piersCued.has(z)){piersCued.add(z);react('pier',pickBit('pier',ST.bits.pier),40,300,true)}}
 }
 function buildBlock(i,j,d){
   const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group();
@@ -933,7 +944,7 @@ function buildBlock(i,j,d){
 }
 
 // ---------- coastal terrain, one strip per row: beach or cliffs to the west, road, hills to the east
-const TC={asph:0x4b4851,shoulder:0x8d8478,sand:0xe6cf98,wet:0xb99f70,scrub:0xc9a865,grass:0x9aa158,rock:0x9a7b62,rockD:0x6f5a4f,hill:0xb39a62,hill2:0x8f8a58};
+const TC=RG.tc;
 const HILL=[[9.5,0],[13,.3],[24,2],[45,6],[80,22],[140,28],[260,48],[520,75],[3000,80]];
 function inlandY(x,z){
   const dx=x-roadX(z),c=coastType(z);let base=0;
@@ -1865,10 +1876,9 @@ function initAmbience(){
   loadNature();
 }
 // real field recordings (CC0, from Freesound) replace the synthesized layers as they arrive; if a file can't load, the synth stays
-const NATURE=['ocean','ocean-close','wind','birds','gull-1','gull-2','gull-3','gull-4','gull-5','gull-6','gull-7','gull-8'];
 Amb.buf={};Amb.gulls=[];
 function loadNature(){
-  for(const n of NATURE)fetch('audio/nature/'+n+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+  for(const n of RG.nature)fetch('audio/nature/'+n+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
     .then(b=>new Promise((res,rej)=>AC.decodeAudioData(b,res,rej))).then(buf=>natureReady(n,buf)).catch(()=>{});
 }
 function loopNode(buf,dest,gain){
@@ -2034,13 +2044,13 @@ const SONGS=[
 ];
 let playlist=[],lastSongId='';
 function nextSong(){
-  if(!playlist.length){playlist=SONGS.slice().sort(()=>Math.random()-.5);if(playlist[0].id===lastSongId)playlist.push(playlist.shift())}
+  if(!playlist.length){playlist=ST.songs.slice().sort(()=>Math.random()-.5);if(playlist[0].id===lastSongId)playlist.push(playlist.shift())}
   const s=playlist.shift();lastSongId=s.id;return s;
 }
 // songs stream through one audio player routed into the radio's volume (decoding them all would be too heavy for phones)
 const songEl=new Audio();songEl.preload='auto';
 // sing-along lyrics: when each line starts in each song (production/align-lyrics.js makes the file)
-let LYR=null;fetch('audio/music/lyrics.json').then(r=>r.ok?r.json():null).then(j=>{LYR=j}).catch(()=>{});
+let LYR=null; // loaded per station by loadStationFiles
 let songNode=null;
 const SILENT='data:audio/mpeg;base64,SUQzBAAAAAAAIlRTU0UAAAAOAAADTGF2ZjYzLjEuMTAyAAAAAAAAAAAAAAD/83DAAAAAAAAAAAAASW5mbwAAAA8AAAAGAAADKQBaWlpaWlpaWlpaWlpaWlpae3t7e3t7e3t7e3t7e3t7e3ucnJycnJycnJycnJycnJycvb29vb29vb29vb29vb29vb3e3t7e3t7e3t7e3t7e3t7e3v////////////////////8AAAAATGF2YzYzLjEuAAAAAAAAAAAAAAAAJAKjAAAAAAAAAymyj8UTAAAAAAAAAAAAAAAAAP/zQMQAAAADSAAAAABMQU1FMy4xMDBVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NCxFsAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NAxKQAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80LEowAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/80DEpAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsSjAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
 function unlockAudio(){ // resume sound, and play one silent sample (the classic iPhone unlock)
@@ -2053,7 +2063,7 @@ function initSongEl(){ // runs inside the first tap: unlocks the player on iPhon
   try{songNode=AC.createMediaElementSource(songEl);songNode.connect(musicBus)}catch(e){songNode=false}
   songEl.src=SILENT;const p=songEl.play();if(p)p.catch(()=>{});
 }
-const songUrl=s=>'audio/music/'+s.id+'.mp3';
+const songUrl=s=>'audio/music/'+ST.dir+s.id+'.mp3';
 function cueSong(s){ // start buffering while the hosts talk
   try{songEl.pause();songEl.src=songUrl(s);songEl.load()}catch(e){}
 }
@@ -2270,12 +2280,29 @@ const VBITS={
     'laguna-serena':{id:'townname-laguna-serena',lines:[['D',"Rolling into Laguna Serena!"]]},
   },
 };
+// ---------- stations: everything one radio station needs. K-JAM is the only one so far; each region names its station.
+// dir: its folder under audio/music and audio/voice (K-JAM's files sit at the top level). heard: prefix for its remembered-bits keys.
+// kinds: the full segments it rotates through. hosts: display names for its speakers.
+const STATIONS={
+  kjam:{id:'kjam',name:'K-JAM',freq:'101.1',tagline:'CLASSIC ROCK & GRIDLOCK',stamp:'K-JAM 101.1',live:'LIVE FROM THE K-JAM STUDIO',
+    dir:'',heard:'',songs:SONGS,bits:VBITS,kinds:['traffic','sigalert','call','shortcut','ad','place','facts'],hosts:{R:'RICK',D:'DANA'}},
+};
+let ST=STATIONS[RG.station]; // the station on the radio now
+// switch the radio to another station: fresh playlist and segment rotation, its own lyrics and subtitle timings
+function setStation(id){
+  const st=STATIONS[id];if(!st||st===ST)return;
+  ST=st;playlist=[];lastSongId='';kindBag=[];LYR=null;VT=null;loadStationFiles();if(voiceBus)initTimings();
+  const f=$('lcd')&&$('lcd').querySelector('.freq span');if(f)f.innerHTML='FM <b>'+st.freq+'</b> '+st.name;
+  refreshPlaylist();
+}
+function loadStationFiles(){const st=ST;fetch('audio/music/'+st.dir+'lyrics.json').then(r=>r.ok?r.json():null).then(j=>{if(ST===st)LYR=j}).catch(()=>{})}
+loadStationFiles();
 // what's been heard, remembered between drives: unheard bits go first, so tomorrow's drive doesn't open with yesterday's joke.
 // Once a pool is used up it starts over, but never with the bit that just played. inOrder plays a series' episodes in order.
 let heard={};try{heard=JSON.parse(localStorage.getItem('la-drive-heard'))||{}}catch(e){}
 const saveHeard=()=>{try{localStorage.setItem('la-drive-heard',JSON.stringify(heard))}catch(e){}};
 function pickBit(key,pool,inOrder){
-  const h=heard[key]||(heard[key]=[]);
+  const hk=ST.heard+key,h=heard[hk]||(heard[hk]=[]);
   let fresh=pool.filter(b=>!h.includes(b.id));
   if(!fresh.length){const last=h[h.length-1];h.length=0;if(last&&pool.length>1)h.push(last);fresh=pool.filter(b=>!h.includes(b.id))}
   const b=inOrder?fresh[0]:pick(fresh);h.push(b.id);saveHeard();return b;
@@ -2310,13 +2337,13 @@ function playLines(lines,tok,done){
   let n=0;const step=()=>{if(tok!==Show.token)return;if(n>=lines.length)return done();sayLine(lines[n++],tok,step)};step();
 }
 // full segments rotate: every type once per round, shuffled, so none goes missing for long (random picks left callers at about one an hour)
-const KINDS=['traffic','sigalert','call','shortcut','ad','place','facts'];let kindBag=[];
+let kindBag=[];
 function nextKind(){
-  if(!kindBag.length){kindBag=KINDS.slice().sort(()=>Math.random()-.5);if(kindBag[0]===Show.lastKind)kindBag.push(kindBag.shift())}
+  if(!kindBag.length){kindBag=ST.kinds.slice().sort(()=>Math.random()-.5);if(kindBag[0]===Show.lastKind)kindBag.push(kindBag.shift())}
   return kindBag.shift();
 }
 // each song has two intros; play whichever was heard less recently
-const introBit=s=>{const a={id:'intro-'+s.id,lines:[s.intro]},b=VBITS.introb[s.id];return b?pickBit('intro-'+s.id,[a,b]):a};
+const introBit=s=>{const a={id:'intro-'+s.id,lines:[s.intro]},b=ST.bits.introb[s.id];return b?pickBit('intro-'+s.id,[a,b]):a};
 // reactions to the drive (you steering, the cruise speed, a postcard, a pier ahead): the freshest one gets the next break, if it's still fresh by then
 const React={bit:null,until:0,last:{}};
 const reactFresh=()=>React.bit&&performance.now()<React.until;
@@ -2325,7 +2352,7 @@ function react(kind,bit,ttl,cool,urgent){
   React.last[kind]=now;React.bit=bit;React.until=now+ttl*1000;
   if(urgent&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('short')})}
 }
-function clockBit(){const h=new Date().getHours(),c=VBITS.clock;return h>=5&&h<11?c.morning:h>=11&&h<14?c.midday:h>=17&&h<21?c.evening:h>=21||h<5?c.late:null}
+function clockBit(){const h=new Date().getHours(),c=ST.bits.clock;return h>=5&&h<11?c.morning:h>=11&&h<14?c.midday:h>=17&&h<21?c.evening:h>=21||h<5?c.late:null}
 // not every song gets a full segment: sometimes two songs in a row, sometimes just a quick ID, so the talk doesn't wear thin
 let lastBreak='';
 function nextBreak(){
@@ -2339,7 +2366,7 @@ function nextBreak(){
 }
 function backToBack(){
   Show.phase='talk';const tok=++Show.token,song=nextSong();Show.pending=song; // 'talk' so the seek button still skips straight in
-  stopVoice();cueSong(song);setLCD('K-JAM','TWO IN A ROW ON K-JAM 101.1');
+  stopVoice();cueSong(song);setLCD(ST.name,'TWO IN A ROW ON '+ST.name+' '+ST.freq);
   setTimeout(()=>{if(tok===Show.token&&Show.on)startSong(tok,song)},1500);
 }
 // a song picked from the playlist: fade out whatever's on, play a request bit and the song's intro, then the song
@@ -2349,7 +2376,7 @@ function requestSong(s){
   const go=()=>{
     Show.on=true;Show.phase='talk';Show.lastKind='request';const tok=++Show.token;Show.pending=s;lastSongId=s.id;
     stopVoice();try{speechSynthesis.cancel()}catch(e){}cueSong(s);
-    const list=[pickBit('request',VBITS.request),introBit(s)];
+    const list=[pickBit('request',ST.bits.request),introBit(s)];
     list.forEach(b=>loadVoice(b.id));
     playBits(list,tok,()=>startSong(tok,s));
   };
@@ -2360,7 +2387,7 @@ function requestSong(s){
 function updateMediaSession(s){
   if(!('mediaSession' in navigator))return;
   try{
-    navigator.mediaSession.metadata=new MediaMetadata({title:s.title,artist:s.band,album:'K-JAM 101.1 · Long Way Home in California',artwork:[{src:'icon-180.png',sizes:'180x180',type:'image/png'}]});
+    navigator.mediaSession.metadata=new MediaMetadata({title:s.title,artist:s.band,album:ST.stamp+' · Long Way Home in California',artwork:[{src:'icon-180.png',sizes:'180x180',type:'image/png'}]});
     navigator.mediaSession.playbackState='playing';
   }catch(e){}
 }
@@ -2374,7 +2401,7 @@ function startSong(tok,song){
   Show.phase='song';
   const show=s=>setLCD('STEREO','♪ '+s.title.toUpperCase()+' · '+s.band.toUpperCase());
   const onEnd=()=>{if(tok===Show.token&&Show.on)nextBreak()};
-  const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ LIVE FROM THE K-JAM STUDIO');playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
+  const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ '+ST.live);playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
   if(song.id&&songNode!==false){show(song);Show.current=song;updateMediaSession(song);refreshPlaylist();playRealSong(song,onEnd,synth)}else synth();
   maybeReqTip();
 }
@@ -2414,21 +2441,22 @@ let voiceBus=null,VT=null,vtLoading=null;const voiceCache=new Map();
 function initVoices(){
   if(voiceBus||!AC)return;
   voiceBus=AC.createGain();voiceBus.connect(master);
-  vtLoading=fetch('audio/voice/timings.json').then(r=>r.ok?r.json():null).then(j=>{VT=j}).catch(()=>{});
+  initTimings();
 }
+function initTimings(){const st=ST;vtLoading=fetch('audio/voice/'+st.dir+'timings.json').then(r=>r.ok?r.json():null).then(j=>{if(ST===st)VT=j}).catch(()=>{})}
 function loadVoice(id){
   if(!AC)return Promise.resolve(null);
-  if(voiceCache.has(id))return voiceCache.get(id);
-  const p=fetch('audio/voice/'+id+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+  const url='audio/voice/'+ST.dir+id+'.mp3';
+  if(voiceCache.has(url))return voiceCache.get(url);
+  const p=fetch(url).then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
     .then(b=>new Promise((res,rej)=>AC.decodeAudioData(b,res,rej))).catch(()=>null);
-  voiceCache.set(id,p);
+  voiceCache.set(url,p);
   if(voiceCache.size>14)voiceCache.delete(voiceCache.keys().next().value); // keep memory small: only recent bits stay decoded
   return p;
 }
 // the script spells numbers out for the voices; show them normally on the radio display
 const showText=t=>t.replace(/Gee-gee-hue-ee/g,'gghui').replace(/K-Jam/g,'K-JAM').replace(/one-oh-one point one/g,'101.1').replace(/four-oh-five/g,'405').replace(/one-oh-one/g,'101')
   .replace(/one-ten/g,'110').replace(/\bthe ten\b/g,'the 10').replace(/nineteen eighty-seven/g,'1987').replace(/\bR V\b/g,'RV').replace(/Doctor Pam/g,'Dr. Pam');
-const SPKN={R:'RICK',D:'DANA'};
 function stopVoice(){if(Show.voiceSrc){const s=Show.voiceSrc;Show.voiceSrc=null;s.onended=null;try{s.stop()}catch(e){}}}
 function playBit(bit,tok,done){
   Promise.all([loadVoice(bit.id),vtLoading||Promise.resolve()]).then(([buf])=>{
@@ -2436,7 +2464,7 @@ function playBit(bit,tok,done){
     const tm=VT&&VT[bit.id];
     if(!buf||!tm||!settings.voices){playLines(bit.lines.map(l=>[l[0],showText(l[1]),l[2]]),tok,done);return} // backup: device voice, or subtitles only
     const s=AC.createBufferSource();s.buffer=buf;s.connect(voiceBus);Show.voiceSrc=s;s.start(AC.currentTime+.05);
-    bit.lines.forEach((l,i)=>setTimeout(()=>{if(tok===Show.token&&Show.voiceSrc===s)setLCD(l[2]||SPKN[l[0]]||'CALLER',showText(l[1]))},(tm.t[i]||0)*1000+50));
+    bit.lines.forEach((l,i)=>setTimeout(()=>{if(tok===Show.token&&Show.voiceSrc===s)setLCD(l[2]||ST.hosts[l[0]]||'CALLER',showText(l[1]))},(tm.t[i]||0)*1000+50));
     s.onended=()=>{if(Show.voiceSrc===s)Show.voiceSrc=null;if(tok===Show.token)setTimeout(done,300)};
   });
 }
@@ -2447,15 +2475,15 @@ function talk(kind){
   Show.phase='talk';if(kind!=='short')Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
-  if(special){list.push(special);if(special===VBITS.welcome&&!settings.requested)list.push(VBITS.plug);if(special===VBITS.welcome&&FOCUS.phase==='focus')list.push(VBITS.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
-  else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null;if(KINDS.includes(kind))kindBag.unshift(kind)} // that segment waits for the next break
-  else if(kind==='facts')list.push(pickBit('facts',VBITS.facts,true))
-  else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,VBITS.place[k]||VBITS.place.strip))}
-  else if(kind==='town'){const tn=VBITS.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',VBITS.town))}
-  else if(kind==='short'){if(Math.random()<.4)list.push(pickBit('id',VBITS.id))} // a quick break: maybe the station ID, then the song
-  else list.push(pickBit(kind,VBITS[kind]));
+  if(special){list.push(special);if(special===ST.bits.welcome&&!settings.requested)list.push(ST.bits.plug);if(special===ST.bits.welcome&&FOCUS.phase==='focus')list.push(ST.bits.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
+  else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null;if(ST.kinds.includes(kind))kindBag.unshift(kind)} // that segment waits for the next break
+  else if(kind==='facts')list.push(pickBit('facts',ST.bits.facts,true))
+  else if(kind==='place'){const k=placeKey();list.push(pickBit('place-'+k,ST.bits.place[k]||ST.bits.place.strip))}
+  else if(kind==='town'){const tn=ST.bits.townname[townSlug(currentTown())];if(tn)list.push(tn);list.push(pickBit('town',ST.bits.town))}
+  else if(kind==='short'){if(Math.random()<.4)list.push(pickBit('id',ST.bits.id))} // a quick break: maybe the station ID, then the song
+  else list.push(pickBit(kind,ST.bits[kind]));
   list.push(introBit(song));
-  if(Math.random()<.35)list.push(pickBit('after',VBITS.after));
+  if(Math.random()<.35)list.push(pickBit('after',ST.bits.after));
   list.forEach(b=>loadVoice(b.id)); // fetch the whole segment up front
   try{speechSynthesis.cancel()}catch(e){}
   playBits(list,tok,()=>startSong(tok,song));
@@ -2491,7 +2519,7 @@ function choose(c){
   }
   car.user=c;
   const now=performance.now();steerTimes.push(now);while(steerTimes.length&&now-steerTimes[0]>180000)steerTimes.shift(); // three picks in three minutes: they're steering
-  if(steerTimes.length>=3)react('steer',pickBit('steer',VBITS.steer),240,900);
+  if(steerTimes.length>=3)react('steer',pickBit('steer',ST.bits.steer),240,900);
 }
 const steerTimes=[];
 const press=(el,fn)=>el.addEventListener('pointerdown',e=>{e.preventDefault();fn()});
@@ -2501,7 +2529,7 @@ canvas.addEventListener('pointerdown',()=>{if(settings.mode==='tilt'&&$('start')
 // cruise speed, 60 to 160 km/h in 10s
 function applySpeed(){$('spdVal').textContent=settings.cruise+' km/h'}
 let spdT=0;
-const spdReact=()=>{clearTimeout(spdT);spdT=setTimeout(()=>{if(settings.cruise>=160)react('speed-fast',VBITS.speed.fast,240,1200);else if(settings.cruise<=60)react('speed-slow',VBITS.speed.slow,240,1200)},2500)}; // once it's settled at the top or bottom
+const spdReact=()=>{clearTimeout(spdT);spdT=setTimeout(()=>{if(settings.cruise>=160)react('speed-fast',ST.bits.speed.fast,240,1200);else if(settings.cruise<=60)react('speed-slow',ST.bits.speed.slow,240,1200)},2500)}; // once it's settled at the top or bottom
 $('spdDown').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise-10,60,160);applySpeed();saveSettings();spdReact()});
 $('spdUp').addEventListener('click',()=>{settings.cruise=clamp(settings.cruise+10,60,160);applySpeed();saveSettings();spdReact()});
 applySpeed();
@@ -2532,7 +2560,7 @@ $('close').addEventListener('click',()=>{$('sheet').hidden=true});
 // playlist: tap the radio display to request a song
 function refreshPlaylist(){
   const ul=$('plList');if(!ul)return;ul.textContent='';
-  for(const s of SONGS){
+  for(const s of ST.songs){
     const cur=Show.current===s&&Show.phase==='song',li=document.createElement('li'),b=document.createElement('button');
     if(cur)b.className='cur';
     const info=document.createElement('span'),t=document.createElement('span'),bd=document.createElement('span'),now=document.createElement('span');
@@ -2678,11 +2706,11 @@ function updateStreak(dt,frame){
   const ms=Date.now()-streak.t0;
   for(const m of[5,10,30,60,120])if(!streak.fired[m]&&ms>=m*60000){
     if(m===30||m===60){const rb=m===30?'30 minutes hands-free':'1 hour hands-free';makePostcard('scenic',rb).then(c=>{pendingCard={c,ribbon:rb}})} // a postcard waits for your next tap
-    streak.fired[m]=true;toast(m<60?m+' minutes hands-free!':m===60?'1 hour hands-free!':'2 hours hands-free!');onAirSoon(VBITS.milestone[m]);
+    streak.fired[m]=true;toast(m<60?m+' minutes hands-free!':m===60?'1 hour hands-free!':'2 hours hands-free!');onAirSoon(ST.bits.milestone[m]);
   }
   if(ms>best.ms){
     best.ms=ms;best.km=streak.km;
-    if(!streak.recordFired&&streak.bestAtStart>=5*60000){streak.recordFired=true;toast('New personal best!');onAirSoon(VBITS.record)}
+    if(!streak.recordFired&&streak.bestAtStart>=5*60000){streak.recordFired=true;toast('New personal best!');onAirSoon(ST.bits.record)}
     if(frame%120===0)saveBest();
   }
   if(frame%15===0){stTime.textContent=fmtTime(ms);stDist.textContent=streak.km.toFixed(1)+' km';stBest.textContent=best.ms>=60000&&best.ms>ms+1000?'BEST '+fmtTime(best.ms):''}
@@ -2694,7 +2722,7 @@ function streakResumed(){
   if(streak.on||!$('start').hidden)return;
   const lost=streak.lost;startStreak();
   if(lost>=60000)toast('Streak ended at '+fmtTime(lost)+'. New streak started');
-  if(lost>=120000)onAirSoon(pickBit('back',VBITS.back));
+  if(lost>=120000)onAirSoon(pickBit('back',ST.bits.back));
 }
 
 // ---------- postcards: the drive dressed as a vintage postcard, with your hands-free time
@@ -2737,7 +2765,7 @@ function composePostcard(shot,info){
   sx.fillStyle='#ffe58a';sx.beginPath();sx.arc(68,92,20,Math.PI,0);sx.fill();sx.fillStyle='#2f6d86';sx.fillRect(12,92,112,24);
   sx.strokeStyle='#2b1b4a';sx.lineWidth=3;sx.beginPath();sx.moveTo(100,116);sx.quadraticCurveTo(96,70,92,44);sx.stroke();
   sx.fillStyle='#2b1b4a';for(let k=0;k<6;k++){const a=-Math.PI*.95+k*.36;sx.beginPath();sx.ellipse(92+Math.cos(a)*13,44+Math.sin(a)*7,15,4,a,0,Math.PI*2);sx.fill()}
-  sx.fillStyle='#2b1b4a';sx.font='28px VT323';sx.textAlign='center';sx.fillText('K-JAM 101.1',68,146);
+  sx.fillStyle='#2b1b4a';sx.font='28px VT323';sx.textAlign='center';sx.fillText(ST.stamp,68,146);
   sx.globalCompositeOperation='destination-out';for(let k=0;k<=12;k++){for(const y of[0,164]){sx.beginPath();sx.arc(k*136/12,y,5,0,7);sx.fill()}}for(let k=0;k<=14;k++){for(const xx of[0,136]){sx.beginPath();sx.arc(xx,k*164/14,5,0,7);sx.fill()}}
   x.save();x.translate(px+pw-170,py+22);x.rotate(.05);x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=8;x.drawImage(st,0,0);x.restore();
   // the postmark: a ring with the place and date, wavy cancel lines running left
@@ -2768,7 +2796,7 @@ async function openPostcard(view='scenic',ribbon='',ready=null){
 }
 function closePostcard(){pcOpen=false;$('pcSheet').hidden=true}
 function savePostcard(){if(!pcBlob)return;const a=document.createElement('a');a.href=pcUrl;a.download='long-way-home-postcard.jpg';document.body.appendChild(a);a.click();a.remove()}
-$('camBtn').addEventListener('click',()=>{openPostcard('scenic');react('postcard',pickBit('postcard',VBITS.postcard),240,600)});
+$('camBtn').addEventListener('click',()=>{openPostcard('scenic');react('postcard',pickBit('postcard',ST.bits.postcard),240,600)});
 $('pcClose').addEventListener('click',closePostcard);
 $('pcSheet').addEventListener('click',e=>{if(e.target===$('pcSheet'))closePostcard()});
 $('pcSave').addEventListener('click',savePostcard);
@@ -2790,10 +2818,10 @@ function focusDone(){ // time's up: chime, the music fades, Rick and Dana sign o
   FOCUS.phase='break';FOCUS.endAt=Date.now()+5*60000;car.pullOver=true;chime();$('focusLbl').textContent='BREAK';
   $('fcTitle').textContent='Focus drive done. Nice work.';$('fcStats').textContent=FOCUS.min+' minutes  ·  '+FOCUS.km.toFixed(1)+' km';$('focusCard').hidden=false;
   const tok=++Show.token;Show.phase='talk';stopVoice();try{speechSynthesis.cancel()}catch(e){}
-  stopSong(2.5,()=>{if(tok!==Show.token)return;playBits([VBITS.focus.end],tok,()=>{if(tok!==Show.token)return;power(false);setLCD('BREAK','FIVE MINUTES · LISTENING TO THE COAST')})});
+  stopSong(2.5,()=>{if(tok!==Show.token)return;playBits([ST.bits.focus.end],tok,()=>{if(tok!==Show.token)return;power(false);setLCD('BREAK','FIVE MINUTES · LISTENING TO THE COAST')})});
 }
 function breakDone(){ // back on the road for the next session
-  car.pullOver=false;$('focusCard').hidden=true;startFocus(FOCUS.min);Show.queue.push(VBITS.focus.back);power(true);
+  car.pullOver=false;$('focusCard').hidden=true;startFocus(FOCUS.min);Show.queue.push(ST.bits.focus.back);power(true);
 }
 function endFocusMode(){
   const wasBreak=FOCUS.phase==='break';FOCUS.phase='off';car.pullOver=false;$('focusCard').hidden=true;$('focusT').hidden=true;if(wasBreak)power(true);
@@ -2808,7 +2836,7 @@ function focusTick(dt){
 for(const seg of document.querySelectorAll('.focusseg'))for(const b of seg.children)b.addEventListener('click',()=>{
   settings.focus=+b.dataset.m;saveSettings();showFocusChoice();
   if(!$('start').hidden)return; // on the title screen it just sets up the next drive
-  if(settings.focus){startFocus(settings.focus);car.pullOver=false;$('focusCard').hidden=true;onAirSoon(VBITS.focus[settings.focus]);toast('Focus drive: '+settings.focus+' minutes')}
+  if(settings.focus){startFocus(settings.focus);car.pullOver=false;$('focusCard').hidden=true;onAirSoon(ST.bits.focus[settings.focus]);toast('Focus drive: '+settings.focus+' minutes')}
   else endFocusMode();
 });
 $('fcSkip').addEventListener('click',breakDone);
@@ -2961,7 +2989,7 @@ $('go').addEventListener('click',()=>{
   initAudio();unlockAudio();
   for(const ms of[600,1500,3000])setTimeout(()=>{if(AC&&AC.state!=='running'&&!document.hidden)unlockAudio()},ms); // in case the first try didn't take
   if(settings.focus)startFocus(settings.focus);
-  Show.queue.push(VBITS.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
+  Show.queue.push(ST.bits.welcome); // Rick and Dana's welcome takes the first break, in place of a station ID
   const cb=clockBit();if(cb)Show.queue.push(cb); // and the real time of day the next one
   power(true);keepAwake();startStreak();maybeOffTip();
 });
@@ -2969,6 +2997,6 @@ document.addEventListener('visibilitychange',()=>{
   if(document.hidden){if(AC)AC.suspend();streakPaused()}
   else if($('start').hidden){if(AC)AC.resume();keepAwake();streakResumed()} // resume sound even with the radio off, so the ocean comes back too
 });
-setLCD('STEREO','CLASSIC ROCK & GRIDLOCK');
+setLCD('STEREO',ST.tagline);
 })();
 </script>

@@ -11,6 +11,8 @@ http.createServer((req,res)=>{
   if(!p.startsWith(root)){res.writeHead(403);return res.end()}
   fs.stat(p,(e,s)=>{
     const f=!e&&s.isDirectory()?path.join(p,'index.html'):p;
-    fs.readFile(f,(err,d)=>{if(err){res.writeHead(404);return res.end('not found')}res.writeHead(200,{'Content-Type':types[path.extname(f).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store'});res.end(d)});
+    // assets (audio, models) live in docs/; fall back there so the source index.html at the root plays with real files
+    fs.readFile(f,(err,d)=>{if(err&&!f.startsWith(path.join(root,'docs')))return fs.readFile(path.join(root,'docs',path.relative(root,f)),(e2,d2)=>e2?(res.writeHead(404),res.end('not found')):send(d2));if(err){res.writeHead(404);return res.end('not found')}send(d)});
+    const send=d=>{res.writeHead(200,{'Content-Type':types[path.extname(f).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store'});res.end(d)};
   });
 }).listen(port,'127.0.0.1',()=>console.log('serving '+root+' on http://127.0.0.1:'+port));
