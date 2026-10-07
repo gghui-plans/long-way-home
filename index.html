@@ -1864,12 +1864,18 @@ function updateFar(cx,cz){
   for(const [k,m] of farTowns)if(Math.abs((k*PER+townLen(k)/2)*B-cz)>5200){scene.remove(m);m.geometry.dispose();farTowns.delete(k)}
   for(const k of[k0-1,k0,k0+1,k0+2])if(!farTowns.has(k)&&built<1&&Math.abs((k*PER+townLen(k)/2)*B-cz)<4600){const m=buildFarTown(k);farTowns.set(k,m);scene.add(m);built++}
 }
+// soft puffs (clouds, fog) computed here, the way stacked soft canvas circles would look: phone browsers dither soft canvas
+// gradients into visible grain, and stretched across the sky the grain shows. blobs: [x,y,radius] in pixels; a: each one's centre opacity
+function puffTex(W,H,blobs,rgb,a){
+  const d=new Uint8Array(W*H*4);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++){let t=1;for(const [bx,by,br] of blobs){const q=Math.hypot(x+.5-bx,H-y-.5-by)/br;if(q<1)t*=1-a*(1-q)}const i=(y*W+x)*4;d[i]=rgb[0];d[i+1]=rgb[1];d[i+2]=rgb[2];d[i+3]=Math.round((1-t)*255)}
+  const tx=new THREE.DataTexture(d,W,H);tx.colorSpace=THREE.SRGBColorSpace;tx.magFilter=THREE.LinearFilter;tx.minFilter=THREE.LinearMipmapLinearFilter;tx.generateMipmaps=true;tx.needsUpdate=true;return tx;
+}
 // soft sunset clouds, far out beyond the mountains, following the camera
 const skyline=new THREE.Group();scene.add(skyline);
 (()=>{
-  const cc=document.createElement('canvas');cc.width=256;cc.height=96;const cx=cc.getContext('2d'),cr=rng(8);
-  for(let k=0;k<14;k++){const x0=30+cr()*196,y0=40+cr()*30,rad=18+cr()*26,g=cx.createRadialGradient(x0,y0,0,x0,y0,rad);g.addColorStop(0,'rgba(255,214,190,.55)');g.addColorStop(1,'rgba(255,190,170,0)');cx.fillStyle=g;cx.fillRect(0,0,256,96)}
-  const cloudMat=new THREE.SpriteMaterial({map:sTex(cc),fog:false,depthWrite:false,transparent:true});
+  const cr=rng(8),bl=[];for(let k=0;k<14;k++)bl.push([30+cr()*196,40+cr()*30,18+cr()*26]);
+  const cloudMat=new THREE.SpriteMaterial({map:puffTex(256,96,bl,[255,210,186],.55),fog:false,depthWrite:false,transparent:true});
   for(let k=0;k<9;k++){const a=cr()*Math.PI*2,rr=4300+cr()*500,s=new THREE.Sprite(cloudMat);s.position.set(Math.sin(a)*rr,650+cr()*550,Math.cos(a)*rr);s.scale.set(1300+cr()*900,420+cr()*220,1);s.renderOrder=-1;skyline.add(s)}
 })();
 function updateSkyline(cx,cz,dir,clock){
@@ -1928,9 +1934,8 @@ function dogGeo(){const b=new Builder(),g=pedDogGeo,c=pick([0xc8a070,0x3a2a20,0x
 const movers=[...Array(5)].map((_,k)=>{const jog=k<3,g=new THREE.Group(),m=new THREE.Mesh(personGeo(jog),MAT_PED);m.castShadow=true;g.add(m);
   if(!jog){const d=new THREE.Mesh(dogGeo(),MAT_PED);d.position.set(.9,0,1.4);d.castShadow=true;g.add(d)}LIFE.add(g);return{g,jog,z:1e9,dir:1,r:Math.random()}});
 const wisps=(()=>{
-  const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d'),r=rng(31);
-  for(let k=0;k<16;k++){const x0=20+r()*216,y0=24+r()*16,rad=14+r()*22,g=x.createRadialGradient(x0,y0,0,x0,y0,rad);g.addColorStop(0,'rgba(255,240,232,.5)');g.addColorStop(1,'rgba(255,240,232,0)');x.fillStyle=g;x.fillRect(0,0,256,64)}
-  const mat=new THREE.SpriteMaterial({map:sTex(c),transparent:true,depthWrite:false,opacity:.3});
+  const r=rng(31),bl=[];for(let k=0;k<16;k++)bl.push([20+r()*216,24+r()*16,14+r()*22]);
+  const mat=new THREE.SpriteMaterial({map:puffTex(256,64,bl,[255,240,232],.5),transparent:true,depthWrite:false,opacity:.3});
   return[...Array(12)].map(()=>{const s=new THREE.Sprite(mat);s.scale.set(400+r()*500,35+r()*30,1);s.userData={dx:-300-r()*1400,z:(r()-.5)*3000,y:SEA+12+r()*28,v:1+r()*2};LIFE.add(s);return s});
 })();
 // up north: a herd of Roosevelt elk grazing in a meadow beside the road (a bull with antlers, cows, a calf), heads dipping to graze
