@@ -15,7 +15,7 @@ http.createServer((req,res)=>{
     // assets (audio, models) live in docs/; fall back there so the source index.html at the root plays with real files
     fs.readFile(f,(err,d)=>{if(err&&!f.startsWith(path.join(root,'docs')))return fs.readFile(path.join(root,'docs',path.relative(root,f)),(e2,d2)=>e2?(res.writeHead(404),res.end('not found')):send(d2));if(err){res.writeHead(404);return res.end('not found')}send(d)});
     // the source index.html is artifact-format (no head); give it the same charset and phone viewport tags build.ps1 adds, so phones lay it out like the live site
-    const HEAD='<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">';
+    const HEAD='<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">';
     const send=d=>{if(path.extname(f)==='.html'&&!/^\s*<!doctype/i.test(d.toString('utf8',0,64)))d=Buffer.concat([Buffer.from(HEAD),d]);res.writeHead(200,{'Content-Type':types[path.extname(f).toLowerCase()]||'application/octet-stream','Cache-Control':'no-store'});res.end(d)};
   });
 }).listen(port,host,()=>console.log('serving '+root+' on http://'+host+':'+port));
