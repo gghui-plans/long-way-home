@@ -2970,9 +2970,14 @@ STATIONS.coffee={id:'coffee',name:'COFFEE CABIN',freq:'89.3',tagline:'COZY SWEAT
   dir:'coffee-cabin/',heard:'cc:',songs:CC_SONGS,bits:CC_BITS,kinds:['traffic','sigalert','call','shortcut','ad','place','facts'],hosts:{J:'MARJ',W:'WALT',R:'RICK',D:'DANA'}};
 let ST=STATIONS[RG.station]||STATIONS.kjam; // the station on the radio now
 // switch the radio to another station: fresh playlist and segment rotation, its own lyrics and subtitle timings
+// a bit queued for a later break (a reaction, a milestone) was picked from the old station. Both stations reuse clip names
+// (steer-01, after-02), so playing it on the new one would put the new hosts' audio under the old hosts' lines: swap it for
+// the new station's bit with the same id, or drop it
+function bitIn(st,id){let f=null;const walk=o=>{if(f||!o||typeof o!=='object')return;if(o.id===id&&o.lines){f=o;return}for(const k in o)walk(o[k])};walk(st.bits);return f}
 function setStation(id){
   const st=STATIONS[id];if(!st||st===ST)return;
   ST=st;playlist=[];lastSongId='';kindBag=[];LYR=null;VT=null;loadStationFiles();if(voiceBus)initTimings();
+  React.bit=React.bit&&bitIn(st,React.bit.id);Show.queue=Show.queue.map(b=>b&&bitIn(st,b.id)).filter(Boolean); // queued for later: the new station's take on it, or nothing
   const f=$('lcd')&&$('lcd').querySelector('.freq span');if(f)f.innerHTML='FM <b>'+st.freq+'</b> '+st.name;
   refreshPlaylist();
 }
