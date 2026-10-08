@@ -27,7 +27,7 @@ for(const L of md){
 }
 for(const [k,v] of clips)if(!v.length)clips.delete(k);
 const fx=(id,l)=>/outside/.test(l.note)?'outside':/background/.test(l.note)?'background':/phone/.test(l.note)||(/^call-/.test(id)&&!/^(MARJ|WALT)$/.test(l.sp))?'phone':'';
-const CHAIN={phone:'highpass=f=320,lowpass=f=3400',background:'highpass=f=400,lowpass=f=2400,volume=0.4',outside:'lowpass=f=1500,aecho=0.8:0.6:70|140:0.35|0.2,volume=0.55'};
+const CHAIN={phone:'highpass=f=320,lowpass=f=3400',background:'highpass=f=400,lowpass=f=2400,volume=0.4',outside:'lowpass=f=1500,aecho=0.8:0.6:70|140:0.35|0.2,volume=0.85'};
 
 // word matching, as in time-voices.js
 const norm=w=>w.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
@@ -52,6 +52,7 @@ const ALL=process.argv.includes('--all'),want=process.argv.slice(2).filter(a=>!a
 const done=id=>{const o=path.join(outDir(id),id+'.mp3'),r=path.join(raw,id+'.mp3');return T[tfile(id)][id]&&fs.existsSync(o)&&fs.existsSync(r)&&fs.statSync(o).mtimeMs>fs.statSync(r).mtimeMs};
 const todo=[...clips.keys()].filter(id=>want.length?want.includes(id):ALL||!done(id));
 const low=[];
+function save(file,txt){for(let k=0;;k++){try{return fs.writeFileSync(file,txt)}catch(e){if(k>=20)throw e;Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,250)}}} // the game may be reading it right then
 for(const id of todo){
   const ls=clips.get(id),src=path.join(raw,id+'.mp3');
   if(!fs.existsSync(src)){console.log('missing',id);continue}
@@ -84,7 +85,7 @@ for(const id of todo){
   const lo=spawnSync(ff,['-hide_banner','-i',mid,'-af','loudnorm=print_format=json','-f','null','-']).stderr.toString(),j=JSON.parse(lo.slice(lo.lastIndexOf('{'),lo.lastIndexOf('}')+1));
   const gain=Math.min(-17-(+j.input_i),-1.5-(+j.input_tp));
   execFileSync(ff,['-hide_banner','-loglevel','error','-y','-i',mid,'-af','volume='+gain.toFixed(2)+'dB','-ar','44100','-ac','1','-c:a','libmp3lame','-b:a','64k',out]);
-  T[tfile(id)][id]={d:+D.toFixed(2),t};fs.writeFileSync(tfile(id),JSON.stringify(T[tfile(id)])); // saved as it goes
+  T[tfile(id)][id]={d:+D.toFixed(2),t};save(tfile(id),JSON.stringify(T[tfile(id)])); // saved as it goes
   console.log(id.padEnd(30),D.toFixed(1).padStart(5)+'s',String(ls.length).padStart(2)+' lines',(used.length?'['+used.join(',')+'] ':'')+note,'|',t.join(' '));
 }
 console.log(`done: ${todo.length} clips${low.length?'; under 60% of words heard, check by ear: '+low.join(', '):''}`);
