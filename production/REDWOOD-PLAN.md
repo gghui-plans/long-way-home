@@ -120,9 +120,11 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 - **Street names:** Spruce St, Alder Ave, Madrone Dr, Sitka St, Huckleberry Ln, Mill St, Harbor Rd, Grange Rd, Tanoak Way, Salal St, Hemlock Ave, Fir Crest Dr.
 - **Between towns:** honey and fruit stands, the carving stand, campgrounds, vista pull-outs.
 
-## 7. More forest, less coast (agreed 2026-10-07, not built yet)
+## 7. More forest, less coast (agreed and built 2026-10-07)
 
 Why: the groves are what makes this region look like nowhere in LA, while the coast stretches overlap most with the original map. It's also true to life: the famous redwood drives (like Avenue of the Giants) run inland along river valleys, and the ocean only shows now and then.
+
+**Built:** groves on 81% of the open road; second growth, meadows (split-rail fence, pull-outs, the elk graze there), creek crossings (a channel, glossy water, rocks, alders, a short bridge); forest towns alternate with harbour towns (forest edge to the west, the motor lodge / general store and gas station / carving yard, log cabins, giants between the buildings). Worst grove frame about 557k triangles, forest town about 493k (LA town about 612k). The drive-through tree stays with batch 5.
 
 **The open road**
 - Groves take about **80%** of the open road (now about 60%).
