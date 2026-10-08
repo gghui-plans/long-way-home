@@ -1,13 +1,14 @@
 // Builds docs/audio/music/lyrics.json: when each lyric line starts in each song (the game plays them in full, about 2:30).
 // Word timings come from whisper.cpp (production/raw/tools/whisper/work/<id>.json, see AUDIO-WORKFLOW.md); the words themselves
 // come from LYRICS.md, so whisper mishearing a word doesn't matter. The two are matched with a forgiving sequence alignment.
-// Usage: node production/align-lyrics.js
+// Usage: node production/align-lyrics.js   (K-JAM, from LYRICS.md)
+//        node production/align-lyrics.js coffee-cabin   (a station's own folder, from REGION-SONGS.md)
 const fs=require('fs'),path=require('path');
-const here=__dirname,work=path.join(here,'raw/tools/whisper/work'),out=path.join(here,'../docs/audio/music/lyrics.json');
+const SUB=process.argv[2]||'',here=__dirname,work=path.join(here,'raw/tools/whisper/work'),dir=path.join(here,'../docs/audio/music',SUB),out=path.join(dir,'lyrics.json');
 const PLAYED=160; // seconds: past the end of every song, so nothing is cut
 
 // lyric blocks from LYRICS.md, keyed by the file each song is saved as
-const md=fs.readFileSync(path.join(here,'LYRICS.md'),'utf8').replace(/\r\n/g,'\n'),blocks={};
+const md=fs.readFileSync(path.join(here,SUB?'REGION-SONGS.md':'LYRICS.md'),'utf8').replace(/\r\n/g,'\n'),blocks={};
 for(const part of md.split('**Save as:** ').slice(1)){ // only the block inside each song's own section (instrumentals have none)
   const id=part.slice(0,part.indexOf('.mp3')),m=part.split(/\n#{2,3} /)[0].match(/```\n([\s\S]*?)```/);if(m)blocks[id]=m[1];
 }
@@ -32,7 +33,7 @@ function align(lines,words){ // global alignment; the lyrics may run past the en
 }
 
 const result={},report=[];
-for(const f of fs.readdirSync(path.join(here,'../docs/audio/music')).filter(f=>f.endsWith('.mp3'))){
+for(const f of fs.readdirSync(dir).filter(f=>f.endsWith('.mp3'))){
   const id=f.replace('.mp3',''),block=blocks[id];
   const over=path.join(work,id+'.lines.json');
   if(fs.existsSync(over)){result[id]=JSON.parse(fs.readFileSync(over,'utf8')).lines.filter(l=>l[0]<PLAYED);report.push(id.padEnd(26)+'hand-timed, '+result[id].length+' lines');continue}

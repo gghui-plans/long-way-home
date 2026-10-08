@@ -1,11 +1,13 @@
 # Turns the raw Suno songs into radio-ready files in docs/audio/music/.
 # Each song plays in full (Suno cuts most of them off around 2:30, so the last 4 s fade out),
 # and is levelled to the same loudness so no song jumps out on the radio.
+# -Sub coffee-cabin processes a station's own folder (raw/music/<sub> into docs/audio/music/<sub>).
+param([string]$Sub = '')
 $ErrorActionPreference = 'Continue' # ffmpeg writes progress to stderr
 $ff   = "$env:LOCALAPPDATA\Microsoft\WinGet\Links\ffmpeg.exe"
 $fp   = $ff -replace 'ffmpeg\.exe$', 'ffprobe.exe'
-$raw  = Join-Path $PSScriptRoot 'raw\music'
-$out  = Join-Path (Split-Path $PSScriptRoot) 'docs\audio\music'
+$raw  = Join-Path (Join-Path $PSScriptRoot 'raw\music') $Sub
+$out  = Join-Path (Join-Path (Split-Path $PSScriptRoot) 'docs\audio\music') $Sub
 $tmp  = Join-Path $env:TEMP 'claude\music-tmp'
 $fade = 4; $target = -16
 New-Item -ItemType Directory -Force $out, $tmp | Out-Null
