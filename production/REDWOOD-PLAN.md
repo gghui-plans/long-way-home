@@ -167,7 +167,14 @@ Why: the groves are what makes this region look like nowhere in LA, while the co
    - **Road trip:** every 30 minutes of driving (not counting breaks or the postcard screen) the car heads for the other region. If it comes due during a focus session, it waits for the drive after the break (or the end of focus mode).
    - **Radio:** at the halfway point of the blend, the song fades, the old station says goodbye through rising static and gets cut off, the dial hisses (TUNING), and the new station comes in with its arrival bit (Marj's first-time welcome the first time). The way back mirrors it. With the radio off, it just comes back on the new station.
    - **The Coffee Cabin** is now a full station: all 160 scripted clips and the 16 songs' titles and intros, generated from the script and song files. Until the recordings arrive, the device voices read it (Marj and Walt have their own voice settings) and the songs fall back to the synth band; its files will live in `audio/voice/coffee-cabin/` and `audio/music/coffee-cabin/`.
-5. **Audio and polish:** drop in the songs and clips (the music and voice processing scripts, plus whisper for the lyrics), ambient sound per stretch, hero models (the drive-through tree and the log truck), and the region's postcard title and stamp.
+5. **Audio and polish:** drop in the songs and clips (the music and voice processing scripts, plus whisper for the lyrics), ambient sound per stretch, hero models (the drive-through tree and the log truck), and the region's postcard title and stamp. **In progress 2026-10-07.**
+   - **Songs:** all 16 in `docs/audio/music/coffee-cabin/`, levelled and faded like K-JAM's (`process-music.ps1 -Sub coffee-cabin`), lyrics timed with whisper (`align-lyrics.js coffee-cabin`).
+   - **Voices:** `process-coffee-voices.js` times every clip from the spoken words, snaps line starts to pauses, and applies the script's notes: phone line on callers (and Walt on the porch phone), quieter for *(in the background)*, muffled with an echo for *(outside)*. Rick and Dana's goodbyes and welcome-backs go with K-JAM's files.
+   - **The drive-through tree:** a 96 m giant straddling the road on about half the open stretches, deep in a grove, with a carved tunnel tall enough for a log truck. The tree bits ("Duck, hon!") cue as it comes up.
+   - **Log trucks:** long-hood cab, chrome stacks, three bunks of logs; open road up north only (about 1 in 12 vehicles).
+   - **Radio-off sound:** the sea fades behind the trees, a babbling creek near crossings, varied-thrush whistles with a forest echo, a woodpecker now and then, a distant foghorn on the coast. Real recordings take over each layer when they exist (forest, canopy, creek, creaks, thrush, jay, raven, woodpecker, elk, foghorn, sea lions; sea lions replace LA's gulls). The radio-off tip says "forest sounds".
+   - **Postcards:** the Coffee Cabin stamp (two redwoods, a lit cabin, chimney smoke), amber-to-rust title letters, and the caption "Sweater on, coffee hot, take it slow."
+   - **Still to come:** the forest recordings (Freesound downloads), then a final phone drive.
 
 ## Shipping
 
