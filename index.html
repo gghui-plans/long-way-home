@@ -373,7 +373,7 @@ const REGIONS={
     towns:['Fern Hollow','Cedar Landing','Mossbridge','Driftwood Bay','Gull Harbor','Elkhorn Flat','Sawdust Junction','Tidewater','Bramble Point','Lantern Cove','Hemlock','Old Mill'],
     ns:['Redwood Hwy','Harbor Rd','Spruce St','Alder Ave','Madrone Dr','Sitka St','Huckleberry Ln','Mill St','Grange Rd','Tanoak Way','Salal St','Hemlock Ave','Fir Crest Dr','Elk Meadow Rd','Driftwood Ln'],
     ew:['Main St','Front St','Cedar Ave','Fern Ave','Ocean View Dr','Pine St','Bay St','Water St','Church St','School St','Orchard Ave','Lighthouse Rd','Bluff St','Wharf St','Myrtle Ave','Laurel St','Cypress St','Meadow Ln','Creek Rd','Logger Ave','Chestnut St','Willow St','Old Mill Rd','Trillium Ln'],
-    nature:['ocean','ocean-close','wind','birds','gull-1','gull-2','gull-3','gull-4','gull-5','gull-6','gull-7','gull-8']}, // forest recordings arrive with the audio batch
+    nature:['ocean','ocean-close','wind','forest','creek','canopy','creak-1','creak-2','thrush-1','thrush-2','thrush-3','jay-1','jay-2','raven-1','raven-2','woodpecker-1','woodpecker-2','elk-1','foghorn','sealion-1','sealion-2','sealion-3']},
 };
 // which region town k (and the open coast after it) belongs to. #redwoods in the address puts the whole coast up north, for testing until the road trip arrives
 const START_REGION=location.hash==='#redwoods'?'redwood':'la';
@@ -703,6 +703,52 @@ const TOWNWOODS=[48,60].map((h,vi)=>{
   const g=b.geo(),P=g.attributes.position.array,w=new Float32Array(P.length/3);for(let i=0;i<w.length;i++){const t=P[i*3+1]/h;w[i]=t>.4?(t-.4)*.45:0}
   g.setAttribute('sway',new THREE.BufferAttribute(w,1));return g;
 });
+// the drive-through tree: an ancient giant straddling the road, a tunnel cut through its foot wide and tall enough for a log truck.
+// The tunnel runs along z. Built as columns round the trunk: solid to the ground at the sides, open under the arch front and back
+const DTREE=(()=>{
+  const b=new Builder(),r=rng(4900),h=96,w=6,yw=4.3,ya=6,ytop=6.6,R0=9,TAU=Math.PI*2;
+  const Rf=y=>R0*(1+.2*Math.pow(Math.max(0,1-(y+.6)/3.2),2)); // the foot flares over the bottom few metres
+  const arch=x=>yw+(ya-yw)*Math.sqrt(Math.max(0,1-(x/w)**2)),AX=[...Array(9)].map((_,i)=>w-2*w*i/8); // tunnel roof, x from +w to -w
+  const BARK=k=>k%2?0x8c4c33:0x683a28,CUT=0xb07a52,CUTD=0x9a6644;
+  // the ring's vertices at height y: arcs at the sides (solid to the ground), the arch's points front and back (open below)
+  const ring=y=>{const R=Rf(y),ph=Math.acos(w/R),v=[];
+    for(let i=0;i<5;i++)v.push({a:-ph+2*ph*i/5,open:false});
+    for(const x of AX)v.push({a:Math.acos(x/R),open:true,x});
+    for(let i=1;i<5;i++)v.push({a:Math.PI-ph+2*ph*i/5,open:false});
+    for(const x of[...AX].reverse())v.push({a:TAU-Math.acos(x/R),open:true,x});
+    return v.map(o=>({...o,R}))};
+  const P=(R,a,y)=>[Math.cos(a)*R,y,Math.sin(a)*R],LV=[-.6,.5,1.8,yw,ytop];
+  const r0=ring(ytop),n=r0.length;
+  for(let k=0;k<n;k++){const k1=(k+1)%n,open=r0[k].open&&r0[k1].open,col=BARK(k);
+    if(open){ // over the tunnel mouth: bark from the arch up
+      const xa=r0[k].x,xb=r0[k1].x,A=[Math.cos(r0[k].a)*R0,arch(xa),Math.sin(r0[k].a)*R0],Bv=[Math.cos(r0[k1].a)*R0,arch(xb),Math.sin(r0[k1].a)*R0];
+      b.tri(A,P(R0,r0[k].a,ytop),P(R0,r0[k1].a,ytop),col,col,col);b.tri(A,P(R0,r0[k1].a,ytop),Bv,col,col,col);
+    }else for(let l=0;l+1<LV.length;l++){ // the solid sides, flaring at the foot
+      const ra=ring(LV[l]),rb=ring(LV[l+1]);
+      b.tri(P(ra[k].R,ra[k].a,LV[l]),P(rb[k].R,rb[k].a,LV[l+1]),P(rb[k1].R,rb[k1].a,LV[l+1]),col,col,col);b.tri(P(ra[k].R,ra[k].a,LV[l]),P(rb[k1].R,rb[k1].a,LV[l+1]),P(ra[k1].R,ra[k1].a,LV[l]),col,col,col);
+    }
+  }
+  // the tunnel: carved walls, then the arched roof
+  for(const sx of[1,-1])for(let l=0;l<3;l++){const y0=LV[l],y1=l<2?LV[l+1]:yw,z0=Math.sqrt(Rf(y0)**2-w*w),z1=Math.sqrt(Rf(y1)**2-w*w),X=sx*w;
+    const q=[[X,y0,-z0],[X,y0,z0],[X,y1,z1],[X,y1,-z1]];if(sx>0){b.tri(q[0],q[1],q[2],CUT,CUT,CUT);b.tri(q[0],q[2],q[3],CUT,CUT,CUT)}else{b.tri(q[0],q[2],q[1],CUT,CUT,CUT);b.tri(q[0],q[3],q[2],CUT,CUT,CUT)}}
+  for(let i=0;i+1<AX.length;i++){const xa=AX[i],xb=AX[i+1],ya1=arch(xa),yb1=arch(xb),za=Math.sqrt(R0*R0-xa*xa),zb=Math.sqrt(R0*R0-xb*xb);
+    b.tri([xa,ya1,-za],[xa,ya1,za],[xb,yb1,zb],CUTD,CUTD,CUTD);b.tri([xa,ya1,-za],[xb,yb1,zb],[xb,yb1,-zb],CUTD,CUTD,CUTD)}
+  // the trunk above, tapering, on the same vertices so there's no seam; the bark greys a little higher up
+  const TS=[ytop,14,24,36,50,64,78,h],rad=y=>R0*(1-.8*(y-ytop)/(h-ytop));
+  for(let l=0;l+1<TS.length;l++){const ra=rad(TS[l]),rb=rad(TS[l+1]),grey=Math.min(1,TS[l]/h*1.5)*.45;
+    for(let k=0;k<n;k++){const k1=(k+1)%n,col=mixCol(BARK(k),0x7a6256,grey);
+      b.tri(P(ra,r0[k].a,TS[l]),P(rb,r0[k].a,TS[l+1]),P(rb,r0[k1].a,TS[l+1]),col,col,col);b.tri(P(ra,r0[k].a,TS[l]),P(rb,r0[k1].a,TS[l+1]),P(ra,r0[k1].a,TS[l]),col,col,col)}}
+  // the crown, like the other giants but older: broad, a bit ragged, a dead snag at the top
+  const FOL=[0x2a4328,0x31502d,0x283f26,0x385634,0x2e4a2b];
+  b.add(G.cone,0x263d24,0,h*.76,0,rad(h*.5)+h*.06,h*.46,rad(h*.5)+h*.06,r()*6);
+  for(let q=0;q<11;q++){const t=.47+.47*(q/10)+(r()-.5)*.03,y=h*t,a=q*2.4+r()*.5,reach=(1-t)*h*.17+2.4,rr=rad(y);
+    if(q<7)b.add(G.box,0x4e3022,Math.cos(a)*(rr+reach*.3),y+.3,Math.sin(a)*(rr+reach*.3),reach*.65,.3,.3,-a,0,-.25);
+    b.add(G.sball1,FOL[Math.floor(r()*FOL.length)],Math.cos(a)*(rr+reach*.42),y-.2,Math.sin(a)*(rr+reach*.42),reach*.7,reach*.3+.7,reach*.7,r()*6)}
+  b.add(G.cone,0x7a6256,0,h+2.5,0,.9,6,.9);
+  const g=b.geo(),Pa=g.attributes.position.array,sw=new Float32Array(Pa.length/3);
+  for(let i=0;i<sw.length;i++){const t=Pa[i*3+1]/h;sw[i]=t>.45?(t-.45)*.35:0}
+  g.setAttribute('sway',new THREE.BufferAttribute(sw,1));return g;
+})();
 // young redwoods, Douglas firs and Sitka spruce: a thin trunk under stacked cones
 const FIRS=[11,16,22].map((h,vi)=>{
   const b=new Builder(),r=rng(4300+vi),T=5,tr=.25+h*.012;
@@ -858,6 +904,10 @@ function meadowZ(k,q){if(hash(k,q,41)<.35)return null;const a=k*PER+townLen(k)+1
 function meadowAt(z){const g=gapAt(z);if(!g||!rwAt(z))return 0;let m=0;for(let q=0;q<2;q++){const c=meadowZ(g.k,q);if(c!=null)m=Math.max(m,ss(170,80,Math.abs(z-c)))}return m}
 // creek crossings: a stream running under the road on a short bridge, on most open stretches
 function creekZ(k){if(hash(k,7,47)<.35)return null;const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;return(a+L*(.15+.7*hash(k,8,49)))*B}
+// the drive-through tree: on about half the open stretches up north, somewhere deep in a grove
+function dtreeZ(k){if(hash(k,29,73)<.5)return null;const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;
+  for(let q=0;q<6;q++){const z=(Math.floor(a+L*(.2+.6*hash(k,q,55)))+.5)*B;if(rwAt(z)&&groveAt(z)>.7&&creekAt(z)>150&&meadowAt(z)<.02)return z}return null}
+function dtreeNear(z){const g=gapAt(z);if(!g||!rwAt(z))return null;const c=dtreeZ(g.k);return c!=null&&Math.abs(c-z)<=B/2?c:null}
 function creekAt(z){const g=gapAt(z);if(!g||!rwAt(z))return 1e9;const c=creekZ(g.k);return c==null?1e9:Math.abs(z-c)} // distance to the creek
 function creekNear(z){const g=gapAt(z);if(!g||!rwAt(z))return null;const c=creekZ(g.k);return c!=null&&Math.abs(c-z)<=B/2?c:null}
 // terrain colours at z, blended through a road trip's handover stretch
@@ -1438,9 +1488,9 @@ function westY(z,dx){const pr=westProfile(z);if(dx<=pr[0][0])return pr[0][1];for
 function groundAt(x,z){const dx=x-roadX(z);return dx<-9.5?westY(z,dx):dx>9.5?inlandY(x,z):0}
 function redwoodScenery(b,gb,grp,j,rnd){
   const z0=j*B,zm=z0+B/2,gv=Math.max(groveAt(zm),ftAtZ(zm)),c=coastType(zm),hm=hillMul(zm),T=regionAtZ(zm).tc,beams=[];
-  const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm); // forest variety: second growth, a meadow, a creek crossing
+  const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
-  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130); // keep the creek and the meadow open
+  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32); // keep the creek, the meadow and the big tree's foot open
   const giant=(dx,z,s)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),k=rnd();b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
   const young=(dx,z)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),s=.8+rnd()*.5;b.add(pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
   if(gv>.12){
@@ -1466,6 +1516,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
     for(let z=z0;z<z0+B;z+=4){const [x,y]=at(13.5,z);b.add(G.box,0x6b5640,x,y+.6,z,.16,1.2,.16);for(const h of[.55,1.05])b.add(G.box,0x7a6248,x,y+h,z+2,.1,.1,4.1,(rnd()-.5)*.08)}
     if(hash(j,3,51)<.35){const [x,y,z]=at(11.5,zm);b.add(G.box,0x8a8270,x,y+.03,z,4,.06,24);b.add(G.box,0x7a5a3a,x+1,y+.95,z+6,.9,.1,2.2);for(const s of[-1,1])b.add(G.box,0x7a5a3a,x+1+s*.9,y+.6,z+6,.35,.08,2.2)}
   }
+  if(tz!=null){const o1=(off(tz+1)-off(tz-1))/2,[x,y]=at(0,tz);b.add(DTREE,null,x,y-.05,tz,1,1,1,Math.atan2(o1,1));piers.set(Math.round(tz),x)} // the radio mentions it coming up, like a pier
   if(cz!=null){ // a creek crossing: the stream running under a short bridge, rocks and alders on the banks
     const o1=(off(cz+1)-off(cz-1))/2,ry=Math.atan2(o1,1),rc=roadX(cz);
     {const w=new THREE.Mesh(new THREE.PlaneGeometry(200,16),CREEK_MAT);w.rotation.x=-Math.PI/2;w.position.set(rc+30,-1.35,cz);w.receiveShadow=true;grp.add(w)} // the water, glossy so it mirrors the sky
@@ -1715,6 +1766,12 @@ const VTYPES={
   wagon:{hl:2.45,w:8,pal:[0xe9dcc0,0x9fd3c7,0xf2c6a0,0xbfe3d9],build(b){b.add(RB(1.8,.62,4.8,.18),WH,0,.62,0);b.add(RB(1.62,.5,3,.18),GL,0,1.13,-.5);b.add(RB(1.64,.08,2.9,.04),WH,0,1.4,-.5);for(const s of[-1,1])b.add(G.box,0x8a5a33,s*.91,.66,-.4,.04,.36,3.6);b.add(G.box,0xf2efe6,.4,1.52,-.4,.55,.08,2.9);b.add(G.box,0x2fb3a8,-.4,1.52,-.4,.55,.08,2.9);lights(b,.6,.72,2.42);wheels4(b,.33,.82,1.6)}},
   bus:{hl:5.5,w:4,pal:[0xf2a541,0xe9dcc0],bus:true,build(b){b.add(RB(2.5,2.7,11,.35),WH,0,1.75,0);b.add(RB(2.53,.9,9.4,.15),GL,0,2.3,-.3);b.add(RB(2.3,1.3,.1,.05),GL,0,2.05,5.5);b.add(G.box,DK,0,.7,0,2.54,.35,10.6);b.add(G.box,0x2b2b30,0,3.0,5.48,1.6,.32,.06);lights(b,.9,1,5.52);wheels4(b,.5,1.1,3.6)}},
   rv:{hl:4,w:3,pal:[0xf2efe6,0xe9dcc0],build(b){b.add(RB(2.4,2.8,8,.35),WH,0,1.8,0);b.add(RB(2.3,.9,1.6,.3),WH,0,3.05,3.3);b.add(G.box,0x8a5a33,0,1.3,-.2,2.43,.28,7.4);b.add(RB(2.43,.6,4.5,.15),GL,0,2.35,-.9);b.add(RB(2.2,.8,.1,.05),GL,0,1.95,4.02);lights(b,.85,1,4.03);wheels4(b,.45,1.08,2.6)}},
+  logtruck:{hl:7.4,w:9,rw:true,pal:[0xc23b2e,0x2f5d3a,0xe9b23a,0xf2efe6,0x2f4f7a],build(b){const CH=0x9a9aa2,BK=[0x6e4128,0x7a4a30,0x5f3a24];
+    b.add(G.box,DK,0,.8,0,1,.3,14.6);b.add(RB(1.6,.9,2.1,.15),WH,0,1.5,6.25);b.add(G.box,CH,0,1.45,7.28,1.25,.85,.08);b.add(G.box,CH,0,.75,7.4,2.4,.28,.22);
+    b.add(RB(2.3,1.7,1.8,.2),WH,0,2.15,4.4);b.add(RB(2,.62,.08,.04),GL,0,2.55,5.31);b.add(G.box,GL,0,2.55,4.6,2.33,.55,.9);for(const s of[-1,1]){b.add(G.box,WH,s*1.08,1.15,6.15,.3,.55,1.5);b.add(G.cyl,CH,s*1.25,2.75,3.45,.09,2.3,.09);b.add(G.cyl,CH,s*1.05,.85,4.5,.32,1,.32,0,Math.PI/2,0)}
+    b.add(G.box,DK,0,.95,-2.2,.26,.26,7.2);for(const z of[2.3,-1.6,-5.4]){b.add(G.box,DK,0,1.2,z,2.4,.16,.32);for(const s of[-1,1])b.add(G.box,DK,s*1.15,2.1,z,.12,1.8,.12)}
+    [[-.78,1.68,.4],[0,1.68,.4],[.78,1.68,.4],[-.4,2.35,.38],[.4,2.35,.38],[0,2.98,.34]].forEach(([x,y,r],i)=>{b.add(G.cyl,BK[i%3],x,y,-2.25,r,10.5,r,0,Math.PI/2,0);for(const z of[3,-7.5])b.add(G.cyl,0xd9b98a,x,y,z,r*.88,.04,r*.88,0,Math.PI/2,0)});
+    lights(b,.85,1.15,7.33);for(const z of[6.05,3,1.9,-5,-6.1])for(const s of[-1,1])b.add(G.cyl,TI,s*1.05,.52,z,.52,.32,.52,0,0,Math.PI/2)}},
   moto:{hl:1,w:5,pal:[0x2b2b30,0xd8344a,0x2f6fb3,0xf2a541],bike:true,build(b){b.add(G.box,WH,0,.72,0,.22,.4,1.6);b.add(RB(.36,.26,.62,.1),WH,0,1,.25);for(const z of[.72,-.72])b.add(G.cyl,TI,0,.32,z,.32,.12,.32,0,0,Math.PI/2);b.add(G.box,0x2a2a30,0,1.35,-.15,.45,.62,.3,0,.3);b.add(BLOB,WH,0,1.86,.02,.22,.22,.24);for(const s of[-1,1])b.add(G.box,0x2a2a30,s*.2,.9,.1,.14,.14,.7,0,-.4)}},
   bike:{hl:.9,w:5,pal:SHIRT,bike:true,lane:6.6,slow:true,build(b){for(const z of[.55,-.55])b.add(G.cyl,TI,0,.34,z,.34,.05,.34,0,0,Math.PI/2);b.add(G.box,0x9a9aa2,0,.68,0,.06,.06,1.05);b.add(G.box,0x9a9aa2,0,.55,-.15,.05,.45,.05);b.add(G.box,WH,0,1.28,-.08,.45,.62,.3,0,.25);b.add(BLOB,WH,0,1.78,.05,.21,.21,.23);for(const s of[-1,1])b.add(G.box,0x2f3b5a,s*.12,.78,-.05,.14,.55,.16,0,.3)}},
 };
@@ -1748,11 +1805,12 @@ function npcSignal(a){
   [a.hl-.05,-(a.hl-.05)].forEach((f,n)=>{_d.position.set(a.x+a.fx*f+rx*hw*sg,y,a.z+a.fz*f+rz*hw*sg);_d.rotation.set(0,0,0);_d.scale.set(1,1,1);_d.updateMatrix();npcBlink.setMatrixAt(a.k*2+n,_d.matrix)});
 }
 function pickType(town,onPCH){
-  const tot=Object.entries(VTYPES).reduce((s,[k,t])=>s+(t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w),0);let r=Math.random()*tot;
-  for(const [k,t] of Object.entries(VTYPES)){const w=t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w;if((r-=w)<=0)return k}
+  const wt=t=>t.rw?(RG.id==='redwood'&&!town?t.w:0):t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w;
+  const tot=Object.values(VTYPES).reduce((s,t)=>s+wt(t),0);let r=Math.random()*tot;
+  for(const [k,t] of Object.entries(VTYPES)){if((r-=wt(t))<=0)return k}
   return'sedan';
 }
-function setType(a,type){const t=VTYPES[type];a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!t.bus;a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
+function setType(a,type){const t=VTYPES[type];a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!(t.bus||t.rw);a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
 function aStartLeg(a){
   const D=DIRS[a.d],Rt=DIRS[(a.d+1)%4],ht=hwyTarget(a.i,a.j,a.d);a.commit=false;
   if(ht!=null){a.piece='hwy';a.bi=a.i;a.bj=ht;a.hz=a.j*B+D[1]*R;a.ze=ht*B-D[1]*R}
@@ -2426,13 +2484,20 @@ function initAmbience(){
   pink.connect(fizzHP);fizzHP.connect(Amb.fizzG);Amb.fizzG.connect(Amb.synthSea);
   const air=noiseLoop('pink');Amb.windBP=AC.createBiquadFilter();Amb.windBP.type='bandpass';Amb.windBP.frequency.value=500;Amb.windBP.Q.value=.6;
   Amb.windG=AC.createGain();Amb.windG.gain.value=0;air.connect(Amb.windBP);Amb.windBP.connect(Amb.windG);Amb.windG.connect(Amb.bus);
+  // the forest: a babbling creek (two noise bands that wobble), and an echo for calls in the trees
+  Amb.creek=AC.createGain();Amb.creek.gain.value=0;Amb.creek.connect(Amb.bus);Amb.creekSynth=AC.createGain();Amb.creekSynth.connect(Amb.creek);Amb.babble=[];
+  for(const [fq,q,g] of[[1900,.8,.06],[650,1.1,.05]]){const n=noiseLoop('pink'),bp=AC.createBiquadFilter(),gn=AC.createGain();bp.type='bandpass';bp.frequency.value=fq;bp.Q.value=q;gn.gain.value=g;n.connect(bp);bp.connect(gn);gn.connect(Amb.creekSynth);Amb.babble.push({bp,gn,fq,g})}
+  Amb.echo=AC.createDelay(1);Amb.echo.delayTime.value=.23;const fb=AC.createGain(),el=AC.createBiquadFilter();fb.gain.value=.32;el.type='lowpass';el.frequency.value=2400;
+  Amb.echo.connect(el);el.connect(fb);fb.connect(Amb.echo);el.connect(Amb.bus);
+  Amb.calls={};Amb.nextCall=Amb.nextHorn=AC.currentTime+4;
   Amb.nextWave=Amb.nextGull=Amb.nextBird=AC.currentTime+1;
   loadNature();
 }
 // real field recordings (CC0, from Freesound) replace the synthesized layers as they arrive; if a file can't load, the synth stays
-Amb.buf={};Amb.gulls=[];
-function loadNature(){
-  for(const n of RG.nature)fetch('audio/nature/'+n+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
+Amb.buf={};Amb.gulls=[];Amb.asked=new Set();
+function loadNature(){ // this region's recordings (called again after a road trip, for the ones not asked for yet)
+  if(!Amb.bus)return;
+  for(const n of RG.nature)if(!Amb.asked.has(n)&&Amb.asked.add(n))fetch('audio/nature/'+n+'.mp3').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()})
     .then(b=>new Promise((res,rej)=>AC.decodeAudioData(b,res,rej))).then(buf=>natureReady(n,buf)).catch(()=>{});
 }
 function loopNode(buf,dest,gain){
@@ -2445,6 +2510,32 @@ function natureReady(n,buf){
   if(n==='ocean-close')Amb.closeG=loopNode(buf,Amb.bus,0);
   if(n==='wind'){Amb.realWindG=loopNode(buf,Amb.bus,0);Amb.realWind=true}
   if(n==='birds'){Amb.birdsG=loopNode(buf,Amb.bus,0);Amb.realBirds=true}
+  if(n==='forest')Amb.forestG=loopNode(buf,Amb.bus,0);
+  if(n==='canopy')Amb.canopyG=loopNode(buf,Amb.bus,0);
+  if(n==='creek'){Amb.creekRealG=loopNode(buf,Amb.creek,1);Amb.creekSynth.gain.setTargetAtTime(0,t,1)}
+  const m=n.match(/^(creak|thrush|jay|raven|woodpecker|elk|sealion)-\d$/);if(m)(Amb.calls[m[1]]=Amb.calls[m[1]]||[]).push(buf);
+  if(n==='foghorn')Amb.calls.foghorn=[buf];
+}
+function callRecorded(kind,t,vol,pan,echo){ // one recorded call from somewhere in the trees, slightly varied in pitch
+  const s=AC.createBufferSource(),g=AC.createGain();s.buffer=pick(Amb.calls[kind]);s.playbackRate.value=.94+Math.random()*.12;g.gain.value=vol;s.connect(g);panTo(g,pan);if(echo)g.connect(Amb.echo);s.start(t);
+}
+function thrush(t,vol){ // a varied thrush: one long, ringing, slightly buzzy whistle, each a different pitch
+  const f0=2300+Math.random()*2200,d=1+Math.random()*.9,o=AC.createOscillator(),am=AC.createOscillator(),ag=AC.createGain(),g=AC.createGain(),pan=(Math.random()*2-1)*.8;
+  o.type='sine';o.frequency.setValueAtTime(f0,t);o.frequency.linearRampToValueAtTime(f0*(.985+Math.random()*.03),t+d);
+  am.frequency.value=38+Math.random()*20;ag.gain.value=vol*.35;am.connect(ag);ag.connect(g.gain);
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.18);g.gain.setValueAtTime(vol,t+d*.7);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+  o.connect(g);panTo(g,pan);g.connect(Amb.echo);o.start(t);am.start(t);o.stop(t+d+.05);am.stop(t+d+.05);
+}
+function woodpecker(t,vol){ // a drum roll on a dead snag: fast knocks that slow and fade
+  const pan=(Math.random()*2-1)*.8,n=12+Math.floor(Math.random()*10);let tt=t;
+  for(let i=0;i<n;i++){const s=AC.createBufferSource(),bp=AC.createBiquadFilter(),g=AC.createGain(),v=vol*(1-i/n*.6);
+    s.buffer=noiseBuf;bp.type='bandpass';bp.frequency.value=1100;bp.Q.value=4;g.gain.setValueAtTime(v,tt);g.gain.exponentialRampToValueAtTime(.0001,tt+.03);
+    s.connect(bp);bp.connect(g);panTo(g,pan);g.connect(Amb.echo);s.start(tt,Math.random());s.stop(tt+.05);tt+=.055+i*.002}
+}
+function foghorn(t,vol){ // a lighthouse diaphone far down the coast: a long low "beee", then a lower "ohh"
+  for(const [f0,a,d] of[[176,0,2.4],[132,2.5,1.6]]){const o=AC.createOscillator(),lp=AC.createBiquadFilter(),g=AC.createGain();o.type='sawtooth';o.frequency.value=f0;lp.type='lowpass';lp.frequency.value=420;
+    g.gain.setValueAtTime(.0001,t+a);g.gain.exponentialRampToValueAtTime(vol,t+a+.25);g.gain.setValueAtTime(vol,t+a+d-.3);g.gain.exponentialRampToValueAtTime(.0001,t+a+d);
+    o.connect(lp);lp.connect(g);panTo(g,-.5);g.connect(Amb.echo);o.start(t+a);o.stop(t+a+d+.05)}
 }
 function gullRecorded(t,vol){ // one to three recorded calls, slightly varied in pitch, from one side
   const pan=(Math.random()*2-1)*.8,n=1+Math.floor(Math.random()*3);let tt=t;
@@ -2496,8 +2587,27 @@ function updateAmbience(){
   if(want!==Amb.wanted){Amb.wanted=want;Amb.bus.gain.setTargetAtTime(want?1:0,t,want?1.5:.4)}
   if(!want||t-(Amb.lastUpd||0)<.25)return; // adjust levels a few times a second, not every frame
   Amb.lastUpd=t;
-  const near=seaNearness(),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
+  const rw=rwW(car.z),fo=rw*Math.max(groveAt(car.z),ftAtZ(car.z)),ck=rw*ss(260,30,creekAt(car.z)); // redwood country, how deep in the trees, how close the creek
+  const near=seaNearness()*(1-.85*fo),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
   Amb.sea.gain.setTargetAtTime(near,t,1.5);
+  if(Amb.forestG)Amb.forestG.gain.setTargetAtTime(rw*(.25+.75*fo)*.9,t,2);
+  if(Amb.canopyG)Amb.canopyG.gain.setTargetAtTime(fo*(.5+.3*Math.sin(t*.21))*.7,t,1.5);
+  Amb.creek.gain.setTargetAtTime(ck*.9,t,1.2);
+  if(ck>.02&&!Amb.creekRealG)for(const b of Amb.babble){b.gn.gain.setTargetAtTime(b.g*(.6+Math.random()*.8),t,.08);b.bp.frequency.setTargetAtTime(b.fq*(.8+Math.random()*.45),t,.1)}
+  if(rw>.5&&t>=Amb.nextCall){ // the forest's own voices, mostly in the groves
+    const r=Math.random(),c=Amb.calls,v=.3+.7*fo;
+    if(r<.45){if(c.thrush)callRecorded('thrush',t,.5*v,(Math.random()*2-1)*.8,true);else thrush(t,.03*v)}
+    else if(r<.62){if(c.jay)callRecorded('jay',t,.4*v,(Math.random()*2-1)*.8,true)}
+    else if(r<.74){if(c.raven)callRecorded('raven',t,.4,(Math.random()*2-1)*.9,true)}
+    else if(r<.86){if(c.woodpecker)callRecorded('woodpecker',t,.35*v,(Math.random()*2-1)*.8,true);else if(fo>.4)woodpecker(t,.05*v)}
+    else if(r<.95){if(c.creak&&fo>.4)callRecorded('creak',t,.3*fo,(Math.random()*2-1)*.6,false)}
+    else if(c.elk&&Math.random()<.4)callRecorded('elk',t,.35,(Math.random()*2-1)*.9,true); // a rare elk bugle
+    Amb.nextCall=t+(fo>.4?4:9)+Math.random()*8;
+  }
+  if(rw>.5&&t>=Amb.nextHorn){ // fog country: now and then a foghorn far down the coast
+    const sea=seaNearness();if(sea>.2&&fo<.5){if(Amb.calls.foghorn)callRecorded('foghorn',t,.35*sea,-.5,true);else foghorn(t,.04*sea)}
+    Amb.nextHorn=t+50+Math.random()*70;
+  }
   const gust=.75+.25*Math.sin(t*.37)+.1*Math.sin(t*1.3);
   // with the real wind loaded, the synth only adds the rush of air at speed
   Amb.windG.gain.setTargetAtTime(Amb.realWind?spd*.08*gust:(.03+spd*.16+cliff*.05)*gust,t,.6);
@@ -2507,10 +2617,11 @@ function updateAmbience(){
   if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime(town?(1-near*.5)*.8:.1,t,2);
   if(!Amb.realSea&&t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
   if(t>=Amb.nextGull){
-    if(near>.3||Math.random()<.2){if(Amb.gulls.length)gullRecorded(t,(.18+.3*Math.random())*Math.max(near,.3));else gull(t,.035+.05*near*Math.random())}
+    if(rw>.5){if(near>.3&&Amb.calls.sealion)for(let q=0;q<1+Math.floor(Math.random()*3);q++)callRecorded('sealion',t+q*(.5+Math.random()*.6),(.2+.25*Math.random())*near,-.4-Math.random()*.5,false)}
+    else if(near>.3||Math.random()<.2){if(Amb.gulls.length)gullRecorded(t,(.18+.3*Math.random())*Math.max(near,.3));else gull(t,.035+.05*near*Math.random())}
     Amb.nextGull=t+(near>.3?5:14)+Math.random()*10;
   }
-  if(!Amb.realBirds&&t>=Amb.nextBird){if(town&&near<.7||Math.random()<.15)birdsong(t,.012+Math.random()*.018);Amb.nextBird=t+(town?2.5:9)+Math.random()*6}
+  if(!Amb.realBirds&&t>=Amb.nextBird){if((town&&near<.7||Math.random()<.15)&&fo<.5)birdsong(t,.012+Math.random()*.018);Amb.nextBird=t+(town?2.5:9)+Math.random()*6}
 }
 function tone(type,f,t,dur,g,dest,det=0){
   const o=AC.createOscillator(),a=AC.createGain();o.type=type;o.frequency.value=f;o.detune.value=det;
@@ -2971,6 +3082,7 @@ function startSong(tok,song){
 // first couple of drives: once the first song starts, point at the display so people find the request list
 let reqTipDone=false,reqTipT=0,offTipT=0;
 // first couple of drives, 2 s in (during Rick's welcome): point at the power knob so people find the ocean sounds
+const refreshOffTip=()=>{$('offTip').textContent='Turn the radio off for '+(RG.id==='redwood'?'forest':'ocean')+' sounds'};
 function maybeOffTip(){
   if(settings.triedOff||settings.offTips>=2)return;
   settings.offTips++;saveSettings();
@@ -3320,14 +3432,25 @@ function composePostcard(shot,info){
   x.font='42px Shrikhand';x.fillStyle='#fff7ec';x.shadowColor='rgba(43,27,74,.85)';x.shadowOffsetX=3;x.shadowOffsetY=3;x.fillText('Greetings from',4,-96);
   let fs=110;x.font=fs+'px Shrikhand';while(x.measureText(info.town).width>pw*.8&&fs>48){fs-=4;x.font=fs+'px Shrikhand'}
   x.shadowOffsetX=7;x.shadowOffsetY=7;x.lineWidth=13;x.strokeStyle='#2b1b4a';x.strokeText(info.town,0,0);x.shadowColor='transparent';
-  const tg=x.createLinearGradient(0,-fs*.8,0,0);tg.addColorStop(0,'#ffe58a');tg.addColorStop(.5,'#ff9a4a');tg.addColorStop(1,'#e8506b');x.fillStyle=tg;x.fillText(info.town,0,0);x.restore();
-  // the K-JAM stamp, perforated, top right
+  const tg=x.createLinearGradient(0,-fs*.8,0,0);const rw=RG.id==='redwood';tg.addColorStop(0,rw?'#fbe7a8':'#ffe58a');tg.addColorStop(.5,rw?'#e9a24c':'#ff9a4a');tg.addColorStop(1,rw?'#b8532c':'#e8506b');x.fillStyle=tg;x.fillText(info.town,0,0);x.restore();
+  // the station's stamp, perforated, top right: K-JAM's sunset palm, or the Coffee Cabin under the redwoods
   const st=document.createElement('canvas');st.width=136;st.height=164;const sx=st.getContext('2d');
   sx.fillStyle='#fffaf0';sx.fillRect(0,0,136,164);
-  const sky=sx.createLinearGradient(0,12,0,120);sky.addColorStop(0,'#6c3f86');sky.addColorStop(.55,'#e8506b');sky.addColorStop(1,'#ffb46a');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
-  sx.fillStyle='#ffe58a';sx.beginPath();sx.arc(68,92,20,Math.PI,0);sx.fill();sx.fillStyle='#2f6d86';sx.fillRect(12,92,112,24);
-  sx.strokeStyle='#2b1b4a';sx.lineWidth=3;sx.beginPath();sx.moveTo(100,116);sx.quadraticCurveTo(96,70,92,44);sx.stroke();
-  sx.fillStyle='#2b1b4a';for(let k=0;k<6;k++){const a=-Math.PI*.95+k*.36;sx.beginPath();sx.ellipse(92+Math.cos(a)*13,44+Math.sin(a)*7,15,4,a,0,Math.PI*2);sx.fill()}
+  if(ST.id==='coffee'){
+    const sky=sx.createLinearGradient(0,12,0,116);sky.addColorStop(0,'#b9cbbf');sky.addColorStop(.6,'#dfe3cf');sky.addColorStop(1,'#f2dca6');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
+    sx.fillStyle='#9fb5a5';for(const [x0,h] of [[22,46],[40,58],[58,40],[84,52],[104,44],[120,56]]){sx.beginPath();sx.moveTo(x0-11,104);sx.lineTo(x0,104-h);sx.lineTo(x0+11,104);sx.fill()}
+    sx.fillStyle='#3e5a3a';sx.fillRect(12,102,112,14);
+    for(const [x0,w] of [[30,13],[104,10]]){sx.fillStyle='#8a4a2e';sx.fillRect(x0-w/2,12,w,94);sx.fillStyle='#6b3722';sx.fillRect(x0+w/2-3,12,3,94);
+      sx.fillStyle='#2f4d33';for(let k=0;k<4;k++){const y=18+k*17;sx.beginPath();sx.ellipse(x0-w*.9,y,w*.95,4.5,-.25,0,7);sx.ellipse(x0+w*.9,y+7,w*.95,4.5,.25,0,7);sx.fill()}}
+    sx.fillStyle='#7a5134';sx.fillRect(52,84,34,20);sx.fillStyle='#2b2a1e';sx.beginPath();sx.moveTo(48,86);sx.lineTo(69,70);sx.lineTo(90,86);sx.fill();
+    sx.fillRect(78,66,6,12);sx.fillStyle='#ffd27a';sx.fillRect(58,90,9,7);sx.fillRect(74,90,7,14);
+    sx.fillStyle='rgba(255,255,255,.85)';for(const [x0,y0,r] of [[83,60,4],[87,52,5],[84,42,6]]){sx.beginPath();sx.arc(x0,y0,r,0,7);sx.fill()}
+  }else{
+    const sky=sx.createLinearGradient(0,12,0,120);sky.addColorStop(0,'#6c3f86');sky.addColorStop(.55,'#e8506b');sky.addColorStop(1,'#ffb46a');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
+    sx.fillStyle='#ffe58a';sx.beginPath();sx.arc(68,92,20,Math.PI,0);sx.fill();sx.fillStyle='#2f6d86';sx.fillRect(12,92,112,24);
+    sx.strokeStyle='#2b1b4a';sx.lineWidth=3;sx.beginPath();sx.moveTo(100,116);sx.quadraticCurveTo(96,70,92,44);sx.stroke();
+    sx.fillStyle='#2b1b4a';for(let k=0;k<6;k++){const a=-Math.PI*.95+k*.36;sx.beginPath();sx.ellipse(92+Math.cos(a)*13,44+Math.sin(a)*7,15,4,a,0,Math.PI*2);sx.fill()}
+  }
   sx.fillStyle='#2b1b4a';sx.font='28px VT323';sx.textAlign='center';sx.fillText(ST.stamp,68,146);
   sx.globalCompositeOperation='destination-out';for(let k=0;k<=12;k++){for(const y of[0,164]){sx.beginPath();sx.arc(k*136/12,y,5,0,7);sx.fill()}}for(let k=0;k<=14;k++){for(const xx of[0,136]){sx.beginPath();sx.arc(xx,k*164/14,5,0,7);sx.fill()}}
   x.save();x.translate(px+pw-170,py+22);x.rotate(.05);x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=8;x.drawImage(st,0,0);x.restore();
@@ -3343,7 +3466,7 @@ function composePostcard(shot,info){
   if(info.ribbon){x.save();x.translate(px+22,py+30);x.rotate(-.06);x.fillStyle='#c2456b';x.fillRect(0,0,x.measureText(info.ribbon).width+300,44);x.fillStyle='#fff7ec';x.font='800 24px Figtree';const t=info.ribbon.toUpperCase()+'!';x.fillText(t,18,31);x.restore()}
   // the caption
   x.textAlign='left';x.fillStyle='#2b1b4a';x.font='44px VT323';x.fillText(info.line,px+4,H-94);
-  x.font='italic 600 23px Figtree';x.fillStyle='#6c4f6a';x.fillText('Top down, sun low, take it slow.',px+4,H-52);
+  x.font='italic 600 23px Figtree';x.fillStyle='#6c4f6a';x.fillText(RG.id==='redwood'?'Sweater on, coffee hot, take it slow.':'Top down, sun low, take it slow.',px+4,H-52);
   x.textAlign='right';x.font='34px Shrikhand';x.fillStyle='#c2456b';x.fillText('Long Way Home',W-px,H-88);
   x.font='800 15px Figtree';x.fillStyle='#6c3f86';x.fillText('IN CALIFORNIA  ·  '+SITE,W-px,H-56);
   return c;
@@ -3523,7 +3646,7 @@ function roadTripGo(){trip.due=false;const ids=Object.keys(REGIONS);requestRegio
 function updateRegion(dt){
   const w=planW(car.z),now=w>=.5?PLAN.to:BASE;
   applyLook(BASE,PLAN?PLAN.to:BASE,w);
-  if(now!==RG){const from=RG;RG=now;setPeopleStyle(RG.id==='redwood');radioHandoff(from,RG)}
+  if(now!==RG){const from=RG;RG=now;setPeopleStyle(RG.id==='redwood');loadNature();refreshOffTip();radioHandoff(from,RG)}
   if(PLAN&&w>=1)commitPlan(); // all the way into the new region
   if(!PLAN&&settings.roadTrip&&dt>0){
     if(car.v>1&&FOCUS.phase!=='break'&&!pcOpen)trip.t+=dt;
@@ -3579,7 +3702,7 @@ function resize(){
 addEventListener('resize',resize);resize();
 // start out on Highway 1, heading north, about a minute south of the first town
 startLeg();car.hz=(townLen(0)+22)*B;updateCar(0);
-applyLook(RG);setPeopleStyle(RG.id==='redwood');
+applyLook(RG);setPeopleStyle(RG.id==='redwood');refreshOffTip();
 {const f=$('lcd').querySelector('.freq span');if(f)f.innerHTML='FM <b>'+ST.freq+'</b> '+ST.name} // the dial shows the station you start on
 camPos.set(-Math.sin(car.yaw)*11,4.4,-Math.cos(car.yaw)*11);camLook.set(Math.sin(car.yaw)*7,1.6,Math.cos(car.yaw)*7);
 stream(car.x,car.z,true);
