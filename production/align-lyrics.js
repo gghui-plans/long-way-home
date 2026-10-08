@@ -14,7 +14,10 @@ for(const part of md.split('**Save as:** ').slice(1)){ // only the block inside 
 }
 const lyricLines=b=>b.split('\n').map(s=>s.trim()).filter(s=>s&&!/^\[.*\]$/.test(s));
 
-const norm=w=>w.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');
+// whisper writes numbers as digits ("60"); the lyrics spell them out ("sixty"), so spell the digits out before matching
+const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+const spell=n=>n<20?ONES[n]:n<100?TENS[Math.floor(n/10)]+(n%10?ONES[n%10]:''):n<1000?ONES[Math.floor(n/100)]+'hundred'+(n%100?spell(n%100):''):String(n);
+const norm=w=>{w=w.toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]/g,'');return /^\d+$/.test(w)?spell(+w):w};
 function lev(a,b){const d=[...Array(b.length+1).keys()];for(let i=1;i<=a.length;i++){let p=d[0];d[0]=i;for(let j=1;j<=b.length;j++){const t=d[j];d[j]=Math.min(d[j]+1,d[j-1]+1,p+(a[i-1]===b[j-1]?0:1));p=t}}return d[b.length]}
 const sim=(a,b)=>a===b?3:(a.length>=4&&b.length>=4&&lev(a,b)<=1)||(a.length>=3&&b.length>=3&&(a.startsWith(b)||b.startsWith(a)))?1.5:-1;
 
@@ -46,7 +49,8 @@ for(const f of fs.readdirSync(dir).filter(f=>f.endsWith('.mp3'))){
   const lastHeard=Math.max(...hit.filter(t=>t!=null));
   for(let li=0;li<lines.length;li++)if(start[li]==null){
     let a=li-1;while(a>=0&&start[a]==null)a--;let b=li+1;while(b<lines.length&&start[b]==null)b++;
-    if(a>=0&&b<lines.length)start[li]=start[a]+(start[b]-start[a])*(li-a)/(b-a);
+    if(a>=0&&b<lines.length){const step=(start[b]-start[a])/(b-a);if(step>=1.2)start[li]=start[a]+step*(li-a)} // squeezed tighter than that, Suno skipped them: leave them out
+    else if(a<0&&b<lines.length)start[li]=Math.max(0,start[b]-(b-li)*3.2); // an opening line whisper misheard: just before the first one it heard
   }
   const res=[];for(let li=0;li<lines.length;li++){const t=start[li];if(t==null||t>=PLAYED||t>lastHeard+1)continue;if(res.length&&t<=res[res.length-1][0])continue;res.push([+t.toFixed(2),lines[li]])}
   const matched=hit.filter(t=>t!=null).length,rate=matched/Math.max(1,L.filter(x=>start[x.li]!=null&&start[x.li]<PLAYED).length);
