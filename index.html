@@ -198,7 +198,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
 <div class="hud" id="hud" hidden>
   <div class="top">
     <div class="left">
-      <div class="sign"><small id="blockno">100 N</small><span id="street">Jacaranda St</span><span class="nextline" id="next" hidden></span></div>
+      <div class="sign"><small id="blockno">100 N</small><span id="street">Jacaranda St</span><span class="nextline" id="next" hidden></span><span class="nextline" id="tripLine" hidden></span></div>
     </div>
     <div class="right">
       <div class="dash">
@@ -3370,9 +3370,9 @@ function updateHud(){
   else{const a={L:'↰ Left onto',R:'↱ Right onto',S:'↑ Straight across'}[c];next=`<b>${a}</b> ${cross} <i>· ${who==='auto'?'autopilot':who}</i>`}
   // only show what's next when it matters: you've picked a turn, or the next intersection is about 15 s away
   const show=!!car.user||(car.piece!=='turn'&&toEndNow()<Math.max(60,car.v*15));
-  const small=signSmall(),key=curStreet()+small+next+car.user+show;
+  const small=signSmall(),tl=tripLine(),key=curStreet()+small+next+car.user+show+tl;
   if(key===lastHud)return;lastHud=key;
-  $('street').textContent=curStreet();$('blockno').textContent=small;$('next').innerHTML=next;$('next').hidden=!show;
+  $('street').textContent=curStreet();$('blockno').textContent=small;$('next').innerHTML=next;$('next').hidden=!show;$('tripLine').innerHTML=tl;$('tripLine').hidden=!tl;
   $('btnL').classList.toggle('on',car.user==='L');$('btnR').classList.toggle('on',car.user==='R');$('btnS').classList.toggle('on',car.user==='S');
 }
 
@@ -3629,7 +3629,7 @@ function drawMap(){
 }
 function setMapMode(m){mapMode=m;$('mapCoast').classList.toggle('on',m==='coast');$('mapTown').classList.toggle('on',m==='town');drawMap()}
 function openMap(){$('mapSheet').hidden=false;refreshRegionUI();requestAnimationFrame(drawMap);clearInterval(mapTimer);mapTimer=setInterval(()=>{drawMap();refreshRegionUI()},300)}
-function closeMap(){$('mapSheet').hidden=true;clearInterval(mapTimer)}
+function closeMap(){$('mapSheet').hidden=true;clearInterval(mapTimer);if(PLAN&&RG!==PLAN.to)wakeHud()} // a trip's on: show the countdown
 $('mapBtn').addEventListener('click',openMap);
 // ---------- road trip: pick a region on the map and drive there; with Road trip on, the car moves on by itself every 30 minutes
 const TRIP_S=30*60,trip={t:0,due:false};
@@ -3647,14 +3647,27 @@ function requestRegion(id,auto){
   trip.due=false;
   if(to===BASE){refreshRegionUI();return}
   setRegionPlan(to);trip.t=0;refreshRegionUI();
+  Object.assign(tripInfo,{auto:!!auto,mile:false,welcome:''});if(auto)wakeHud(); // picked in the map: closing the map wakes it
   toast(auto?'Road trip: heading for '+to.label+'.':'Heading for '+to.label+'. It starts past the next stretch of open coast.');
+}
+// the trip on the road sign: how far until the new region begins, then a welcome when you get there. The screen wakes
+// (as if tapped, so calm mode fades it again after 10 s) when a road trip starts by itself, at a mile out, and on arrival
+const tripInfo={auto:false,mile:false,welcome:'',until:0};
+const wakeHud=()=>{lastTouch=performance.now();hudEl.classList.remove('calm')};
+const tripDist=()=>{if(!PLAN)return 0;const fwd=Math.cos(car.yaw)>=0,ahead=[(PLAN.zA+PLAN.zB)/2,(PLAN.zC+PLAN.zD)/2].map(m=>fwd?m-car.z:car.z-m).filter(d=>d>0); // to the handover, halfway through the blend (where the radio switches)
+  return ahead.length?Math.min(...ahead):0};
+function tripLine(){
+  if(PLAN&&RG!==PLAN.to){const mi=tripDist()/1609;if(mi<1&&!tripInfo.mile){tripInfo.mile=true;wakeHud()}
+    return '<b>'+(tripInfo.auto?'Road trip · ':'→ ')+PLAN.to.name+'</b> '+(mi>=.05?mi.toFixed(1)+' mi':'almost there')}
+  return tripInfo.welcome&&performance.now()<tripInfo.until?'<b>'+tripInfo.welcome+'</b>':'';
 }
 function commitPlan(){BASE=PLAN.to;PLAN=null;flushFar();refreshRegionUI()}
 function roadTripGo(){trip.due=false;const ids=Object.keys(REGIONS);requestRegion(ids[(ids.indexOf(BASE.id)+1)%ids.length],true)}
 function updateRegion(dt){
   const w=planW(car.z),now=w>=.5?PLAN.to:BASE;
   applyLook(BASE,PLAN?PLAN.to:BASE,w);
-  if(now!==RG){const from=RG;RG=now;settings.region=RG.id;saveSettings();setPeopleStyle(RG.id==='redwood');loadNature();refreshOffTip();radioHandoff(from,RG)}
+  if(now!==RG){if(PLAN&&now===PLAN.to){Object.assign(tripInfo,{welcome:'Welcome to '+now.label,until:performance.now()+8000});wakeHud()}
+    const from=RG;RG=now;settings.region=RG.id;saveSettings();setPeopleStyle(RG.id==='redwood');loadNature();refreshOffTip();radioHandoff(from,RG)}
   if(PLAN&&w>=1)commitPlan(); // all the way into the new region
   if(!PLAN&&settings.roadTrip&&dt>0){
     if(car.v>1&&FOCUS.phase!=='break'&&!pcOpen)trip.t+=dt;
@@ -3689,7 +3702,7 @@ function refreshRegionUI(){
   const tgt=PLAN?PLAN.to:BASE;for(const b of $('regionSeg').children)b.classList.toggle('on',b.dataset.r===tgt.id);
   $('roadTrip').checked=settings.roadTrip;
   let note='';
-  if(PLAN){const fwd=Math.cos(car.yaw)>=0,d=Math.max(0,fwd?PLAN.zC-car.z:car.z-PLAN.zA);note=RG===PLAN.to?'Welcome to '+PLAN.to.label+'.':'On the way to '+PLAN.to.label+(d>0?' · it begins in '+(d/1609).toFixed(1)+' mi':'');}
+  if(PLAN){const d=tripDist();note=RG===PLAN.to?'Welcome to '+PLAN.to.label+'.':'On the way to '+PLAN.to.label+(d>80?' · '+(d/1609).toFixed(1)+' mi to go':'');} // the same distance as the road sign
   else if(settings.roadTrip)note=trip.due?'Road trip: moving on after your focus session':'Road trip: next region in '+Math.max(1,Math.ceil((TRIP_S-trip.t)/60))+' min';
   $('regionNote').textContent=note;
 }
