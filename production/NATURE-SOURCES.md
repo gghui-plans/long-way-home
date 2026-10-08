@@ -14,9 +14,9 @@ Every recording used in the game, where it came from, and its license. Keep this
 | gull-b | R01-71-Close up Seagull | craigsmith | https://freesound.org/s/479595/ | CC0 | Vintage film recording, some distortion. Use sparingly (HQ preview MP3) |
 | gull-c | Lost seagull | SiriusParsec | https://freesound.org/s/532092/ | CC0 | Young herring gull, 14 s, several calls (HQ preview MP3) |
 
-## Redwood Coast: to download (shortlist, 2026-10-07)
+## Redwood Coast (in the game since 2026-10-07)
 
-Every page below shows Creative Commons 0 (checked 2026-10-07). Sign in to Freesound, download each one, and drop it in `production/raw/nature/redwood/` under the "Save as" name. Claude cuts the one-shots and loops, levels them, and moves each row into the table above once it's used. The game slot is the file the game asks for in `docs/audio/nature/`.
+All CC0 (checked on each page 2026-10-07). The raw files are in `production/raw/nature/redwood/` under the first column's name; `process-nature.ps1 -Region redwood` cuts the loops and calls into `docs/audio/nature/` (the game slot column).
 
 | Save as | Game slot(s) | Title | Creator | Link | Length | Notes |
 |---|---|---|---|---|---|---|
@@ -34,7 +34,7 @@ Every page below shows Creative Commons 0 (checked 2026-10-07). Sign in to Frees
 | foghorn | foghorn | Fog horn as heard from shore | richwise | https://freesound.org/s/795709/ | 3:12 | Distant blasts on a foggy morning, gentle waves |
 | sealions | sealion-1..3 | Colony of sea lions on land barking and vocalizing | RavenWolfProds | https://freesound.org/s/503679/ | 7:55 | Crescent City CA, California sea lions. Close up (Claude distances it); skip any people or cars |
 
-Backups if one disappoints:
+Backups if one disappoints (not downloaded):
 - creek: https://freesound.org/s/792675/ (redwoods, unedited)
 - thrush: https://freesound.org/s/824788/ (hermit thrush)
 - raven: https://freesound.org/s/835857/ (Humboldt canyon echo, water underneath)

@@ -2612,7 +2612,7 @@ function updateAmbience(){
   // with the real wind loaded, the synth only adds the rush of air at speed
   Amb.windG.gain.setTargetAtTime(Amb.realWind?spd*.08*gust:(.03+spd*.16+cliff*.05)*gust,t,.6);
   Amb.windBP.frequency.setTargetAtTime(350+spd*700,t,.8);
-  if(Amb.realWindG)Amb.realWindG.gain.setTargetAtTime((.3+spd*.45+cliff*.3)*gust,t,.8);
+  if(Amb.realWindG)Amb.realWindG.gain.setTargetAtTime((.3+spd*.45+cliff*.3)*gust*(1-.6*fo),t,.8); // deep in the groves the canopy takes over
   if(Amb.closeG)Amb.closeG.gain.setTargetAtTime(ss(.6,1,near)*.7,t,1.5);
   if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime(town?(1-near*.5)*.8:.1,t,2);
   if(!Amb.realSea&&t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
@@ -3179,7 +3179,7 @@ function seek(){
 function power(on){
   Show.on=on;Show.token++;
   if(on)talk('id');
-  else{stopVoice();try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','RADIO OFF · LISTENING TO THE COAST')}
+  else{stopVoice();try{speechSynthesis.cancel()}catch(e){}stopSong(.4);Show.phase='off';setLCD('OFF','RADIO OFF · LISTENING TO THE '+(RG.id==='redwood'?'FOREST':'COAST'))}
 }
 // ---------- HUD & controls
 const $=id=>document.getElementById(id);
@@ -3504,7 +3504,7 @@ function focusDone(){ // time's up: chime, the music fades, Rick and Dana sign o
   FOCUS.phase='break';FOCUS.endAt=Date.now()+5*60000;car.pullOver=true;chime();$('focusLbl').textContent='BREAK';
   $('fcTitle').textContent='Focus drive done. Nice work.';$('fcStats').textContent=FOCUS.min+' minutes  ·  '+FOCUS.km.toFixed(1)+' km';$('focusCard').hidden=false;
   const tok=++Show.token;Show.phase='talk';stopVoice();try{speechSynthesis.cancel()}catch(e){}
-  stopSong(2.5,()=>{if(tok!==Show.token)return;playBits([ST.bits.focus.end],tok,()=>{if(tok!==Show.token)return;power(false);setLCD('BREAK','FIVE MINUTES · LISTENING TO THE COAST')})});
+  stopSong(2.5,()=>{if(tok!==Show.token)return;playBits([ST.bits.focus.end],tok,()=>{if(tok!==Show.token)return;power(false);setLCD('BREAK','FIVE MINUTES · LISTENING TO THE '+(RG.id==='redwood'?'FOREST':'COAST'))})});
 }
 function breakDone(){ // back on the road for the next session
   car.pullOver=false;$('focusCard').hidden=true;startFocus(FOCUS.min);Show.queue.push(ST.bits.focus.back);power(true);
