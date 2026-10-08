@@ -120,6 +120,33 @@ Small logging and fishing towns, with shorter grids and longer forest stretches 
 - **Street names:** Spruce St, Alder Ave, Madrone Dr, Sitka St, Huckleberry Ln, Mill St, Harbor Rd, Grange Rd, Tanoak Way, Salal St, Hemlock Ave, Fir Crest Dr.
 - **Between towns:** honey and fruit stands, the carving stand, campgrounds, vista pull-outs.
 
+## 7. More forest, less coast (agreed 2026-10-07, not built yet)
+
+Why: the groves are what makes this region look like nowhere in LA, while the coast stretches overlap most with the original map. It's also true to life: the famous redwood drives (like Avenue of the Giants) run inland along river valleys, and the ocean only shows now and then.
+
+**The open road**
+- Groves take about **80%** of the open road (now about 60%).
+- The coast becomes a reveal: every so often the forest opens onto a bluff and a sea view for 20–30 seconds, then closes again.
+
+**Forest variety** (so 80% never feels like the same grove on repeat)
+- **Cathedral groves:** the giants, dark and foggy, with light shafts. What exists now.
+- **Second-growth forest:** younger, denser and brighter, with more firs and ferns, smaller trunks.
+- **Meadows and clearings:** open grass where the elk graze, a split-rail fence, a pull-out.
+- **Creek crossings:** a short bridge over a rocky stream, ferns and alders on the banks.
+- **The drive-through tree** (the hero model from batch 5), now and then on a grove stretch.
+
+**Forest towns** (about half the redwood towns; the other half stay harbour towns, so they alternate)
+- **Trees:** giant redwoods in the gaps between buildings and along the sidewalks, never in the roads. A couple per lot, so you drive down streets lined with trunks and the buildings sit at their feet. Most of the canopy is above the camera, so in-town redwoods get simpler tops.
+- **Buildings:** smaller and woodier. Log cabins and lodges, a couple of A-frames, a general store, a gas station, a motor lodge with a glowing VACANCY sign, a chainsaw-carving shop with bears out front. Mossy roofs, woodpiles, chimney smoke.
+- **Light:** darker and cosier under the canopy, light shafts coming through, warm porch lights and lit windows glowing (the same glow LA uses for neon). The warm light is what keeps it inviting rather than gloomy.
+- **Layout:** no beach or harbour; the west side becomes forest, maybe a creek with a little bridge. The mill, campgrounds and forest lots stay.
+
+**Watch**
+- **Performance:** keep forest towns under LA's busiest town frame (about 612k triangles; redwood towns are about 555k now). Simpler in-town crowns, fewer but bigger trunks, fog hiding the distance. Measure before and after.
+- **Readability:** a dark town can turn murky on a phone; the warm lights and brighter street surfaces matter. Check on the user's phone.
+- **Radio:** a few bits assume the coast (harbour, Gus at the lighthouse, sea lions, coastal fog banks). With about 20% coast and the harbour towns kept, they still fit. The general store and Main Street town lines suit forest towns as is.
+- **The LA handover** still blends across a coast stretch; you come out of LA's coast straight into the trees.
+
 ## Build batches
 
 1. **Foundation (code, LA only):** a station table (K-JAM becomes entry #1) and a region table (LA becomes entry #1). LA looks and sounds exactly the same afterward. **Done 2026-10-06 on the `redwoods` branch.** The region table holds sky, terrain colours, town and street names, ambient sounds and its station; trees, props, districts and outfits get added in batch 3, when the redwood versions exist. The station table holds name, frequency, songs, bits, segment rotation, host names and its own audio folder (`dir`); `setStation()` switches stations.
