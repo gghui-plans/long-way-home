@@ -255,9 +255,9 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     </div>
     <div class="row"><span class="lbl">Cruise speed</span><div class="stepper"><button id="spdDown" aria-label="Slower">−</button><output id="spdVal">100 km/h</output><button id="spdUp" aria-label="Faster">+</button></div></div>
     <div class="row"><label class="lbl" for="vol">Volume</label><input type="range" id="vol" min="0" max="100" value="80"></div>
-    <div class="row"><label class="lbl" for="voices">Host voices</label><input type="checkbox" id="voices" checked></div>
-    <p class="note">Turn off to keep just the music, with Rick and Dana as subtitles on the radio display. No sound on iPhone? Check the silent switch.</p>
-    <div class="row"><label class="lbl" for="signalSnd">Turn signal sound</label><input type="checkbox" id="signalSnd" checked></div>
+    <div class="row"><label class="lbl" for="musicMode">Music mode</label><input type="checkbox" id="musicMode"></div>
+    <p class="note">Just the songs, back to back, with no hosts or breaks. No sound on iPhone? Check the silent switch.</p>
+    <div class="row"><label class="lbl" for="signalSnd">Turn signal sound</label><input type="checkbox" id="signalSnd"></div>
     <p class="note">The tick-tock when the car signals a turn.</p>
     <div class="row"><label class="lbl" for="calm">Calm mode</label><input type="checkbox" id="calm"></div>
     <p class="note">Fades the signs and buttons after 10 seconds without touching anything. The hands-free timer stays. Tap anywhere to bring everything back.</p>
@@ -2425,8 +2425,10 @@ function placeKey(){
   return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,voices:true,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false,offTips:0,triedOff:false,roadTrip:true,signalSound:true,region:'la'};
+const settings={mode:'arrows',vol:.8,musicMode:false,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false,offTips:0,triedOff:false,roadTrip:true,signalSound:false,region:'la'};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
+delete settings.voices; // the old host-voices switch, replaced by music mode
+if(!settings.sigOffV){settings.signalSound=false;settings.sigOffV=1} // the tick sound now starts off, for returning players too
 const saveSettings=()=>{try{localStorage.setItem('la-drive',JSON.stringify(settings))}catch(e){}};
 const effVol=()=>settings.muted?0:settings.vol; // the level everything actually plays at
 
@@ -2998,7 +3000,7 @@ function pickBit(key,pool,inOrder){
 const Show={on:false,phase:'off',token:0,lastKind:'',queue:[]};
 // queue a special bit for the next break; if a song has been on a while, fade it now (like a red light)
 function onAirSoon(bit){
-  if(!Show.on)return;
+  if(!Show.on||settings.musicMode)return;
   Show.queue.push(bit);
   if(Show.phase==='song'&&AC&&AC.currentTime-M.start>20){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk(nextKind())})}
 }
@@ -3010,7 +3012,7 @@ function sayLine(line,tok,next){
   let done=false,to;
   const fin=()=>{if(done)return;done=true;clearTimeout(to);if(tok===Show.token)setTimeout(next,280)};
   const est=900+text.length*65/sp.rate;
-  if(settings.voices&&!settings.muted&&'speechSynthesis' in window){
+  if(!settings.muted&&'speechSynthesis' in window){
     to=setTimeout(fin,est*1.8+2500);
     const u=new SpeechSynthesisUtterance(spoken(text)),v=sp.v();
     if(v){u.voice=v;u.lang=v.lang}else u.lang='en-US';
@@ -3034,7 +3036,7 @@ const introBit=s=>{const a={id:'intro-'+s.id,lines:s.introLines||[s.intro]},b=ST
 const React={bit:null,until:0,last:{}};
 const reactFresh=()=>React.bit&&performance.now()<React.until;
 function react(kind,bit,ttl,cool,urgent){
-  const now=performance.now();if(!Show.on||now<(React.last[kind]??-1e12)+cool*1000)return;
+  const now=performance.now();if(!Show.on||settings.musicMode||now<(React.last[kind]??-1e12)+cool*1000)return;
   React.last[kind]=now;React.bit=bit;React.until=now+ttl*1000;
   if(urgent&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('short')})}
 }
@@ -3043,6 +3045,7 @@ function clockBit(){const h=new Date().getHours(),c=ST.bits.clock;return h>=5&&h
 let lastBreak='';
 function nextBreak(){
   const r=Math.random();
+  if(settings.musicMode)return talk('short'); // no breaks: talk() goes straight to the song
   if(Show.queue.length)lastBreak='full';
   else if(reactFresh()){lastBreak='short';return talk('short')} // the reaction, then the song
   else if(r<.2&&lastBreak!=='music'){lastBreak='music';return backToBack()}
@@ -3062,7 +3065,7 @@ function requestSong(s){
   const go=()=>{
     Show.on=true;Show.phase='talk';Show.lastKind='request';const tok=++Show.token;Show.pending=s;lastSongId=s.id;
     stopVoice();try{speechSynthesis.cancel()}catch(e){}cueSong(s);
-    const list=[pickBit('request',ST.bits.request),introBit(s)];
+    const list=settings.musicMode?[]:[pickBit('request',ST.bits.request),introBit(s)];
     list.forEach(b=>loadVoice(b.id));
     playBits(list,tok,()=>startSong(tok,s));
   };
@@ -3149,7 +3152,7 @@ function playBit(bit,tok,done){
   Promise.all([loadVoice(bit.id),vtLoading||Promise.resolve()]).then(([buf])=>{
     if(tok!==Show.token)return;
     const tm=VT&&VT[bit.id];
-    if(!buf||!tm||!settings.voices){playLines(bit.lines.map(l=>[l[0],showText(l[1]),l[2]]),tok,done);return} // backup: device voice, or subtitles only
+    if(!buf||!tm){playLines(bit.lines.map(l=>[l[0],showText(l[1]),l[2]]),tok,done);return} // backup: device voice, or subtitles only
     const s=AC.createBufferSource();s.buffer=buf;s.connect(voiceBus);Show.voiceSrc=s;s.start(AC.currentTime+.05);
     bit.lines.forEach((l,i)=>setTimeout(()=>{if(tok===Show.token&&Show.voiceSrc===s)setLCD(l[2]||ST.hosts[l[0]]||'CALLER',showText(l[1]))},(tm.t[i]||0)*1000+50));
     s.onended=()=>{if(Show.voiceSrc===s)Show.voiceSrc=null;if(tok===Show.token)setTimeout(done,300)};
@@ -3161,6 +3164,7 @@ function talk(kind){
   if(!Show.on)return;
   Show.phase='talk';if(kind!=='short')Show.lastKind=kind;const tok=++Show.token,song=nextSong();Show.pending=song;
   stopVoice();cueSong(song);
+  if(settings.musicMode){Show.queue.length=0;React.bit=null;setTimeout(()=>{if(tok===Show.token&&Show.on)startSong(tok,song)},800);return} // music mode: straight into the next song
   const list=[],special=Show.queue.shift(); // a hands-free milestone or welcome-back takes this break's slot
   if(special){list.push(special);if(special===ST.bits.welcome&&!settings.requested)list.push(ST.bits.plug);if(special===ST.bits.welcome&&FOCUS.phase==='focus')list.push(ST.bits.focus[FOCUS.min])} // the request plug, until they've tried it; the focus drive starting
   else if(kind!=='town'&&kind!=='red'&&reactFresh()){list.push(React.bit);React.bit=null;if(ST.kinds.includes(kind))kindBag.unshift(kind)} // that segment waits for the next break
@@ -3178,10 +3182,10 @@ function talk(kind){
 let lastRed=-1e12;
 onRedStop=()=>{ // a red light only cuts in on a song's last 40 s (in place of its fade-out), and at most every 10 minutes
   const left=M.real&&isFinite(songEl.duration)?songEl.duration-songEl.currentTime:Infinity;
-  if(Show.on&&Show.phase==='song'&&AC&&left<40&&performance.now()-lastRed>600000){lastRed=performance.now();Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('red')})}
+  if(Show.on&&!settings.musicMode&&Show.phase==='song'&&AC&&left<40&&performance.now()-lastRed>600000){lastRed=performance.now();Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('red')})}
 };
 onTownCue=()=>{ // approaching a town on Highway 1
-  if(Show.on&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('town')})}
+  if(Show.on&&!settings.musicMode&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('town')})}
 };
 function seek(){
   if(!Show.on)return;
@@ -3285,7 +3289,7 @@ const FEEDBACK_URL=''; // e.g. a Google Form or Tally link; '{text}' in it is re
 let fbMood='';
 function fbCompose(){
   const dev=(navigator.userAgent.match(/iPhone|iPad|Android|Windows|Macintosh|CrOS|Linux/)||['Other'])[0];
-  return['Long Way Home in California: feedback',`Feel: ${fbMood||'(not picked)'}`,`Notes: ${$('fbText').value.trim()||'(none)'}`,`Device: ${dev}, ${innerWidth}x${innerHeight}`,`Settings: ${settings.mode}, ${settings.cruise} km/h, voices ${settings.voices?'on':'off'}`].join('\n');
+  return['Long Way Home in California: feedback',`Feel: ${fbMood||'(not picked)'}`,`Notes: ${$('fbText').value.trim()||'(none)'}`,`Device: ${dev}, ${innerWidth}x${innerHeight}`,`Settings: ${settings.mode}, ${settings.cruise} km/h, music mode ${settings.musicMode?'on':'off'}`].join('\n');
 }
 function fbSync(){if(FEEDBACK_URL){$('fbLink').href=FEEDBACK_URL.replace('{text}',encodeURIComponent(fbCompose()))}}
 function openFb(){$('sheet').hidden=true;$('fbSheet').hidden=false;$('fbOut').hidden=true;$('fbLink').hidden=!FEEDBACK_URL;$('fbCopy').hidden=!!FEEDBACK_URL;fbSync()}
@@ -3327,8 +3331,8 @@ $('volBtn').addEventListener('click',e=>{e.stopPropagation();$('volPop').hidden=
 document.addEventListener('pointerdown',e=>{if(!$('volPop').hidden&&!e.target.closest('#volPop,#volBtn'))$('volPop').hidden=true});
 applyVolume();
 $('signalSnd').checked=settings.signalSound;$('signalSnd').addEventListener('change',e=>{settings.signalSound=e.target.checked;saveSettings()});
-$('voices').checked=settings.voices;
-$('voices').addEventListener('change',e=>{settings.voices=e.target.checked;saveSettings();if(!settings.voices)try{speechSynthesis.cancel()}catch(_){}});
+$('musicMode').checked=settings.musicMode;
+$('musicMode').addEventListener('change',e=>{settings.musicMode=e.target.checked;saveSettings();if(settings.musicMode&&Show.on&&Show.phase==='talk')seek()}); // switched on mid-break: skip to the song
 
 // tilt: picks the next turn, with a dead zone; must level out before picking again
 const DEAD=10,TRIG=18;
@@ -3693,11 +3697,11 @@ function radioHandoff(from,to){
   const tok=++Show.token,hand=b=>b&&b.handoff;Show.phase='talk';stopVoice();try{speechSynthesis.cancel()}catch(e){}
   staticTo(.2,3);
   stopSong(2,()=>{if(tok!==Show.token)return;
-    const bye=hand(old.bits)?pickBit('handoff-out',old.bits.handoff.out):null;staticTo(.55,9);
+    const bye=!settings.musicMode&&hand(old.bits)?pickBit('handoff-out',old.bits.handoff.out):null;staticTo(.55,9);
     playBits(bye?[bye]:[],tok,()=>{if(tok!==Show.token)return;
       staticTo(1,.4);setLCD('~ ~ ~','· · ·  TUNING  · · ·');
       setTimeout(()=>{if(tok!==Show.token)return;setStation(st.id);staticTo(0,3.5);
-        const hi=hand(st.bits)?pickBit('handoff-in',st.bits.handoff.in,true):null;Show.phase='talk';
+        const hi=!settings.musicMode&&hand(st.bits)?pickBit('handoff-in',st.bits.handoff.in,true):null;Show.phase='talk';
         playBits(hi?[hi]:[],tok,()=>{if(tok===Show.token)nextBreak()});
       },2600);
     });
