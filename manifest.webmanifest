@@ -4,7 +4,7 @@
   "description": "Top down, sun low, take it slow. A self-driving convertible, golden-hour Highway 1 and the radio.",
   "start_url": "./",
   "scope": "./",
-  "display": "fullscreen",
+  "display": "standalone",
   "orientation": "any",
   "background_color": "#2b1b4a",
   "theme_color": "#2b1b4a",

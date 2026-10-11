@@ -24,7 +24,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Long Way Home">
 </head>
 <body>
@@ -50,8 +50,6 @@ button{font-family:var(--f-body)}
 button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
 
 .hud{position:fixed;inset:0;pointer-events:none}
-/* iPhone home-screen app: Safari reports a viewport short by the status bar, so the full-screen layers take the real screen height (--app-h, set in resize) */
-.pwa-ios #c,.pwa-ios .hud,.pwa-ios .start,.pwa-ios .sheet,.pwa-ios .pcsheet,.pwa-ios .mapsheet{bottom:auto;height:var(--app-h,100%)}
 .top{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:16px;right:16px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .top .left{display:grid;gap:8px;justify-items:start;min-width:0}
 .sign{background:var(--sign);color:var(--sign-ink);border:2px solid var(--sign-ink);outline:3px solid var(--sign);border-radius:7px;padding:3px 12px 5px;font-weight:800;font-size:20px;line-height:1.1;letter-spacing:.01em;box-shadow:0 6px 16px rgba(0,0,0,.35);max-width:100%}
@@ -401,10 +399,6 @@ const pick=(arr,r=Math.random)=>arr[Math.floor(r()*arr.length)];
 
 // ---------- renderer & scene
 const canvas=document.getElementById('c');
-// iPhone home-screen app: innerHeight comes up short by the status bar's height (a strip shows at the bottom), so go by the screen there
-const pwaIOS=/iPhone|iPod/.test(navigator.userAgent)&&navigator.standalone===true;
-if(pwaIOS)document.documentElement.classList.add('pwa-ios');
-const viewH=()=>pwaIOS?Math.max(innerHeight,innerWidth>innerHeight?Math.min(screen.width,screen.height):Math.max(screen.width,screen.height)):innerHeight;
 const renderer=new THREE.WebGLRenderer({canvas,antialias:devicePixelRatio<2,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,1.75));
 const scene=new THREE.Scene();
@@ -513,7 +507,7 @@ function setQuality(hq){
     composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}));
     rayPass=new ShaderPass(GODRAY);
     composer.addPass(new RenderPass(scene,camera));composer.addPass(rayPass);composer.addPass(new UnrealBloomPass(new THREE.Vector2(256,256),.35,.5,.9));composer.addPass(new OutputPass());
-    composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,viewH());
+    composer.setPixelRatio(renderer.getPixelRatio());composer.setSize(innerWidth,innerHeight);
   }
 }
 const SUN_DIR=new THREE.Vector3(-0.8,0.42,0.3).normalize();
@@ -3780,7 +3774,7 @@ $('mapTown').addEventListener('click',()=>setMapMode('town'));
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
 let baseFov=56;
 function resize(){
-  const w=innerWidth,h=viewH();document.documentElement.style.setProperty('--app-h',h+'px');renderer.setSize(w,h,false);if(composer)composer.setSize(w,h);
+  const w=innerWidth,h=innerHeight;renderer.setSize(w,h,false);if(composer)composer.setSize(w,h);
   camera.aspect=w/h;camera.fov=baseFov=camera.aspect<.8?70:56;camera.updateProjectionMatrix();
 }
 addEventListener('resize',resize);addEventListener('orientationchange',()=>setTimeout(resize,350));resize(); // iPhone reports the new size a beat after rotating
