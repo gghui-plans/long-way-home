@@ -34,8 +34,12 @@ $head = @"
 <meta name="twitter:description" content="Top down, sun low, take it slow.">
 <meta name="twitter:image" content="${SiteUrl}share.png">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Long Way Home">
 </head>
 <body>
@@ -44,7 +48,7 @@ $head = @"
 $docs = Join-Path $root 'docs'
 New-Item -ItemType Directory -Force $docs | Out-Null
 [System.IO.File]::WriteAllText((Join-Path $docs 'index.html'), $head + $body + "`n</body>`n</html>`n", (New-Object System.Text.UTF8Encoding($false)))
-foreach ($f in 'share.png','icon.svg','icon-180.png') { if (Test-Path (Join-Path $root $f)) { Copy-Item (Join-Path $root $f) $docs -Force } }
+foreach ($f in 'share.png','icon.svg','icon-180.png','icon-192.png','icon-512.png','icon-maskable-512.png','manifest.webmanifest') { if (Test-Path (Join-Path $root $f)) { Copy-Item (Join-Path $root $f) $docs -Force } }
 New-Item -ItemType File -Force (Join-Path $docs '.nojekyll') | Out-Null
 # A custom domain (anything not on github.io) needs a CNAME file in the published folder.
 $siteHost = ([Uri]$SiteUrl).Host

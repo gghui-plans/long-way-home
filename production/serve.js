@@ -2,7 +2,7 @@
 // host 0.0.0.0 makes it reachable from a phone on the same wifi (screenshot saving stays limited to this computer)
 const http=require('http'),fs=require('fs'),path=require('path');
 const root=path.resolve(process.argv[2]||'.'),port=+(process.argv[3]||8765),host=process.argv[4]||'127.0.0.1';
-const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.json':'application/json','.mp3':'audio/mpeg','.png':'image/png','.svg':'image/svg+xml',
+const types={'.html':'text/html; charset=utf-8','.webmanifest':'application/manifest+json','.js':'text/javascript','.json':'application/json','.mp3':'audio/mpeg','.png':'image/png','.svg':'image/svg+xml',
   '.gltf':'model/gltf+json','.glb':'model/gltf-binary','.bin':'application/octet-stream','.obj':'text/plain','.mtl':'text/plain','.jpg':'image/jpeg'};
 http.createServer((req,res)=>{
   if(req.method==='PUT'&&req.url.startsWith('/__shot/')){if(!/^(::1|127.|::ffff:127.)/.test(req.socket.remoteAddress||'')){res.writeHead(403);return res.end()} // save a screenshot sent from the page (PNG data URL) into production/raw/shots (private)
