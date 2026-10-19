@@ -95,6 +95,15 @@ The game adds the static and dropouts. `[cut]` marks where the signal dies mid-l
 - WALT: [gruff] Walt.
 - MARJ: [warmly] We broadcast from our living room. Wipe your feet.
 
+**welcome-01 · How it works** (recorded 2026-10-18; the Cabin's version of Rick and Dana's welcome-01. It plays when a drive starts on the Redwood Coast. arrive-01 plays the first time you drive up from LA.)
+- MARJ: [warm, cheerful] Morning, hon, or whatever time it is out there. This is 89.3, The Coffee Cabin. I'm Marj.
+- WALT: [gruff] Walt.
+- MARJ: [warm, explaining] Here's how it works up here. No destination, no score, and the car drives itself.
+- WALT: [dry] Better than most folks drive up here.
+- MARJ: [gently] Your only job is to leave your phone alone and look at the trees.
+- WALT: [dry] We'll know.
+- MARJ: [laughs softly] We won't know. Pour yourself a coffee, hon.
+
 **arrive-02 · Smell that**
 - MARJ: [warm, inviting] If you just drove in from the south, welcome to the redwoods, hon. Roll your window down. Smell that?
 - WALT: [sniffs, dry] That's the percolator.
