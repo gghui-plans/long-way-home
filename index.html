@@ -610,7 +610,7 @@ if(sn>0.0){ // snow on everything facing up (roofs, tree tops, rocks, the ground
   sCov=smoothstep(.45,.75,sCov*(.55+.45*tB.g)+.15*(tF.r-.5));
   diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.82,.87,.95)*(.94+.12*tF.a),sCov);
 }`)
-  .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));\nfloat dAs=(1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat))*step(.6,dUp),dDst=length(vViewPosition),dGz=1.0-smoothstep(.015,.07,abs(normalize(cameraPosition-vWPos).y));\nroughnessFactor=mix(roughnessFactor,.04,dAs*smoothstep(80.0,200.0,dDst)*(1.0-smoothstep(450.0,700.0,dDst))*dGz*(.55+.45*sin(uTime*2.3+vWPos.x*.21+vWPos.z*.17)));')
+  .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));\nfloat dAs=(1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat))*step(.6,dUp),dDst=length(vViewPosition),dGz=1.0-smoothstep(.015,.07,abs(normalize(cameraPosition-vWPos).y));\nroughnessFactor=mix(roughnessFactor,.04,dAs*smoothstep(80.0,200.0,dDst)*(1.0-smoothstep(450.0,700.0,dDst))*dGz*(.55+.45*sin(uTime*2.3+vWPos.x*.21+vWPos.z*.17)));\nif(sn>0.0)roughnessFactor=mix(roughnessFactor,.5,dAs*sn); // wet asphalt in the snow')
   .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
 };
 const MAT_CAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.42,metalness:.1}); // traffic: a bit of shine on the paint
@@ -1586,6 +1586,13 @@ function redwoodScenery(b,gb,grp,j,rnd){
       b.add(G.cyl,0x5a3a2a,x,y+rr*.7,z,rr,L,rr,ry,Math.PI/2);if(!al)b.add(G.box,0x5f7a3a,x,y+rr*1.55,z,rr*1.1,.12,L*.9,ry)}
     if(rnd()<.45){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(14+rnd()*30),z0+rnd()*B),rr=1.4+rnd()*1.2;b.add(G.cyl,0x6b4330,x,y+.6,z,rr,1.6,rr);b.add(G.cyl,0xb08a62,x,y+1.42,z,rr*.92,.05,rr*.92)}
     if(rnd()<.7*gv){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(18+rnd()*40),z0+rnd()*B);beams.push([x,y,z,3+rnd()*5,60+rnd()*30])} // off the road, so the car never drives through one
+  }
+  if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side
+    const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1);
+    for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
+    for(const side of[-1,1])if((j+(side>0?0:1))%2===0){const z=z0+B*.5,[x,y]=at(side*10.3,z);b.add(G.box,0x2b2b30,x,y+2.1,z,.09,4.2,.09);b.add(G.box,0xe8702a,x,y+4.05,z,.11,.5,.11)} // a pole every 120 m each side, staggered
+    for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,[xa,ya]=at(-10.1,za),[xb,yb]=at(-10.1,zb);b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
+      b.add(G.box,0xb4b7bc,(xa+xb)/2,(ya+yb)/2+.72,(za+zb)/2,.06,.32,Math.hypot(xb-xa,zb-za)+.05,Math.atan2(xb-xa,zb-za))} // the guardrail
   }
   if(md>.3){ // a meadow opening on the east side: grass, a split-rail fence along the road, now and then a gravel pull-out with a picnic table
     for(let k=0;k<10;k++){const [x,y,z]=at(16+rnd()*90,z0+rnd()*B);b.add(BLOB,pick([0x6b7a44,0x5f7240,0x7a8448],rnd),x,y+.3,z,1.2+rnd(),.5,1.2+rnd(),rnd()*6)}
