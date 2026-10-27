@@ -61,6 +61,19 @@ Last updated: 2026-10-27
   - The lake's far shore is now snowy peaks (steep up top), with a pink alpenglow on the high snow far away. The road's snowbanks and guardrail stop where the road runs into town.
   - **Gotcha for later work:** every new three.js geometry, material or mesh draws a random id from `Math.random`. Building Sierra-only geometry at startup shifts the random numbers LA and the Redwood Coast use for people and traffic. Build region-only things on first use (like `PINES()`), or only inside region-gated code.
 - **Defaults picked (easy to change, not decided):** road trip order LA → Redwood Coast → High Sierra → LA (the order of REGIONS); title line "Chains on, cocoa hot, take it slow."; radio-off words "mountain sounds"; the map buttons don't list the Sierra yet (batch 5).
+- **Feedback, decided 2026-10-27 (waiting for "build"):** the user liked the road but said it "just looks like Redwood with snow" and wants to feel higher up in the mountains (reference photos: a guardrail with the drop right behind it and a sea of clouds below; a steep rock-and-snow face beside the road). To build, in this order:
+  1. Above the treeline at the top: trees thin out as you climb, bare rock and snow near the summit, forest only on the lower slopes by the villages.
+  2. The drop starts right at the guardrail.
+  3. A sea of clouds below at the summit with far peaks poking through; the lake shows lower down near the villages.
+  4. A steep rock-and-snow face right beside the road on the uphill side, rock showing through.
+  5. Tighter S-bends near the summit (true hairpins aren't possible) and switchbacks drawn on the slope below, with a few headlights crawling up.
+  6. Elevation on the road sign ("CA-89 NORTH · 7,240 FT"), rising and falling with the climb.
+  7. A summit pull-out: elevation sign, a couple of parked cars, people taking photos at the rail.
+  8. Clouds at road level near the top (drive through a wisp, come out above the cloud sea).
+  9. Wind up high: snow blowing off the ridges and across the road at the summit, wind noise rising as you climb.
+  10. A tiny village far below by the lake (rooftops and lights).
+  11. Rock cuts: blasted rock walls where the road is carved in, with icicles, and a snow shed on one stretch.
+  - Not picked: a deeper blue sky at the top, birds circling below, radio crackle at the summit.
 - **Left in batch 2:** the villages' own buildings (A-frames, chalets, ski and rental shops, the ski hill with runs and lift towers, the rink, the sledding hill, the chain installer, gondola in place of the Ferris wheels, a boat dock and paddle-wheeler); lakeside villages instead of forest towns; pines thinning toward the summit; real lake shores at the villages; signs. Then batches 3 (life and weather), 5 (map and handoff) and 6 (audio and polish).
 - **Not checked yet:** a phone (frame rate and heat with the snow shader, pines and far mountains), the lake shoreline moving in motion, the Redwood Coast → Sierra handover.
 - **Questions for the user:** the open items (station and host names, voices, top up or down in snow, snowfall pattern, loop order); is the Coffee Cabin OK as the radio stand-in until the Fireside exists; how glossy should the wet road be.
