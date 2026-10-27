@@ -6,26 +6,6 @@ Last updated: 2026-10-27
 
 ## Active
 
-### K-JAM set 2: 14 more songs (17–32, minus 21 and 30)
-
-- **Worked on:**
-  - 2026-10-18: wrote 16 songs on the theme "Postcards from one summer" (LYRICS.md, songs 17–32).
-  - 2026-10-19: rewrote them all after the first Suno takes.
-  - 2026-10-26/27: all 14 generated, moved to raw/music and run through process-music, whisper and align-lyrics (78–100% of words matched). Four songs needed whisper re-runs (see AUDIO-WORKFLOW.md, 2026-10-27).
-  - 2026-10-27: all 28 intro clips generated and processed (eleven_v4, stability 0.75, about 8,400 credits including test takes; about 23,300 left). Every story says its script (88–100% of words matched by whisper), and the subtitles are timed from the spoken words. Committed without a full listen; the user will flag retakes from drives.
-- **Decided:**
-  - The theme is one LA summer, a place per song, with no named landmarks. **Why:** it ties into the in-game postcards and the user's favourite song, Postcard from the Pier.
-  - Hookier choruses, with an [Intro] on every song. **Why:** the first takes weren't catchy.
-  - Each song gets its own chorus shape. **Why:** the catchier versions all followed one formula and felt samey.
-  - No Motown; the out-of-place genres went back to the classic-rock palette. **Why:** the user doesn't like the Motown sound.
-  - Couples Skate and Ice Cream Truck keep their v2 lyrics, which the user liked.
-  - 2026-10-27: set 2's second intros are two-host story intros (summer memories), with a lore sheet for Rick and Dana. **Why:** the user wanted Rick and Dana to have longer bits now and then, like Marj and Walt.
-  - 2026-10-27: Rick's story lines use feeling-based directions ("dry, a little proud"), not bare dry/deadpan/flat. **Why:** the first take sounded flat and not quite like him; the user picked the livelier take at stability 0.75.
-  - 2026-10-27: the set stops at 14. The two instrumentals (Salt Air Stomp, Heat Shimmer) moved to FUTURE-WORK. **Why:** the user felt Last Night of Summer caps off the set.
-- **Left:**
-  1. On "build": add the SONGS entries and the introb story lines (SET2-INTROS-DRAFT.md has the code; take the line text from PRODUCTION-PACK.md, which has the final wording), wire them in, check that the playlist scrolls well with 30 songs on a phone, then build and push.
-  2. After that, the user flags any intros that sound off on drives. Retake with `generate-voices.ps1 -Only <bit> -Force -Model eleven_v4 -Stability 0.75`, then process-voices.
-
 ### Coffee Cabin set 2: 16 more songs (17–32)
 
 - **Worked on:** 2026-10-26: wrote all 16 into REGION-SONGS.md and ran the chorus check.
@@ -57,11 +37,13 @@ These are decided but not built. Details are in FUTURE-WORK.md.
 
 ## Loose ends
 
+- K-JAM set 2 intros went live without a full listen. The user flags any that sound off on drives; retake with `generate-voices.ps1 -Only <bit> -Force -Model eleven_v4 -Stability 0.75`, then process-voices and build. ElevenLabs has about 23,300 credits left.
 - The Claude artifact copy was last republished 2026-10-11 (v40), so it's behind the live site.
 - Cancel the ElevenLabs and Suno subscriptions once the region audio is done.
 
 ## Recently finished
 
+- 2026-10-27: K-JAM set 2 is live: 14 "Postcards from one summer" songs (30 in all), each with a short intro and a two-host story intro. Salt Air Stomp and Heat Shimmer are in FUTURE-WORK.
 - 2026-10-26: CLAUDE.md, WORKFLOW.md and STATE.md set up. The song and plan files that had never been committed are now in git too.
 - 2026-10-18: Marj and Walt's game explainer when a drive starts in the redwoods (d6ccd00).
 - 2026-10-11: added the game to the iPhone home screen as an app, with its own icon and an install button (c46e5e0, 07a8434, e16e475).
