@@ -825,6 +825,8 @@ let PINES_=null;const PINES=()=>PINES_||(PINES_=[12,20,30,40].map((h,vi)=>{
   return swayGeo(b.geo(),h*1.8);
 }));
 const GRANITE=[0x9a968e,0x8c8880,0xa8a49b,0x7f7b74];
+let SHRUBS_=null;const SHRUBS=()=>SHRUBS_||(SHRUBS_=[0,1,2].map(vi=>{const b=new Builder(),r=rng(5100+vi); // low shrubs (manzanita, sage) for the Sierra's undergrowth
+  for(let k=0;k<2+vi;k++)b.add(BLOB,[0x4a5a3c,0x56603f,0x5f5a44][Math.floor(r()*3)],(r()-.5)*1.2,.3,(r()-.5)*1.2,.6+r()*.4,.42+r()*.25,.6+r()*.4,r()*6);return b.geo()}));
 // sword ferns: a fountain of arching, tapering fronds
 const FERNS=[0,1,2].map(vi=>{
   const b=new Builder(),r=rng(4500+vi),n=7+vi;
@@ -1076,13 +1078,13 @@ function pierCheck(){
   for(const [z,x] of piers){const d=Math.hypot(car.x-x,car.z-z);if(d<420&&d>120&&!piersCued.has(z)){piersCued.add(z);react('pier',pickBit('pier',ST.bits.pier),40,300,true)}}
 }
 function buildBlock(i,j,d){
-  const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group(),rw=isRW(regionOf(Math.floor(j/PER)));RW_STYLE=rw;
+  const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group(),rw=isRW(regionOf(Math.floor(j/PER)));RW_STYLE=rw;const al=isAlp(regionOf(Math.floor(j/PER))); // al: the High Sierra's pines and shrubs
   const x0=i*B+HW,z0=j*B+HW,cx=x0+S/2,cz=z0+S/2,ix=i*B,jz=j*B;
   let rot=0;
   const P=(u,v)=>{const a=rot*Math.PI/2,c=Math.cos(a),s=Math.sin(a),x=u-S/2,z=v-S/2;return[cx+x*c+z*s,cz-x*s+z*c]};
   const put=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);b.add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)};
   const palm=(u,v,h)=>{const s=.92+rnd()*.16;
-    if(rw){put(FIRS[h<14?0:h<17?1:2],null,u,.3,v,s,s,s*(.9+rnd()*.2),rnd()*6.28);return} // up north: firs and young redwoods
+    if(rw){put(al?PINES()[h<14?0:1]:FIRS[h<14?0:h<17?1:2],null,u,.3,v,s,s,s*(.9+rnd()*.2),rnd()*6.28);return} // up north: firs and young redwoods
     if(rnd()<.55)put(FANPALMS[h<14?0:h<16.5?1:2],null,u,.3,v,s,s,s,rnd()*6.28);else put(PALMS[h<13.5?0:h<16?1:2],null,u,.3,v,s,s,s,rnd()*6.28)}; // over half are tall fan palms
   const tree=(u,v,s=1)=>{
     if(rw){put(G.trunk,0x8a8478,u,1.9*s,v,.24*s,3.2*s,.24*s);put(BLOB,rnd()<.12?pick([0xc8782e,0xd29a3a],rnd):pick([0x5a7f3e,0x4f7538,0x668a44],rnd),u,4.4*s,v,2.3*s,2.2*s,2.3*s,rnd()*6);return} // alders and maples (one turning)
@@ -1137,9 +1139,9 @@ function buildBlock(i,j,d){
   else if(d==='forestedge'){ // the town's west edge: the forest itself, where down south there'd be beach
     const xw=ix,xe=ix+B-HW;
     b.add(G.box,0x4b3f2b,(xw+xe)/2,.12,jz+B/2,xe-xw,.24,B);
-    for(let k=0;k<3;k++){const s=.9+rnd()*.3;b.add(TOWNWOODS[k%2],null,xw+6+rnd()*(xe-xw-12),-.5,jz+6+rnd()*(B-12),s,s,s,rnd()*6.28)}
-    for(let k=0;k<2;k++)b.add(pick(FIRS,rnd),null,xw+4+rnd()*(xe-xw-8),.2,jz+rnd()*B,1,1,1,rnd()*6.28);
-    for(let k=0;k<12;k++){const s=1.2+rnd()*.9;b.add(pick(FERNS,rnd),null,xw+2+rnd()*(xe-xw-4),.24,jz+rnd()*B,s,s,s,rnd()*6.28)}
+    for(let k=0;k<3;k++){const s=.9+rnd()*.3;b.add(al?PINES()[2+k%2]:TOWNWOODS[k%2],null,xw+6+rnd()*(xe-xw-12),-.5,jz+6+rnd()*(B-12),s,s,s,rnd()*6.28)}
+    for(let k=0;k<2;k++)b.add(al?PINES()[Math.floor(rnd()*2)]:pick(FIRS,rnd),null,xw+4+rnd()*(xe-xw-8),.2,jz+rnd()*B,1,1,1,rnd()*6.28);
+    for(let k=0;k<12;k++){const s=1.2+rnd()*.9;b.add(pick(al?SHRUBS():FERNS,rnd),null,xw+2+rnd()*(xe-xw-4),.24,jz+rnd()*B,s,s,s,rnd()*6.28)}
     b.add(G.box,0x8a7a5e,xe-5,.26,jz+B/2,1.6,.04,B); // a trail along the edge of town
     if(rnd()<.5){const L=7+rnd()*6,ry=rnd()*6.28;b.add(G.cyl,0x5a3a2a,xw+14,.8,jz+B/2,.7,L,.7,ry,Math.PI/2);b.add(G.box,0x5f7a3a,xw+14,1.55,jz+B/2,.8,.12,L*.9,ry)}
   }
@@ -1261,9 +1263,9 @@ function buildBlock(i,j,d){
       for(let k=0;k<2;k++){const e=Math.floor(rnd()*4),t=4+rnd()*(S-8);palm(e===0?t:e===1?S-1.7:e===2?t:1.7,e===0?1.7:e===1?t:e===2?S-1.7:t,13+rnd()*6)}
     }else if(d==='woods'){ // a patch of forest kept in town: young redwoods, ferns, a trail and picnic tables
       put(G.box,0x8a7a5e,S/2,.34,S/2,S-7,.04,1.6);
-      for(let k=0;k<4;k++){const u=7+rnd()*(S-14),v=7+rnd()*(S-14);if(Math.abs(v-S/2)<4)continue;const s=.42+rnd()*.25;put(REDWOODS[k%3],null,u,-.4,v,s,s,s,rnd()*6.28)}
+      for(let k=0;k<4;k++){const u=7+rnd()*(S-14),v=7+rnd()*(S-14);if(Math.abs(v-S/2)<4)continue;const s=.42+rnd()*.25;put(al?PINES()[1+k%3]:REDWOODS[k%3],null,u,-.4,v,al?s*1.6:s,al?s*1.6:s,al?s*1.6:s,rnd()*6.28)}
       for(let k=0;k<3;k++)palm(5+rnd()*(S-10),5+rnd()*(S-10),12+rnd()*6);
-      for(let k=0;k<16;k++){const u=4+rnd()*(S-8),v=4+rnd()*(S-8);if(Math.abs(v-S/2)<2)continue;const s=1.1+rnd()*.7;put(pick(FERNS,rnd),null,u,.3,v,s,s,s,rnd()*6)}
+      for(let k=0;k<16;k++){const u=4+rnd()*(S-8),v=4+rnd()*(S-8);if(Math.abs(v-S/2)<2)continue;const s=1.1+rnd()*.7;put(pick(al?SHRUBS():FERNS,rnd),null,u,.3,v,s,s,s,rnd()*6)}
       for(const v of[S/2-5,S/2+5]){put(G.box,0x7a5a3a,S/2+8,.95,v,2.2,.1,.9);for(const s of[-1,1])put(G.box,0x7a5a3a,S/2+8,.6,v+s*.9,2.2,.08,.35)} // picnic tables
     }else if(d==='camp'){ // a campground: tents, an RV, picnic tables, and a campfire with friends round it
       put(G.box,0x9a907e,S/2,.34,S/2,S-9,.04,3);put(G.box,0x9a907e,S/2,.34,S/2,3,.04,S-9);
@@ -1415,7 +1417,7 @@ function buildBlock(i,j,d){
   }
   if(rw&&forestTown(Math.floor(j/PER))&&d!=='edge'&&d!=='forestedge'&&d!=='mill'){ // a forest town: giants in the gaps between the buildings and along the sidewalks
     const spots=d==='cabins'?[[22,22],[22,4.2],[22,S-4.2]]:d==='main'?[[4.2,4.2],[S-4.2,4.2],[S/2,4.2]]:d==='lodge'?[[4.2,4.2],[S-4.2,4.2]]:[[4.2,4.2],[S-4.2,S-4.2],[S-4.2,4.2]];
-    for(const [u,v] of spots)if(rnd()<.85){const s=.85+rnd()*.3;put(TOWNWOODS[Math.floor(rnd()*2)],null,u,-.6,v,s,s,s,rnd()*6.28)}
+    for(const [u,v] of spots)if(rnd()<.85){const s=.85+rnd()*.3;put((al?PINES().slice(2):TOWNWOODS)[Math.floor(rnd()*2)],null,u,-.6,v,s,s,s,rnd()*6.28)}
   }
   const mesh=b.mesh();grp.add(mesh);
   if(gb.pos.length)grp.add(new THREE.Mesh(gb.geo(),MAT_GLOW));
@@ -1468,7 +1470,7 @@ function signTex(top,bottom){
 }
 function buildTerrain(j){
   const b=new Builder(),gb=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
-  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j));RW_STYLE=rw; // this stretch's own colours, scenery and people's clothes
+  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j)),al=isAlp(regionAtRow(j));RW_STYLE=rw; // this stretch's own colours, scenery and people's clothes
   for(let s=0;s<=NZ;s++){
     const z=z0+s*B/NZ,rc=roadX(z),o1=(off(z+1)-off(z-1))/2,len=Math.hypot(1,o1),nx=1/len,nz=-o1/len,pts=[];
     const P=(dx,y,col,along)=>pts.push([along?rc+dx*nx:rc+dx,y,along?z+dx*nz:z,col]);
@@ -1545,9 +1547,9 @@ function buildTerrain(j){
   }
   if(ftAtZ(z0+B/2)){ // a forest town carries on into the forest to the west, where down south there'd be beach and sea
     b.add(G.box,TC.duff||0x4b3f2b,-800,.12,z0+B/2,1240,.24,B);
-    for(let k=0;k<5;k++){const s=.85+rnd()*.35;b.add(REDWOODS[Math.floor(rnd()*3)],null,-186-Math.pow(rnd(),1.5)*170,-.6,z0+rnd()*B,s,s,s,rnd()*6.28)}
-    for(let k=0;k<3;k++)b.add(pick(FIRS,rnd),null,-190-rnd()*140,.2,z0+rnd()*B,1,1,1,rnd()*6.28);
-    for(let k=0;k<10;k++){const s=1.3+rnd()*.8;b.add(pick(FERNS,rnd),null,-183-rnd()*60,.24,z0+rnd()*B,s,s,s,rnd()*6.28)}
+    for(let k=0;k<5;k++){const s=.85+rnd()*.35;b.add(al?PINES()[1+Math.floor(rnd()*3)]:REDWOODS[Math.floor(rnd()*3)],null,-186-Math.pow(rnd(),1.5)*170,-.6,z0+rnd()*B,s,s,s,rnd()*6.28)}
+    for(let k=0;k<3;k++)b.add(al?PINES()[Math.floor(rnd()*2)]:pick(FIRS,rnd),null,-190-rnd()*140,.2,z0+rnd()*B,1,1,1,rnd()*6.28);
+    for(let k=0;k<10;k++){const s=1.3+rnd()*.8;b.add(pick(al?SHRUBS():FERNS,rnd),null,-183-rnd()*60,.24,z0+rnd()*B,s,s,s,rnd()*6.28)}
   }
   const mesh=b.mesh();grp.add(mesh);grp.userData={mesh,j};
   if(gb.pos.length)grp.add(new THREE.Mesh(gb.geo(),MAT_GLOW));
@@ -2111,9 +2113,9 @@ function buildFarChunk(c){
 function farCell(b,i,j,d){
   const rnd=rng(Math.floor(hash(i,j,77)*4294967296)),ix=i*B,jz=j*B,x0=ix+HW,z0=jz+HW,cx=x0+S/2,cz=z0+S/2,A=0x4b4851;
   if(d==='edge'){if(legExists(i,j,2))b.add(G.box,A,ix,0,jz+B/2,W,.04,B);if(legExists(i,j,1))b.add(G.box,A,ix+B/2,0,jz,B,.04,W);return}
-  const rw=isRW(regionOf(Math.floor(j/PER)));
-  if(d==='forestedge'){const xe=ix+B-HW;b.add(G.box,0x4b3f2b,(ix+xe)/2,.12,jz+B/2,xe-ix,.24,B);for(let k=0;k<3;k++)farRedwood(b,ix+6+rnd()*(xe-ix-12),0,jz+6+rnd()*(B-12),44+rnd()*14,rnd);return}
-  if(d==='beach'&&rw){const xe=ix+B-HW;b.add(G.box,0xcdbb98,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+8;z<jz+B;z+=17)farRedwood(b,xe-2,0,z,14+rnd()*8,rnd);
+  const rw=isRW(regionOf(Math.floor(j/PER))),fr=isAlp(regionOf(Math.floor(j/PER)))?farPine:farRedwood; // the Sierra's pines
+  if(d==='forestedge'){const xe=ix+B-HW;b.add(G.box,0x4b3f2b,(ix+xe)/2,.12,jz+B/2,xe-ix,.24,B);for(let k=0;k<3;k++)fr(b,ix+6+rnd()*(xe-ix-12),0,jz+6+rnd()*(B-12),44+rnd()*14,rnd);return}
+  if(d==='beach'&&rw){const xe=ix+B-HW;b.add(G.box,0xcdbb98,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+8;z<jz+B;z+=17)fr(b,xe-2,0,z,14+rnd()*8,rnd);
     const tw=townOfRow(j);if(tw&&j===tw.a+Math.floor(tw.TL/2)&&hash(tw.k,9,3)<.65)b.add(G.box,0x8a7458,ix-55,1.15,jz+B/2,110,.5,9); // the wharf from afar
     return}
   if(d==='beach'){const xe=ix+B-HW;b.add(G.box,0xead39c,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+6;z<jz+B;z+=14)farPalm(b,xe-2,0,z,rnd()<.5?22:14,rnd);
@@ -2135,16 +2137,16 @@ function farCell(b,i,j,d){
   else if(d==='harbor'||d==='main'){const n=d==='main'?3:2,side=Math.floor(rnd()*4),ox=[0,13,0,-13][side],oz=[-13,0,13,0][side],along=side%2===0;
     for(let k=0;k<n;k++){const t=(k+.5)/n-.5,w=(S-10)/n-.6,h=5+rnd()*2.5,c=d==='main'?pick(MAINC,rnd):pick(HARBORC,rnd),x=cx+ox+(along?t*(S-10):0),z=cz+oz+(along?0:t*(S-10));
       b.add(G.box,c,x,h/2+.3,z,along?w:11,h,along?11:w);if(d==='harbor')b.add(G.gable,pick(ROOFC,rnd),x,h+.3,z,along?w+.6:11.6,2.6,along?11.6:w+.6,along?0:Math.PI/2)}
-    farRedwood(b,x0+3,.3,z0+3,16+rnd()*6,rnd)}
-  else if(d==='victorian'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12){farRedwood(b,x0+u,.3,z0+v,16+rnd()*6,rnd);continue}
+    fr(b,x0+3,.3,z0+3,16+rnd()*6,rnd)}
+  else if(d==='victorian'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12){fr(b,x0+u,.3,z0+v,16+rnd()*6,rnd);continue}
       const w=8+rnd()*2,dd=8+rnd()*2,h=6.4;b.add(G.box,pick(VICTC,rnd),x0+u,h/2+.3,z0+v,w,h,dd);b.add(G.gable,pick(ROOFC,rnd),x0+u,h+.3,z0+v,w+.6,3.6,dd+.4)}
-    if(rnd()<.7)farRedwood(b,x0+2,.3,z0+rnd()*S,16+rnd()*7,rnd)}
-  else if(d==='woods'){for(let k=0;k<4;k++)farRedwood(b,x0+6+rnd()*(S-12),.3,z0+6+rnd()*(S-12),20+rnd()*10,rnd)}
-  else if(d==='camp'){for(let k=0;k<3;k++)b.add(G.gable,pick([0xe07a2a,0x3f8a5a,0x3a6aa8],rnd),x0+8+rnd()*(S-16),.3,z0+8+rnd()*(S-16),2.8,1.9,3.4);b.add(G.box,0xf2efe6,x0+32,2.1,z0+32,3,3.2,9);for(let k=0;k<3;k++)farRedwood(b,x0+3+rnd()*(S-6),.3,z0+3+rnd()*(S-6),15+rnd()*7,rnd)}
+    if(rnd()<.7)fr(b,x0+2,.3,z0+rnd()*S,16+rnd()*7,rnd)}
+  else if(d==='woods'){for(let k=0;k<4;k++)fr(b,x0+6+rnd()*(S-12),.3,z0+6+rnd()*(S-12),20+rnd()*10,rnd)}
+  else if(d==='camp'){for(let k=0;k<3;k++)b.add(G.gable,pick([0xe07a2a,0x3f8a5a,0x3a6aa8],rnd),x0+8+rnd()*(S-16),.3,z0+8+rnd()*(S-16),2.8,1.9,3.4);b.add(G.box,0xf2efe6,x0+32,2.1,z0+32,3,3.2,9);for(let k=0;k<3;k++)fr(b,x0+3+rnd()*(S-6),.3,z0+3+rnd()*(S-6),15+rnd()*7,rnd)}
   else if(d==='mill'){b.add(G.box,0x8a5a42,x0+12,4.3,cz,13,8,30);b.add(G.gable,0x7a7f84,x0+12,8.3,cz,14,3.6,31);const tw=townOfRow(j);if(tw&&j===tw.a+1)b.add(G.cone,0x7b4a32,x0+32,10,z0+12,6,18.2,6)}
   else if(d==='lodge'){b.add(G.box,0x8a6a4a,cx,2.2,cz,30,3.8,9);b.add(G.gable,0x4f6236,cx,4.1,cz,10,2,31,Math.PI/2)}
   else if(d==='cabins'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12)continue;b.add(G.box,pick([0x7a5236,0x6b4630,0x8a6040],rnd),x0+u,2,z0+v,8,3.6,7);b.add(G.gable,0x4f6236,x0+u,3.8,z0+v,8.8,2.6,7.8)}}
-  if(rw&&forestTown(Math.floor(j/PER))&&d!=='edge'&&d!=='mill')for(let k=0;k<2;k++)farRedwood(b,x0+4+rnd()*(S-8),.3,z0+4+rnd()*(S-8),40+rnd()*16,rnd); // the giants over a forest town
+  if(rw&&forestTown(Math.floor(j/PER))&&d!=='edge'&&d!=='mill')for(let k=0;k<2;k++)fr(b,x0+4+rnd()*(S-8),.3,z0+4+rnd()*(S-8),40+rnd()*16,rnd); // the giants over a forest town
 }
 function buildFarTown(k){
   const a=k*PER,TL=townLen(k),b=new Builder(),hid=[];
