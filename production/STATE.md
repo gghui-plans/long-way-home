@@ -6,22 +6,23 @@ Last updated: 2026-10-26
 
 ## Active
 
-### K-JAM set 2: 16 more songs (17–32)
+### K-JAM set 2: 14 more songs (17–32, minus 21 and 30)
 
 - **Worked on:**
   - 2026-10-18: wrote 16 songs on the theme "Postcards from one summer" (LYRICS.md, songs 17–32).
   - 2026-10-19: rewrote them all after the first Suno takes.
+  - 2026-10-26/27: all 14 generated, moved to raw/music and run through process-music and whisper. Couples Skate and Rooftop at Dusk came back from whisper as only "[MUSIC]" and were re-run with their lyrics as a hint.
 - **Decided:**
   - The theme is one LA summer, a place per song, with no named landmarks. **Why:** it ties into the in-game postcards and the user's favourite song, Postcard from the Pier.
   - Hookier choruses, with an [Intro] on every song. **Why:** the first takes weren't catchy.
   - Each song gets its own chorus shape. **Why:** the catchier versions all followed one formula and felt samey.
   - No Motown; the out-of-place genres went back to the classic-rock palette. **Why:** the user doesn't like the Motown sound.
   - Couples Skate and Ice Cream Truck keep their v2 lyrics, which the user liked.
-- **Now:** the user is generating all 16 in Suno, starting from 17. Which ones are done isn't tracked here; ask.
+  - 2026-10-27: the set stops at 14. The two instrumentals (Salt Air Stomp, Heat Shimmer) moved to FUTURE-WORK. **Why:** the user felt Last Night of Summer caps off the set.
 - **Left:**
-  1. The user finishes the Suno songs, then Claude checks and processes the MP3s (process-music, whisper, align-lyrics).
-  2. Write a SONGS entry for each song, plus two host intros (intro and introb, so 32 clips). The user approves them, then they go to ElevenLabs.
-  3. On "build": wire them in, check that the playlist scrolls well with 32 songs on a phone, then build and push.
+  1. Finish align-lyrics and spot-check the lyric timings.
+  2. Write a SONGS entry for each song, plus two host intros (intro and introb, so 28 clips). The user approves them, then they go to ElevenLabs.
+  3. On "build": wire them in, check that the playlist scrolls well with 30 songs on a phone, then build and push.
 
 ### Coffee Cabin set 2: 16 more songs (17–32)
 

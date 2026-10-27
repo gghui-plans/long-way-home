@@ -30,7 +30,7 @@ Each region has its own station, and each station has a song file, a voice scrip
 2. **Plan.** When the user picks something up, it gets a section in STATE.md. A big feature, such as a region, also gets its own plan file.
 3. **Write.** Claude drafts the lyrics, scripts or plan. The user reviews them and marks what to cut, change or keep. Rules for songs and scripts are below.
 4. **Make the audio.**
-   - **Songs:** the user generates them in Suno from the song file and downloads the keepers as **MP3**, named by the song's "Save as" name, into Downloads. Claude moves them to `production/raw/music/` (or `raw/music/<station folder>/`).
+   - **Songs:** the user generates them in Suno from the song file and downloads the keepers as **MP3** into Downloads (Suno names them by title, such as "Top Down, Radio Up.mp3"). Claude moves them to `production/raw/music/` (or `raw/music/<station folder>/`), renamed to the song's "Save as" name.
    - **Voices:** once the user approves a script, Claude generates them through the ElevenLabs API (`generate-voices.ps1` for K-JAM, `generate-coffee-voices.js` for the Cabin). This spends credits, so test a few clips first. Check the balance by asking the user for a dashboard screenshot.
 5. **Process.** These turn raw files into game files in `docs/audio/`. `production/raw/` is never committed.
    - Songs: `process-music.ps1` (`-Sub coffee-cabin` for a station folder), then whisper (`production/raw/tools/whisper/run-all.sh`), then `align-lyrics.js` (plus the folder name) for the scrolling lyrics.

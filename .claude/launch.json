@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "local",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["production/serve.js", ".", "8765"],
+      "port": 8765
+    },
+    {
+      "name": "phone",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["production/serve.js", ".", "8766", "0.0.0.0"],
+      "port": 8766
+    },
+    {
+      "name": "winter",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["production/serve.js", ".", "8767"],
+      "port": 8767
+    }
+  ]
+}
