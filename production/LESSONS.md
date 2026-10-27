@@ -14,12 +14,26 @@ Bugs and traps that cost real time, came back, or weren't obvious from the code.
   - **Why:** the camera is low and looks along the road, so a steep slope hides behind its own edge and the horizon stays at eye level however high you are. A lake below just looks like a sea.
   - **Fix:** show height with a far shore across the water and a visible slope below the road (trees stepping down, rock, a guardrail), not with the drop alone.
 
+- **The drive freezes for a moment every few seconds** (2026-10-27, winter branch)
+  - **Why:** scenery is built on the fly as you drive (terrain strips, town blocks, far chunks, far towns), each piece all in one frame. A heavy piece stalls that frame. The Sierra's far chunks cost about 4x LA's, and each village's ski hill about 0.2 s at phone speed.
+  - **Fix:** in the Sierra, far pieces are built a step at a time over the next frames, about 3 ms a frame (`farLater`, `farSteps`). The steps run in the same order, so the result is the same. Repeated ground-height lookups are cached (`gyAt`). LA and the Redwoods still build all at once, so they stay pixel-identical.
+  - **Not fixed (shared code):** terrain strips and town blocks still build in one frame in every region (30–90 ms at phone speed).
+- **Measuring hitches:** `production/raw/wt/prof.html` (winter worktree, not committed) loads the game with timers round the per-frame and build functions. `node production/raw/wt/drive-prof.js <region> <secs> <cpuSlowdown> <out.json> [cpu]` drives it in headless Edge at phone size, with the CPU slowed (4 is roughly a phone), and saves the slow frames with what ran in each. `cpu` adds a CPU profile per build function. It needs the winter-phone server on 8768.
+  - Headless Edge needs no browser pane. A hidden pane pauses the game, which spoils timings.
+  - In Git Bash, prefix `MSYS_NO_PATHCONV=1` when passing a `/production/...` path in an environment variable, or it becomes a Windows path.
+
 ## Region code
 
 - **A new region changes LA's people and traffic** (2026-10-27, winter branch)
   - **Why:** every new three.js geometry, material or mesh draws a random id from `Math.random`. Building one region's things at startup shifts the random numbers the other regions use.
   - **Rule:** build region-only things on first use (like `PINES()`) or inside region-gated code.
 - **Proving nothing else changed:** after any region change, compare LA and the Redwood Coast pixel for pixel against the code from before. The test pages (`harness.html`, `regress.html?tag=x`, `diff.html`) are in `production/raw/wt/` in the winter worktree (not committed).
+
+- **The first frame's time step is negative** (2026-10-27, winter branch)
+  - **Why:** the first frame's timestamp can come before the start time, so the first `dt` was about −0.8 s. The Sierra's switchback headlights then read past the end of their path and threw an error each frame for a few frames.
+  - **Fix:** the loop clamps `dt` to 0–0.05 s.
+- **A `//` comment pasted mid-line comments out the rest of the line.** The code packs several statements per line. A note added after `last=now;` silenced `clock+=dt;frame++;`: the clock froze, the traffic lights stuck, and the car sat at red lights for over a minute (2026-10-27).
+  - **Rule:** a comment goes at the end of the line, after its last statement. After an edit, check the whole line.
 
 ## Audio pipeline
 
