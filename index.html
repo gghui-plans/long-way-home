@@ -2040,7 +2040,7 @@ function buildFarChunk(c){
   const TC=tcAt(z0+FARCH/2),lakeC=lookAt(z0+FARCH/2,'lake')>0; // this stretch's own colours; a lake to the west
   for(let s=0;s<=NZ;s++){
     const z=z0+s*FARCH/NZ,rc=roadX(z),lot=lotRow(Math.floor(z/B)),pts=[];
-    if(lakeC){const dl=lookAt(z,'lake');pts.push([rc-1750,240+160*Math.sin(z/900)+80*Math.sin(z/340+1),TC.rock],[rc-1450,SEA-dl-40,TC.rockD])} // the lake's far shore: a ridge across the water, its foot below the lowest lake (same point count all chunk)
+    if(lakeC){const dl=lookAt(z,'lake'),rk=Math.min(1,dl/150);pts.push([rc-1750,SEA-40+(280+160*Math.sin(z/900)+80*Math.sin(z/340+1))*rk,TC.rock],[rc-1450,SEA-dl-40,TC.rockD])} // the lake's far shore: a ridge across the water, its foot below the lowest lake (same point count all chunk); it rises through a handover
     if(ftAtZ(z)){const D=TC.duff||TC.wet;for(const dx of[-1400,-900,-600,-400,-260,-180,-120,-60,-20,-9.5])pts.push([rc+dx,.15,D])} // a forest town: woods to the west, not sea (same point count as below)
     else{const dl=lookAt(z,'lake');pts.push([rc-900,SEA-16-dl,TC.wet],[rc-260-dl*2,SEA-9-dl,TC.wet]);for(const [dx,y,cc] of westProfile(z))pts.push([rc+dx,y,cc])}
     pts.push([rc-8,0,TC.asph],[rc+8,0,TC.asph],[rc+9.5,0,TC.shoulder]);
