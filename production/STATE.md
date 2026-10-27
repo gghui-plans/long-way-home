@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-26
+Last updated: 2026-10-27
 
 ## Active
 
@@ -43,8 +43,13 @@ Last updated: 2026-10-26
 
 - **Worked on:** the plan is in WINTER-PLAN.md, and 16 Fireside jazz songs are written in REGION-SONGS.md (not generated).
 - **Decided:** fireside jazz, no Christmas on the station (decorations only, switched on by date). Suno downloads aren't capped (2026-10-18).
-- **Behind schedule:** WINTER-PLAN's timeline had code batch 1 in the week of Oct 19–25, and it hasn't started. Lyrics are due Nov 2 and songs Nov 3.
-- **Left:** everything in WINTER-PLAN.md. The open items are the station and host names, the voices, the top up or down in snow, and the snowfall pattern.
+- **Behind schedule:** WINTER-PLAN's timeline had code batch 1 in the week of Oct 19–25. Lyrics are due Nov 2 and songs Nov 3.
+- **Batch 1, started 2026-10-27** on the `claude/winter-35bb4b` branch (stands in for `winter`; not merged, not pushed):
+  - Region code works for any number of regions. Each region says which scenery it builds from (`kit`), so "how much redwood country" now means "how much redwood-kit country" (`regW(z, test)`), and the by-name checks became region fields (`quiet` words for radio-off, `tagline`, postcard colours `pc`).
+  - Third region `sierra` (High Sierra, CA-89), with `#sierra` in the address. Stand-ins until batch 2: the Redwood Coast's scenery and the Coffee Cabin on the radio, a colder sky with pink alpenglow, the village and street names from the plan.
+  - LA and the Redwood Coast checked pixel-for-pixel against reference shots (a local test page with a fixed random seed and clock, in `production/raw/wt/`, not committed).
+- **Defaults picked (easy to change, not decided):** road trip order LA → Redwood Coast → High Sierra → LA (the order of REGIONS); title line "Chains on, cocoa hot, take it slow."; radio-off words "mountain sounds"; the map buttons don't list the Sierra yet (batch 5).
+- **Left:** the rest of WINTER-PLAN.md. The open items are the station and host names, the voices, the top up or down in snow, and the snowfall pattern.
 
 ## Waiting for "build"
 
