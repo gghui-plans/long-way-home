@@ -2269,22 +2269,24 @@ function buildFarChunk(c){
   for(let s=0;s<NZ;s++)for(let k=0;k<NP-1;k++){const a=s*NP+k,bb=a+1,cc=a+NP+1,d=a+NP;idx.push(a,cc,bb,a,d,cc)}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(col,3));
   g.setAttribute('hid',new THREE.Float32BufferAttribute(new Float32Array(pos.length),3));g.setIndex(idx);g.computeVertexNormals();
-  grp.add(new THREE.Mesh(g,MAT_FAR));
-  // roadside props far ahead: palms along the beach road, sea stacks off the cliffs (hidden where the near land has its own)
-  const b=new Builder(),hid=[];
-  for(let j=c*8;j<c*8+8;j++){
-    if(lotRow(j))continue;const n0=b.pos.length/3,zm=j*B+B/2,cst=coastType(zm);
+  grp.add(new THREE.Mesh(g,MAT_FAR));grp.userData.z=z0+FARCH/2;
+  // roadside props far ahead: palms along the beach road, sea stacks off the cliffs (hidden where the near land has its own). One step per row
+  // (in the High Sierra, spread over the next frames; the same order, so the same trees)
+  const b=new Builder(),hid=[],steps=[];
+  for(let j=c*8;j<c*8+8;j++)steps.push(()=>{
+    if(lotRow(j))return;const n0=b.pos.length/3,zm=j*B+B/2,cst=coastType(zm);
     if(rwAt(zm))farForestRow(b,j,rnd);else{
     if(cst<.35)for(let k=0;k<2;k++)if(rnd()<.6){const z=j*B+10+rnd()*40;farPalm(b,roadX(z)-16,0,z,rnd()<.4?22:14,rnd)}
     if(cst>.5&&rnd()<.55){const z=j*B+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9)}
     }
     for(let q=b.pos.length/3-n0;q>0;q--)hid.push(0,j,2);
-  }
-  for(let j=c*8;j<c*8+8;j++){ // up north the hills behind are forested all the way to the ridges (always drawn)
-    if(!rwAt(j*B))continue;const n0=b.pos.length/3;
+  });
+  for(let j=c*8;j<c*8+8;j++)steps.push(()=>{ // up north the hills behind are forested all the way to the ridges (always drawn)
+    if(!rwAt(j*B))return;const n0=b.pos.length/3;
     for(let k=0;k<6;k++){const z=j*B+rnd()*B,x=Math.max(roadX(z)+140,lotRow(j)?XE+60:0)+rnd()*rnd()*2300,y=inlandY(x,z);if(y<560)(alpAt(j*B)?farPine:farRedwood)(b,x,y-1,z,30+rnd()*26,rnd)}
     for(let q=b.pos.length/3-n0;q>0;q--)hid.push(0,0,0);
-  }
+  });
+  steps.push(()=>{
   if(peak&&rnd()<.3){ // a radio tower on a high ridge, its red light blinking
     const n0=b.pos.length/3,[px,py,pz]=peak;
     for(const [a,c2] of[[-1,-1],[1,-1],[0,1]])b.add(G.box,0x4a4048,px+a*2.2,py+20,pz+c2*2.2,.5,40,.5,0,c2*.05,-a*.05);
@@ -2292,6 +2294,8 @@ function buildFarChunk(c){
     const l=new THREE.Sprite(TOWER_MAT);l.position.set(px,py+41,pz);l.scale.set(24,24,1);grp.add(l);
   }
   if(b.pos.length){const pg=b.geo();pg.setAttribute('hid',new THREE.Float32BufferAttribute(hid,3));grp.add(new THREE.Mesh(pg,MAT_FAR))}
+  });
+  farSteps(grp,steps);
   return grp;
 }
 // one low-detail town: street grid, lot slabs and building masses per cell, tagged with the cell so it can hide
@@ -2341,9 +2345,10 @@ function farCell(b,i,j,d){
 // ---------- the High Sierra's ski hill, on the mountainside just east of each village: runs cut through the forest, a base lodge, a
 // chairlift, and the gondola from the station in town (the mill's column) to the top. The land there as drawn: the near strips' grid
 // (rows every 10 m) or the far chunks' (every 60 m), whichever is higher, so things stand on whichever is showing
+const gyMemo=new Map(),gyAt=(x,z)=>{const k=x+','+z;let v=gyMemo.get(k);if(v===undefined){if(gyMemo.size>60000)gyMemo.clear();v=inlandY(x,z);gyMemo.set(k,v)}return v}; // the land at the grid corners: the ski hill's trees and skiers ask for the same few hundred over and over (cleared with the far scenery)
 function gridY(xs,dz,x,z){let k=0;while(k<xs.length-2&&x>xs[k+1])k++;const x0=xs[k],x1=xs[k+1],z0=Math.floor(z/dz)*dz,z1=z0+dz,u=clamp((x-x0)/(x1-x0),0,1),t=(z-z0)/dz,
-  a=inlandY(x0,z0),bb=inlandY(x1,z0),c=inlandY(x1,z1),d=inlandY(x0,z1);return u>=t?a+u*(bb-a)+t*(c-bb):a+t*(d-a)+u*(c-d)} // (the same two triangles per cell as the mesh)
-const hillY=(x,z)=>Math.max(gridY(FAR.slice(3),B/6,x,z),gridY(FARX,FARCH/8,x,z)-.3);
+  a=gyAt(x0,z0),bb=gyAt(x1,z0),c=gyAt(x1,z1),d=gyAt(x0,z1);return u>=t?a+u*(bb-a)+t*(c-bb):a+t*(d-a)+u*(c-d)} // (the same two triangles per cell as the mesh)
+const FAR3=FAR.slice(3),hillY=(x,z)=>Math.max(gridY(FAR3,B/6,x,z),gridY(FARX,FARCH/8,x,z)-.3);
 const skiCache=new Map();
 function skiLayout(k){if(skiCache.has(k))return skiCache.get(k);
   const zg=(k*PER+2)*B-16,ph=hash(k,5,91)*6,cz=zg+100; // zg: the gondola's line, cz: the chairlift's
@@ -2352,11 +2357,12 @@ function skiLayout(k){if(skiCache.has(k))return skiCache.get(k);
   const chair=[60,150,240,330,420,510,600].map((o,q)=>{const x=XE+o;return[x,hillY(x,cz)+(q&&q<6?10:5),cz]});
   const L={zg,cz,runs,X0:XE+15,X1:XE+650,gond,chair};skiCache.set(k,L);return L}
 function cableBeam(b,p,q,c,t){const dx=q[0]-p[0],dy=q[1]-p[1],dz=q[2]-p[2],hl=Math.hypot(dx,dz);b.add(G.box,c,(p[0]+q[0])/2,(p[1]+q[1])/2,(p[2]+q[2])/2,t,t,Math.hypot(hl,dy),Math.atan2(dx,dz),-Math.atan2(dy,hl))}
-function skiHill(b,gb,k){const L=skiLayout(k),r=rng(9100+k),{zg,cz,runs}=L,GR=0x8a8f96;
+function skiHill(b,gb,k){const L=skiLayout(k),r=rng(9100+k),{zg,cz,runs}=L,GR=0x8a8f96,S=[]; // returns its steps, built over a few frames (in order, so the same trees)
   const open=(x,z)=>runs.some(R=>Math.abs(z-R.z(x))<R.w/2+3)||Math.abs(z-zg)<9||Math.abs(z-cz)<7;
   const fir=(x,z,h)=>b.add(G.roof,r()<.5?0x1d3326:0x22392a,x,hillY(x,z)+h*.42,z,h*.2,h,h*.2); // the forest the runs are cut through: plain dark spires (cheap, a dozen triangles each), thick enough that the runs read as lanes
-  for(let q=0;q<1100;q++){const x=XE+25+r()*640,z=zg-200+r()*440;if(!open(x,z))fir(x,z,12+r()*8)}
-  for(const R of runs)for(let x=L.X0+10;x<L.X1;x+=7)for(const s2 of[-1,1])fir(x,R.z(x)+s2*(R.w/2+3.5+r()*4),13+r()*7); // a wall of trees along each run
+  for(let p=0;p<4;p++)S.push(()=>{for(let q=0;q<275;q++){const x=XE+25+r()*640,z=zg-200+r()*440;if(!open(x,z))fir(x,z,12+r()*8)}});
+  for(const R of runs)S.push(()=>{for(let x=L.X0+10;x<L.X1;x+=7)for(const s2 of[-1,1])fir(x,R.z(x)+s2*(R.w/2+3.5+r()*4),13+r()*7)}); // a wall of trees along each run
+  S.push(()=>{
   for(const R of runs)for(let x=L.X0+30;x<L.X1;x+=55)for(const s2 of[-1,1]){const z=R.z(x)+s2*(R.w/2+.5);b.add(G.box,0xf0782a,x,hillY(x,z)+1,z,.25,2,.25)} // orange poles along the edges
   { // the base lodge: a big A-frame facing town, its glass gable lit, a deck, a lit row of windows
     const lx=XE+44,lz=zg+52,ly=hillY(lx,lz);b.add(G.box,0x6b4630,lx,ly+1.5,lz,20,7,16);b.add(G.gable,0x3a3f46,lx,ly+5,lz,18,10,22,Math.PI/2);
@@ -2371,24 +2377,32 @@ function skiHill(b,gb,k){const L=skiLayout(k),r=rng(9100+k),{zg,cz,runs}=L,GR=0x
     for(let q=1;q<L.chair.length-1;q++){const [x,y]=L.chair[q],yb=hillY(x,cz);b.add(G.box,GR,x,(yb+y)/2,cz,.7,y-yb,.7);b.add(G.box,GR,x,y,cz,.5,.4,5.6)}
     for(const q of[0,L.chair.length-1]){const [x,y]=L.chair[q],yb=hillY(x,cz);b.add(G.box,0x6b4630,x,yb+2,cz,6,4,8);b.add(G.gable,0x3a3f46,x,yb+4,cz,9,1.8,7,Math.PI/2);b.add(G.cyl,GR,x,y,cz,2.2,.4,2.2)}
     for(const o of[-2.1,2.1])for(let q=0;q+1<L.chair.length;q++){const p=L.chair[q],n=L.chair[q+1];cableBeam(b,[p[0],p[1],cz+o],[n[0],n[1],cz+o],0x2a2628,.12)}}
+  });return S;
 }
 function buildFarTown(k){
   const a=k*PER,TL=townLen(k),b=new Builder(),hid=[];
-  for(let j=a;j<=a+TL;j++)for(let i=XMIN-1;i<=XMAX;i++){
+  const row=j=>{for(let i=XMIN-1;i<=XMAX;i++){
     const d=cellKind(i,j);if(!d)continue;const n0=b.pos.length/3;farCell(b,i,j,d);for(let q=b.pos.length/3-n0;q>0;q--)hid.push(i,j,1);
-  }
-  let gb=null;if(isAlp(regionOf(k))){const n0=b.pos.length/3;gb=new Builder();gb.gain=2.4;skiHill(b,gb,k);for(let q=b.pos.length/3-n0;q>0;q--)hid.push(0,0,0)} // the High Sierra: the ski hill (always drawn)
-  const g=b.geo();g.setAttribute('hid',new THREE.Float32BufferAttribute(hid,3));const m=new THREE.Mesh(g,MAT_FAR);if(gb)m.add(new THREE.Mesh(gb.geo(),MAT_GLOW));return m;
+  }};
+  if(isAlp(regionOf(k))){ // the High Sierra: a row of the town a step, then the ski hill (always drawn), over the next frames so no one frame stalls
+    const grp=new THREE.Group();grp.userData.z=(a+TL/2)*B;const fin=(bb,hd)=>{const g=bb.geo();g.setAttribute('hid',new THREE.Float32BufferAttribute(hd,3));return new THREE.Mesh(g,MAT_FAR)};
+    const sb=new Builder(),gb=new Builder(),steps=[];gb.gain=2.4;for(let j=a;j<=a+TL;j++)steps.push(()=>row(j));
+    steps.push(()=>grp.add(fin(b,hid)),...skiHill(sb,gb,k),()=>{const m=fin(sb,new Array(sb.pos.length).fill(0));m.add(new THREE.Mesh(gb.geo(),MAT_GLOW));grp.add(m)});
+    farSteps(grp,steps);return grp}
+  for(let j=a;j<=a+TL;j++)row(j);
+  const g=b.geo();g.setAttribute('hid',new THREE.Float32BufferAttribute(hid,3));return new THREE.Mesh(g,MAT_FAR);
 }
-const farChunks=new Map(),farTowns=new Map();
+const farChunks=new Map(),farTowns=new Map(),farLater=[]; // farLater: the rest of a High Sierra far piece, built a step at a time over the next frames (so no one frame stalls)
+function farSteps(grp,steps){if(regW(grp.userData.z,isAlp)>0)farLater.push(...steps.map(f=>()=>{if(grp.parent)f()}));else for(const f of steps)f()} // elsewhere all at once, as before
 function flushFar(){ // a road trip changed what lies ahead: rebuild the far scenery (it comes back a piece per frame)
-  skiCache.clear();
+  skiCache.clear();gyMemo.clear();farLater.length=0;
   for(const m of[farChunks,farTowns]){for(const g of m.values()){scene.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose()})}m.clear()}
 }
 function updateFar(cx,cz){
   farU.uRow.value=Math.floor(cz/B);
   const c0=Math.floor(cz/FARCH);let built=0;
   for(const [c,g] of farChunks)if(Math.abs(c-c0)>FAR_N+1){scene.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose()});farChunks.delete(c)}
+  if(farLater.length){const t0=performance.now();do farLater.shift()();while(farLater.length&&performance.now()-t0<3);built=1} // finish the pieces already started first, about 3 ms a frame
   for(let d=0;d<=FAR_N&&built<1;d++)for(const c of d?[c0-d,c0+d]:[c0])if(!farChunks.has(c)&&built<1){const g=buildFarChunk(c);farChunks.set(c,g);scene.add(g);built++}
   const k0=Math.floor(cz/B/PER);
   for(const [k,m] of farTowns)if(Math.abs((k*PER+townLen(k)/2)*B-cz)>5200){scene.remove(m);m.traverse(o=>{if(o.geometry)o.geometry.dispose()});farTowns.delete(k)}
@@ -4172,7 +4186,7 @@ stream(car.x,car.z,true);
 let last=performance.now(),frame=0,lastKmh=-1,lastSig='';const kmhEl=$('kmh'),sigLEl=$('sigL'),sigREl=$('sigR');
 function loop(now){
   requestAnimationFrame(loop);
-  const dt=Math.min(.05,(now-last)/1000);last=now;clock+=dt;frame++;
+  const dt=clamp((now-last)/1000,0,.05);last=now;clock+=dt;frame++; // (dt never below 0: the first frame's time can come before the start time, and a step back in time broke the switchback headlights)
   updateLamps(clock);updateTilt(dt);updateCalm(now);updateCar(cardShot?0:dt);updateStreak(dt,frame);stream(car.x,car.z,false);updatePeds(dt,car.x,car.z,frame);updateTraffic(dt);
   // chase cam: locked to the car's position, only the angle is smoothed (so it never falls behind at speed)
   const fx=Math.sin(car.yaw),fz=Math.cos(car.yaw),back=10+car.v*.05;
