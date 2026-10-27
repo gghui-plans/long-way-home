@@ -1,5 +1,7 @@
 # Audio upgrade workflow: recorded hosts and real songs
 
+*History of the October 2026 audio upgrade, plus file conventions. The current how-to is in WORKFLOW.md.*
+
 Goal: replace the device text-to-speech hosts and the in-browser synth music with recorded audio, so every player hears the same Rick and Dana on any device.
 
 Decided 2026-10-03. The planned fix for picking up iPhone Premium voices is dropped, because recordings make it unnecessary.

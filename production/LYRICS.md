@@ -538,7 +538,8 @@ The long way home
 Sixteen more songs, written 2026-10-18 (see FUTURE-WORK.md, "16 more songs per station"). Each song is a snapshot of one place and moment in a single LA summer, in order from the first day of summer to the last night. They use everyday places, not named landmarks, and tie into the in-game postcards.
 
 - Same settings as set 1 (top of this file). Save into `docs/audio/music/`, then run `process-music.ps1`.
-- Five songs have the Postcard from the Pier sound: 80s new wave, chorus guitars, synth pads and dreamy female vocals. The rest keep the classic-rock spread, with two instrumentals and one duet.
+- Five songs have the Postcard from the Pier sound: 80s new wave, chorus guitars, synth pads and dreamy female vocals. The rest keep set 1's classic-rock palette (no Motown, disco or jazz), with two instrumentals and one duet.
+- Rewritten 2026-10-19 after the first takes: an [Intro] and a fast first chorus on every song, and each chorus has its own shape (listed per song) so they don't all follow one formula. Couples Skate and Ice Cream Truck keep their v2 lyrics.
 - Bands: K-JAM's existing bands plus five new ones (Cruise Control, Hazard Lights, The Parking Meters, The Fender Benders, Heat Index). The names are for the radio intros only, so change them freely.
 - In the game, each new song needs a SONGS entry plus two host intros (intro and introb), so 32 new ElevenLabs clips. Those get written once the songs are final.
 
@@ -547,19 +548,19 @@ Sixteen more songs, written 2026-10-18 (see FUTURE-WORK.md, "16 more songs per s
 | # | Song | Band | Sound | Vocal | Status |
 |---|---|---|---|---|---|
 | 17 | Top Down, Radio Up | Rush Hour Rebels | 80s heartland rock | M | written, not generated |
-| 18 | Ice Cream Truck | The Carpoolers | 60s Motown soul pop | M | written, not generated |
+| 18 | Ice Cream Truck | The Carpoolers | 70s boogie rock | M | written, not generated |
 | 19 | Couples Skate | The Turn Signals | 80s new wave (Postcard sound) | F | written, not generated |
 | 20 | Motel Pool | Tailgate Thunder | 70s soft rock | M | written, not generated |
 | 21 | Salt Air Stomp | The Offramps | 60s surf with organ and sax | Instrumental | written, not generated |
 | 22 | Drive-In Double Feature | Cruise Control | 80s new wave (Postcard sound) | F | written, not generated |
 | 23 | Taco Truck Moon | The Parking Meters | 70s Latin rock | M | written, not generated |
 | 24 | High Score | Hazard Lights | 80s arena rock | F | written, not generated |
-| 25 | Laundromat Love | Dana's Cousin Kevin | 50s rock and roll | M | written, not generated |
+| 25 | Laundromat Love | Dana's Cousin Kevin | 60s garage rock | M | written, not generated |
 | 26 | Fireworks on the Water | The Fender Benders | 70s piano rock anthem | M | written, not generated |
 | 27 | Photo Booth | The Turn Signals | 80s jangle new wave (Postcard sound) | F | written, not generated |
-| 28 | Block Party | Gridlock Prophets | 70s disco funk | M + group | written, not generated |
+| 28 | Block Party | Gridlock Prophets | 70s funk rock with horns | M + group | written, not generated |
 | 29 | One-Hour Sailboat | Valet Overdrive | 70s yacht rock | Duet | written, not generated |
-| 30 | Heat Shimmer | Heat Index | 70s jazz-funk | Instrumental | written, not generated |
+| 30 | Heat Shimmer | Heat Index | 70s southern rock | Instrumental | written, not generated |
 | 31 | Rooftop at Dusk | Cruise Control | 80s new wave ballad (Postcard sound) | F | written, not generated |
 | 32 | Last Night of Summer | The Turn Signals | 80s new wave (Postcard sound) | F | written, not generated |
 
@@ -576,6 +577,8 @@ Sixteen more songs, written 2026-10-18 (see FUTURE-WORK.md, "16 more songs per s
 - **Lyrics:** paste the block below
 
 ```
+[Intro]
+
 [Verse 1]
 School's out, keys in, and the morning's wide awake
 Every single light turns green for every turn I take
@@ -621,43 +624,58 @@ Top down, radio up
 - **Save as:** ice-cream-truck.mp3
 - **Title:** Ice Cream Truck
 - **Band (for the radio):** The Carpoolers
-- **Style of Music:** 1960s Motown soul pop, tambourine, bright horns, handclaps, upbeat male lead vocals, backing vocal harmonies, joyful
+- **Style of Music:** 1970s boogie rock, rollicking piano, handclaps, cowbell, fun male vocals, catchy singalong chorus
 - **Vocal Gender:** Male
 - **Theme:** a grown man hears the jingle three streets over and runs for it anyway.
-- **Lyrics:** paste the block below
+- **Lyrics:** paste the block below (v2, 2026-10-19: boogie rock instead of Motown, hookier chorus and a na-na post-chorus)
 
 ```
+[Intro]
+
 [Verse 1]
 Heard it three streets over, that little tune
 Floating through the heat of the afternoon
-Dropped my broom and grabbed a dollar from the jar
-Running down the sidewalk, it can't be very far
+Grabbed a dollar from the jar and I'm out the door
+Barefoot on the sidewalk like I'm ten once more
 
 [Chorus]
-Here comes the ice cream truck (ice cream truck)
-Rolling down the block with a little bit of luck
-Every kid in town is coming out to play
-Here comes the ice cream truck, hey hey
+Ice cream truck, ice cream truck
+Wait for me, wait for me
+Ice cream truck, ice cream truck
+Sweetest sound on the street
+
+[Post-Chorus]
+Na na na-na na, na na na-na na
+Na na na-na na, here it comes
 
 [Verse 2]
 Grown man in flip-flops running down the street
 Neighbours laughing at me, hot tar on my feet
 Cherry pop and a fudge bar dripping down my hand
-Sweetest little summer in the whole wide land
+Best two dollars in the whole wide land
 
 [Chorus]
-Here comes the ice cream truck (ice cream truck)
-Rolling down the block with a little bit of luck
-Every kid in town is coming out to play
-Here comes the ice cream truck, hey hey
+Ice cream truck, ice cream truck
+Wait for me, wait for me
+Ice cream truck, ice cream truck
+Sweetest sound on the street
 
-[Horn Break]
+[Post-Chorus]
+Na na na-na na, na na na-na na
+Na na na-na na, here it comes
+
+[Piano Solo]
 
 [Final Chorus]
-Here comes the ice cream truck (ice cream truck)
-Rolling down the block with a little bit of luck
-Hear that music playing, come on, run this way
-Here comes the ice cream truck, hey hey
+Ice cream truck, ice cream truck
+Wait for me, wait for me
+Ice cream truck, ice cream truck
+Sweetest sound on the street
+
+[Post-Chorus]
+Na na na-na na, na na na-na na
+Na na na-na na, here it comes
+Wait for me!
 ```
 
 ---
@@ -667,23 +685,29 @@ Here comes the ice cream truck, hey hey
 - **Save as:** couples-skate.mp3
 - **Title:** Couples Skate
 - **Band (for the radio):** The Turn Signals
-- **Style of Music:** 1980s new wave rock, chorus-drenched guitars, synth pads, driving bassline, dreamy female vocals, roller rink shimmer
+- **Style of Music:** upbeat 1980s new wave rock, chorus-drenched guitars, synth pads, dreamy female vocals, catchy guitar hook
 - **Vocal Gender:** Female
 - **Theme:** Friday night at the roller rink, when the DJ dims the lights for the couples skate.
-- **Lyrics:** paste the block below
+- **Lyrics:** paste the block below (v2, 2026-10-19: hookier chorus and a whoa-oh post-chorus; v1 wasn't catchy enough)
 
 ```
+[Intro]
+
 [Verse 1]
 Mirror ball spinning on a Friday night
 Laces pulled tight and the floor's so bright
-The DJ turns the lights down low
-And says, "Grab a partner, nice and slow"
+DJ turns the lights down low
+Grab a partner, nice and slow
 
 [Chorus]
 Couples skate, couples skate
-Take my hand, it's not too late
-Round and round till the music fades
-Couples skate
+Spin me round, don't make me wait
+Couples skate, couples skate
+Under the mirror ball
+
+[Post-Chorus]
+Whoa-oh, round and round we go
+Whoa-oh, round and round we go
 
 [Verse 2]
 You wobble once and I catch your sleeve
@@ -693,19 +717,27 @@ Spinning together in our own little space
 
 [Chorus]
 Couples skate, couples skate
-Take my hand, it's not too late
-Round and round till the music fades
-Couples skate
+Spin me round, don't make me wait
+Couples skate, couples skate
+Under the mirror ball
+
+[Post-Chorus]
+Whoa-oh, round and round we go
+Whoa-oh, round and round we go
 
 [Bridge]
-Under the lights, the world goes slow
+Lights down low, take it slow
 Hold on tight and don't let go
 
 [Final Chorus]
 Couples skate, couples skate
-Take my hand, it's not too late
-Round and round till the music fades
-Couples skate
+Spin me round, don't make me wait
+Couples skate, couples skate
+Under the mirror ball
+
+[Post-Chorus]
+Whoa-oh, round and round we go
+Whoa-oh, round and round we go
 Couples skate
 ```
 
@@ -716,43 +748,52 @@ Couples skate
 - **Save as:** motel-pool.mp3
 - **Title:** Motel Pool
 - **Band (for the radio):** Tailgate Thunder
-- **Style of Music:** 1970s soft rock, Wurlitzer electric piano, smooth bass, gentle drums, warm laid-back male vocals, summer night
+- **Style of Music:** 1970s soft rock, Wurlitzer electric piano, smooth groove, warm male vocals, catchy chorus
 - **Vocal Gender:** Male
 - **Theme:** a cheap roadside motel on a road trip: the neon sign, and a swim at midnight.
-- **Lyrics:** paste the block below
+- **Lyrics:** paste the block below (v3, 2026-10-19: a story chorus that lands on the title, and the last chorus changes; v2's repeat-the-title chorus felt formulaic)
 
 ```
+[Intro]
+
 [Verse 1]
 Neon buzzing, vacancy
 Plastic key, room twenty-three
-Highway sighing just past the wall
+Highway humming past the wall
 Nobody out here, nobody at all
 
 [Chorus]
-Meet me at the motel pool
-Midnight and the water's cool
-Lights glowing blue from down below
-Meet me at the motel pool
+The sign says closed at ten o'clock
+But the gate don't even lock
+So I'll be waiting where the lights glow blue
+Down at the motel pool
 
 [Verse 2]
 Folding chairs and a no-lifeguard sign
-Cannonball, and the stars align
+Cannonball and the stars align
 Your sunglasses on the diving board
 Best little room that we could afford
 
 [Chorus]
-Meet me at the motel pool
-Midnight and the water's cool
-Lights glowing blue from down below
-Meet me at the motel pool
+The sign says closed at ten o'clock
+But the gate don't even lock
+So I'll be waiting where the lights glow blue
+Down at the motel pool
 
 [Electric Piano Solo]
 
-[Final Chorus]
-Meet me at the motel pool
-Midnight and the water's cool
+[Bridge]
 Checkout's not till half past ten
-Meet me at the motel pool again
+And I'd book this room again
+
+[Final Chorus]
+The sign says closed at ten o'clock
+But the gate don't even lock
+So jump on in, the water's cool
+Down at the motel pool
+
+[Outro]
+Down at the motel pool
 ```
 
 ---
@@ -775,24 +816,31 @@ Meet me at the motel pool again
 - **Save as:** drive-in-double-feature.mp3
 - **Title:** Drive-In Double Feature
 - **Band (for the radio):** Cruise Control
-- **Style of Music:** 1980s new wave dream pop, shimmering chorus guitars, warm synth pads, steady drum machine, dreamy female vocals
+- **Style of Music:** 1980s new wave rock, chorus-drenched guitars, synth pads, dreamy female vocals
 - **Vocal Gender:** Female
-- **Theme:** the back row of the drive-in. Two movies, and she can't tell you how either one ends.
-- **Lyrics:** paste the block below
+- **Theme:** the back row of the drive-in. Her friends ask how the movie ended, and she couldn't tell you.
+- **Chorus shape:** question and answer
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Speaker hanging on the window glass
 Stars coming out while the trailers pass
 Back row parking where the crickets sing
 Your head on my shoulder, and I don't need a thing
 
+[Pre-Chorus]
+And my friends all ask me Monday
+
 [Chorus]
-Drive-in double feature
-Under a velvet sky
-Don't ask me how the movie ends
-I watched the stars go by
-Drive-in double feature
+How'd the movie end?
+I couldn't tell you
+Who was the hero then?
+I couldn't tell you
+All I saw was you in the silver light
+At the drive-in double feature on a summer night
 
 [Verse 2]
 Monster on the screen and you jump and scream
@@ -800,23 +848,28 @@ Laughing in the glow of the silver beam
 Intermission and the hot dogs dance
 Second show starts, but it don't stand a chance
 
+[Pre-Chorus]
+And my friends all ask me Monday
+
 [Chorus]
-Drive-in double feature
-Under a velvet sky
-Don't ask me how the movie ends
-I watched the stars go by
-Drive-in double feature
+How'd the movie end?
+I couldn't tell you
+Who was the hero then?
+I couldn't tell you
+All I saw was you in the silver light
+At the drive-in double feature on a summer night
 
 [Bridge]
 Headlights waking up row by row
 I'm in no hurry, let's go slow
 
 [Final Chorus]
-Drive-in double feature
-Under a velvet sky
-Don't ask me how the movie ends
-I watched the stars go by
-Drive-in double feature
+How'd the movie end?
+I couldn't tell you
+Are you going back again?
+Every weekend
+All I saw was you in the silver light
+At the drive-in double feature on a summer night
 ```
 
 ---
@@ -826,12 +879,15 @@ Drive-in double feature
 - **Save as:** taco-truck-moon.mp3
 - **Title:** Taco Truck Moon
 - **Band (for the radio):** The Parking Meters
-- **Style of Music:** 1970s Latin rock, congas and timbales, Hammond organ, sustained bluesy lead guitar, groovy bass, warm male vocals
+- **Style of Music:** 1970s Latin rock, congas and timbales, Hammond organ, bluesy lead guitar, male vocals, group shouts
 - **Vocal Gender:** Male
 - **Theme:** two in the morning in line at the taco truck. The cook sings off-key and throws in a free one.
-- **Lyrics:** paste the block below
+- **Chorus shape:** call and response (the line answers back in the parentheses)
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Two in the morning and the streets are still
 Bright little window at the top of the hill
@@ -839,9 +895,9 @@ Smoke on the grill and a radio song
 Line of night owls, ten people long
 
 [Chorus]
-Under the taco truck moon
+Who's still hungry? (We are!)
+Who's still up? (We are!)
 Salsa verde and a summer tune
-Nobody's tired, it's way too soon
 Under the taco truck moon
 
 [Verse 2]
@@ -851,17 +907,21 @@ Cook's singing along and he's way off key
 Hands me an extra one, says, "This one's free"
 
 [Chorus]
-Under the taco truck moon
+Who's still hungry? (We are!)
+Who's still up? (We are!)
 Salsa verde and a summer tune
-Nobody's tired, it's way too soon
 Under the taco truck moon
 
 [Guitar Solo]
 
+[Bridge]
+Sun's coming up in an hour or two
+Nobody's leaving, what else would we do
+
 [Final Chorus]
-Under the taco truck moon
+Who's still hungry? (We are!)
+Who's going home? (Not yet!)
 Salsa verde and a summer tune
-See you tomorrow, see you soon
 Under the taco truck moon
 ```
 
@@ -872,23 +932,34 @@ Under the taco truck moon
 - **Save as:** high-score.mp3
 - **Title:** High Score
 - **Band (for the radio):** Hazard Lights
-- **Style of Music:** 1980s arena rock, big gated drums, synth stabs, crunchy electric guitars, powerful female rock vocals, anthemic
+- **Style of Music:** 1980s arena rock, gated drums, synth stabs, crunchy guitars, powerful female rock vocals, gang vocals
 - **Vocal Gender:** Female
 - **Theme:** the boardwalk arcade late at night. She's one life away from putting her three letters at the top of the board.
-- **Lyrics:** paste the block below
+- **Chorus shape:** a big sung chorus, then a gang-shout chant
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Pocket full of quarters, boardwalk's open late
 Lights all blinking like they're telling me my fate
 Kids are crowding round me, nobody makes a sound
 One more life and I'm the queen of this town
 
+[Pre-Chorus]
+Hands on the buttons, eyes on the screen
+Faster than anything you've ever seen
+
 [Chorus]
-Going for the high score
-Three little letters on the board
-Every light is flashing, give me more
 I'm going for the high score
+Gonna light up the board tonight
+Three little letters at the top
+Shining in the arcade light
+
+[Chant]
+Insert coin! (Insert coin!)
+Insert coin! (Insert coin!)
 
 [Verse 2]
 Skee-ball thunder and the prize wall glows
@@ -896,24 +967,28 @@ Rubber spiders and a pink plastic rose
 Ten thousand tickets for a yo-yo, yeah
 But the only thing I want is my name up there
 
-[Chorus]
-Going for the high score
-Three little letters on the board
-Every light is flashing, give me more
-I'm going for the high score
+[Pre-Chorus]
+Hands on the buttons, eyes on the screen
+Faster than anything you've ever seen
 
-[Bridge]
-Game over? No, not tonight
-Insert coin, I'm ready to fight
+[Chorus]
+I'm going for the high score
+Gonna light up the board tonight
+Three little letters at the top
+Shining in the arcade light
+
+[Chant]
+Insert coin! (Insert coin!)
+Insert coin! (Insert coin!)
 
 [Guitar Solo]
 
 [Final Chorus]
-Going for the high score
-Three little letters on the board
-Every light is flashing, give me more
 I'm going for the high score
-High score!
+Gonna light up the board tonight
+Three little letters at the top
+Shining in the arcade light
+Game over? Not tonight!
 ```
 
 ---
@@ -923,12 +998,15 @@ High score!
 - **Save as:** laundromat-love.mp3
 - **Title:** Laundromat Love
 - **Band (for the radio):** Dana's Cousin Kevin
-- **Style of Music:** 1950s rock and roll, boogie-woogie piano, slapback echo, upright bass, honking saxophone, playful male vocals
+- **Style of Music:** 1960s garage rock, fuzz guitar, Farfisa organ, handclaps, raw fun male vocals
 - **Vocal Gender:** Male
 - **Theme:** washing the sand out of a week of beach towels, and meeting someone over a borrowed quarter.
-- **Lyrics:** paste the block below
+- **Chorus shape:** a rhythmic list (wash it, rinse it, spin it)
+- **Lyrics:** paste the block below (v2, 2026-10-19: garage rock instead of 50s rock and roll)
 
 ```
+[Intro]
+
 [Verse 1]
 Sand in my pockets from a week at the shore
 Hauled my beach towels through the laundromat door
@@ -936,31 +1014,35 @@ There you were folding by machine number nine
 Asked you for a quarter and you gave me your time
 
 [Chorus]
-Laundromat love, going round and round
-Spin cycle romance in the middle of town
-Tumble dry low, let the quarters drop
-Laundromat love, and it won't stop
+Wash it, rinse it, spin it round
+Best love story in this town
+Fold it, stack it, take it home
+Laundromat love
 
 [Verse 2]
 Socks gone missing and a mystery stain
 Rumble of the dryer like a midnight train
 You folded my shirts and I folded my heart
-Wash, rinse, repeat, now we'll never be apart
+Now Sunday night's my favourite part
 
 [Chorus]
-Laundromat love, going round and round
-Spin cycle romance in the middle of town
-Tumble dry low, let the quarters drop
-Laundromat love, and it won't stop
+Wash it, rinse it, spin it round
+Best love story in this town
+Fold it, stack it, take it home
+Laundromat love
 
-[Sax Solo]
+[Organ Solo]
+
+[Bridge]
+Out of quarters? Baby, that's alright
+I'll bring a roll next Sunday night
 
 [Final Chorus]
-Laundromat love, going round and round
-Spin cycle romance in the middle of town
-Tumble dry low, let the quarters drop
-Laundromat love, and it won't stop
-Laundromat love!
+Wash it, rinse it, spin it round
+Best love story in this town
+Fold it, stack it, take it home
+Laundromat love
+Laundromat love
 ```
 
 ---
@@ -970,12 +1052,15 @@ Laundromat love!
 - **Save as:** fireworks-on-the-water.mp3
 - **Title:** Fireworks on the Water
 - **Band (for the radio):** The Fender Benders
-- **Style of Music:** 1970s piano rock anthem, pounding piano, big drums, electric guitar, swelling strings, soaring male vocals
+- **Style of Music:** 1970s piano rock anthem, pounding piano, big drums, strings, soaring male vocals
 - **Vocal Gender:** Male
 - **Theme:** the whole town on blankets on the beach, watching the summer fireworks over the water.
-- **Lyrics:** paste the block below
+- **Chorus shape:** an anthem with long held lines; the title once, at the top
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Whole town spread out on the sand tonight
 Blankets and coolers and the last of the light
@@ -984,10 +1069,9 @@ Everybody waiting with their eyes on the sky
 
 [Chorus]
 Fireworks on the water
-Lighting up the bay
-All of us together
-Watching the night turn into day
-Fireworks on the water
+And the whole sky open wide
+Every face turned up and shining
+In the gold and silver light
 
 [Verse 2]
 Every boom comes echoing across the sea
@@ -997,10 +1081,9 @@ Sparklers writing names on the summer air
 
 [Chorus]
 Fireworks on the water
-Lighting up the bay
-All of us together
-Watching the night turn into day
-Fireworks on the water
+And the whole sky open wide
+Every face turned up and shining
+In the gold and silver light
 
 [Bridge]
 Here comes the grand finale
@@ -1010,10 +1093,9 @@ And all the stars come back on
 
 [Final Chorus]
 Fireworks on the water
-Lighting up the bay
-All of us together
-Watching the night turn into day
-Fireworks on the water
+And the whole sky open wide
+I'll remember every summer
+By the way you looked tonight
 ```
 
 ---
@@ -1025,43 +1107,46 @@ Fireworks on the water
 - **Band (for the radio):** The Turn Signals
 - **Style of Music:** 1980s jangle-pop new wave, ringing chorus guitars, synth pads, upbeat drums, dreamy female vocals
 - **Vocal Gender:** Female
-- **Theme:** four frames in a boardwalk photo booth: shy, silly, laughing, and then a kiss. She keeps the strip.
-- **Lyrics:** paste the block below
+- **Theme:** four frames in a boardwalk photo booth: shy, silly, laughing, and then a kiss. They tear the strip in half to share it.
+- **Chorus shape:** it counts the flashes, so the first two lines change every chorus
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Curtain closed and the quarters in
 Two on a stool and a nervous grin
-First flash, we're both too shy
-Second flash, you cross your eyes
+Lean in closer, the light turns red
+Smile, I think that's what it said
 
 [Chorus]
-Four little pictures in the photo booth
-Black and white and the summer truth
-Keep it in my wallet, keep it for good
-Four little pictures in the photo booth
+Flash, and we're both too shy
+Flash, and you cross your eyes
+Black and white in the photo booth
+Four little pictures of the summer truth
 
 [Verse 2]
-Third flash, we can't stop laughing
-Fourth flash, I don't know what happened
 Waiting by the slot while the pictures dry
 Holding up the strip to the evening sky
+You want two and I want two
+So we tear it down the middle, me and you
 
 [Chorus]
-Four little pictures in the photo booth
-Black and white and the summer truth
-Keep it in my wallet, keep it for good
-Four little pictures in the photo booth
+Flash, and we can't stop laughing
+Flash, and I don't know what happened
+Black and white in the photo booth
+Four little pictures of the summer truth
 
 [Bridge]
-Years from now when the summer's gone
-I'll take it out, and I'll hold on
+Years from now in a dresser drawer
+I'll find my half and I'll want one more
 
 [Final Chorus]
-Four little pictures in the photo booth
-Black and white and the summer truth
-Keep it in my wallet, keep it for good
-Four little pictures in the photo booth
+Flash, and it's you and me
+Flash, and it's all I need
+Black and white in the photo booth
+Four little pictures of the summer truth
 ```
 
 ---
@@ -1071,12 +1156,15 @@ Four little pictures in the photo booth
 - **Save as:** block-party.mp3
 - **Title:** Block Party
 - **Band (for the radio):** Gridlock Prophets
-- **Style of Music:** 1970s disco funk, four-on-the-floor beat, slap bass, horn section, string stabs, male lead vocals with group backing vocals, joyful
+- **Style of Music:** 1970s funk rock, horn section riff, slap bass, wah guitar, male vocals, gang vocals
 - **Vocal Gender:** Male
 - **Theme:** the street is closed off for a summer block party: grill smoke, the open hydrant, and Grandma dancing.
-- **Lyrics:** paste the block below
+- **Chorus shape:** the horn riff is the hook; the chorus is a long line with a shouted title
+- **Lyrics:** paste the block below (v2, 2026-10-19: funk rock instead of disco)
 
 ```
+[Intro: Horn Riff]
+
 [Verse 1]
 Barricades up at the end of the street
 Grill smoke rising in the summer heat
@@ -1084,13 +1172,12 @@ Speakers in the window, turn it up loud
 Grandma's dancing in the middle of the crowd
 
 [Chorus]
-Block party (block party)
-Everybody's invited
-Block party (block party)
-Whole street's excited
-Bring a friend and bring a chair
-Music floating everywhere
-Block party
+Bring a chair, bring a friend, bring your mama too
+Block party!
+Everybody on the street knows what to do
+Block party!
+
+[Horn Riff]
 
 [Verse 2]
 Hydrant spraying and the kids run through
@@ -1099,23 +1186,21 @@ Uncle on the grill in a crazy hat
 Dominoes slapping, now how about that
 
 [Chorus]
-Block party (block party)
-Everybody's invited
-Block party (block party)
-Whole street's excited
-Bring a friend and bring a chair
-Music floating everywhere
-Block party
+Bring a chair, bring a friend, bring your mama too
+Block party!
+Everybody on the street knows what to do
+Block party!
 
-[Horn Break]
+[Bridge]
+Somebody call the neighbours
+Oh wait, they're already here
+
+[Horn Riff]
 
 [Final Chorus]
-Block party (block party)
-Everybody's invited
-Block party (block party)
-Whole street's excited
-Bring a friend and bring a chair
-Music floating everywhere
+Bring a chair, bring a friend, bring your mama too
+Block party!
+Everybody on the street knows what to do
 Block party!
 ```
 
@@ -1126,30 +1211,50 @@ Block party!
 - **Save as:** one-hour-sailboat.mp3
 - **Title:** One-Hour Sailboat
 - **Band (for the radio):** Valet Overdrive
-- **Style of Music:** 1970s yacht rock, smooth electric piano, saxophone, soft groove, male and female harmony vocals, playful
+- **Style of Music:** 1970s yacht rock, smooth electric piano, saxophone, soft groove, male and female duet vocals
 - **Vocal Gender:** leave unset (duet)
 - **Theme:** a little sailboat rented for an hour by two people who can't sail. They drift, the man on the dock waves, and they pay for a second hour.
-- **Lyrics:** paste the block below
+- **Chorus shape:** a duet that trades lines
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1: Male]
 Twenty dollars at the harbour shack
 Little white boat, gotta bring it back
+
+[Verse 1: Female]
 Man said, "One hour, don't you go too far"
 I said, "Mister, you don't know who we are"
+
+[Chorus: Male]
+Do you know how to sail?
+
+[Chorus: Female]
+No, do you?
+
+[Chorus: Both]
+Not a clue, not a clue
+One-hour sailboat, drifting on the blue
 
 [Verse 2: Female]
 Wind came up and the wind died down
 We drifted halfway out of town
+
+[Verse 2: Male]
 Sail flapping like a laundry line
 Lost and laughing, and that's just fine
 
+[Chorus: Male]
+Do you know how to sail?
+
+[Chorus: Female]
+No, do you?
+
 [Chorus: Both]
-One-hour sailboat
-Drifting on a summer tide
-Nowhere we can go but sideways
-Long as you're right here by my side
-One-hour sailboat
+Not a clue, not a clue
+One-hour sailboat, drifting on the blue
 
 [Saxophone Solo]
 
@@ -1157,12 +1262,15 @@ One-hour sailboat
 Man on the dock waving his hat
 We waved right back, imagine that
 
+[Final Chorus: Male]
+Should we head back in?
+
+[Final Chorus: Female]
+Not yet, not yet
+
 [Final Chorus: Both]
-One-hour sailboat
-Drifting on a summer tide
 We'll pay him for a second hour
-Long as you're right here by my side
-One-hour sailboat
+One-hour sailboat, drifting on the blue
 ```
 
 ---
@@ -1172,11 +1280,11 @@ One-hour sailboat
 - **Save as:** heat-shimmer.mp3
 - **Title:** Heat Shimmer
 - **Band (for the radio):** Heat Index
-- **Style of Music:** 1970s jazz-funk instrumental, Fender Rhodes, breezy flute melody, wah guitar, smooth bass, laid-back groove, hazy summer afternoon
+- **Style of Music:** 1970s southern rock instrumental, twin lead guitars, Hammond organ, slow-burning groove, hazy
 - **Vocal Gender:** leave unset (instrumental)
 - **Instrumental:** On (leave the Lyrics box empty)
 - **Exclude styles:** add "vocals" as well
-- **Theme:** the hottest afternoon of the summer, with the road shimmering ahead.
+- **Theme:** the hottest afternoon of the summer, with the road shimmering ahead. (v2, 2026-10-19: southern rock instead of jazz-funk)
 
 ---
 
@@ -1185,12 +1293,15 @@ One-hour sailboat
 - **Save as:** rooftop-at-dusk.mp3
 - **Title:** Rooftop at Dusk
 - **Band (for the radio):** Cruise Control
-- **Style of Music:** dreamy 1980s new wave ballad, shimmering chorus guitars, lush synth pads, slow drum machine, airy female vocals, sunset glow
+- **Style of Music:** dreamy 1980s new wave ballad, shimmering chorus guitars, lush synth pads, airy female vocals
 - **Vocal Gender:** Female
 - **Theme:** up the fire escape with two cold sodas to watch the city turn orange, then the lights come on.
-- **Lyrics:** paste the block below
+- **Chorus shape:** a slow build of "and the..." lines, with the title once, at the very end
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Up the fire escape at the end of the day
 Two cold sodas and a blanket to lay
@@ -1198,11 +1309,11 @@ City going orange from the hills to the sea
 Nobody up here but you and me
 
 [Chorus]
-Rooftop at dusk
-Watching the city glow
-Palm trees black against the gold
-Lights coming on below
-Rooftop at dusk
+And the palm trees turn to shadows
+And the windows turn to gold
+And the whole world's getting quiet
+Like a secret being told
+Up here on the rooftop at dusk
 
 [Verse 2]
 Helicopter humming somewhere far
@@ -1211,22 +1322,22 @@ Somebody's music on the street down there
 Warm wind tangled in your hair
 
 [Chorus]
-Rooftop at dusk
-Watching the city glow
-Palm trees black against the gold
-Lights coming on below
-Rooftop at dusk
+And the palm trees turn to shadows
+And the windows turn to gold
+And the whole world's getting quiet
+Like a secret being told
+Up here on the rooftop at dusk
 
 [Bridge]
 Stay till the purple turns to blue
 I'd stay up here all night with you
 
 [Final Chorus]
-Rooftop at dusk
-Watching the city glow
-Palm trees black against the gold
-Lights coming on below
-Rooftop at dusk
+And the palm trees turn to shadows
+And the city lights come on
+And I'd trade a hundred summers
+For this one before it's gone
+Up here on the rooftop at dusk
 ```
 
 ---
@@ -1236,12 +1347,15 @@ Rooftop at dusk
 - **Save as:** last-night-of-summer.mp3
 - **Title:** Last Night of Summer
 - **Band (for the radio):** The Turn Signals
-- **Style of Music:** 1980s new wave rock, chorus-drenched guitars, synth pads, driving drums, dreamy female vocals, bittersweet and hopeful
+- **Style of Music:** 1980s new wave rock, chorus-drenched guitars, synth pads, driving drums, dreamy female vocals, bittersweet
 - **Vocal Gender:** Female
 - **Theme:** the set's closer: postcards and a photo strip on the mirror, school tomorrow, one more drive with the top down. It bookends song 17.
-- **Lyrics:** paste the block below
+- **Chorus shape:** new words every chorus, always landing on the title
+- **Lyrics:** paste the block below (v2, 2026-10-19)
 
 ```
+[Intro]
+
 [Verse 1]
 Postcards on the mirror and a photo strip
 Sand in the car from every single trip
@@ -1249,11 +1363,9 @@ Tan's already fading and the nights are getting cool
 Tomorrow morning's waiting with the first bell back at school
 
 [Chorus]
-Last night of summer
-Top down, one more time
-Every song on the radio
-Sounds like it's yours and mine
-Last night of summer
+So it's top down, one more time
+Every song on the radio sounds like yours and mine
+On the last night of summer
 
 [Verse 2]
 Ferris wheel's still turning, but it's slower than before
@@ -1262,23 +1374,19 @@ Same time next summer, promise me you'll be
 Right here in the passenger seat next to me
 
 [Chorus]
-Last night of summer
-Top down, one more time
-Every song on the radio
-Sounds like it's yours and mine
-Last night of summer
+So it's one more lap along the shore
+One more song we've heard a hundred times before
+On the last night of summer
 
 [Bridge]
 It doesn't really end
 It just waits for us again
 
 [Final Chorus]
-Last night of summer
-Top down, one more time
-Every song on the radio
-Sounds like it's yours and mine
-Last night of summer
-Last night of summer
+So it's slow down, let the evening last
+Wave goodbye to summer in the rear-view glass
+On the last night of summer
+On the last night of summer
 ```
 
 ---
