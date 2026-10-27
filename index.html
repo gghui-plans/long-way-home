@@ -566,14 +566,22 @@ const detailTex=(()=>{
   const t=new THREE.DataTexture(d,N,N);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;
   t.generateMipmaps=true;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.needsUpdate=true;return t;
 })();
+// snow (the High Sierra): how much in the region behind and ahead, and where a road trip blends between them, so the snow line sits on the road
+const snowU={uSnow:{value:new THREE.Vector2()},uSnowZ:{value:new THREE.Vector4(0,1,0,1)}};
+const SNOW_GLSL=`uniform vec2 uSnow;uniform vec4 uSnowZ;
+float snowAt(float z){if(uSnow.x<=0.0&&uSnow.y<=0.0)return 0.0;
+  float a=clamp((z-uSnowZ.x)/(uSnowZ.y-uSnowZ.x),0.0,1.0),b=clamp((z-uSnowZ.z)/(uSnowZ.w-uSnowZ.z),0.0,1.0);
+  return mix(uSnow.x,uSnow.y,max(a*a*(3.0-2.0*a),b*b*(3.0-2.0*b)));}`;
+function setSnow(){const a=BASE.look.snow||0,b=PLAN?PLAN.to.look.snow||0:a;snowU.uSnow.value.set(a,b);if(PLAN)snowU.uSnowZ.value.set(PLAN.zA,PLAN.zB,PLAN.zC,PLAN.zD)}
 const detailU={uDetail:{value:detailTex},uOrigin:{value:new THREE.Vector3()},uTime:{value:0}}; // origin snaps every 512 m so the pattern stays sharp far from the start
 MAT.onBeforeCompile=sh=>{
-  Object.assign(sh.uniforms,detailU);
+  Object.assign(sh.uniforms,detailU,snowU);
   sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nvarying vec3 vWPos;varying vec3 vWNrm;attribute float sway;uniform float uTime;')
     .replace('#include <begin_vertex>','#include <begin_vertex>\nif(sway>0.0){float ph=transformed.x*.07+transformed.z*.05;transformed.x+=sway*(.32*sin(uTime*1.1+ph)+.1*sin(uTime*2.6+ph*1.7));transformed.z+=sway*.22*sin(uTime*.85+ph+1.3);}\nelse if(sway<0.0){float ph=(-sway-1.0)*6.283;transformed.y+=.22*sin(uTime*1.25+ph);transformed.x+=.1*sin(uTime*.9+ph);}')
     .replace('#include <project_vertex>','#include <project_vertex>\nvWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vWNrm=normalize(mat3(modelMatrix)*objectNormal);');
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
 uniform sampler2D uDetail;uniform vec3 uOrigin;uniform float uTime;varying vec3 vWPos;varying vec3 vWNrm;
+${SNOW_GLSL}
 vec3 dtBump(vec3 p,vec3 n,vec2 dH,float fd){vec3 sx=normalize(dFdx(p)),sy=normalize(dFdy(p)),r1=cross(sy,n),r2=cross(n,sx);float det=dot(sx,r1)*fd;return normalize(abs(det)*n-sign(det)*(dH.x*r1+dH.y*r2));}`)
   .replace('#include <color_fragment>',`#include <color_fragment>
 vec3 dP=vWPos-uOrigin,dN=normalize(vWNrm),dc=vColor.rgb;float dUp=abs(dN.y);
@@ -594,7 +602,13 @@ if(dUp>.6){ // ground and roofs: grain and broad patches; cracks on asphalt; win
   dMod=(.87+.27*tF.g+(tB.g-.5)*.3)*mix(.76,1.0,smoothstep(0.0,2.5,vWPos.y));
   dH=tF.g;
 }
-diffuseColor.rgb*=mix(1.0,dMod,dFade);`)
+diffuseColor.rgb*=mix(1.0,dMod,dFade);
+float sn=snowAt(vWPos.z);
+if(sn>0.0){ // snow on everything facing up (roofs, tree tops, rocks, the ground), thinner in patches; the road and its yellow lines stay clear, lit parts stay lit
+  float sAs=max((1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat)),step(.7,dSat)*step(.35,dLum)*step(vWPos.y,.1)),sCov=smoothstep(.4,.8,dN.y)*sn*(1.0-sAs)*step(dMx,1.0);
+  sCov=smoothstep(.45,.75,sCov*(.55+.45*tB.g)+.15*(tF.r-.5));
+  diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.82,.87,.95)*(.94+.12*tF.a),sCov);
+}`)
   .replace('#include <roughnessmap_fragment>','#include <roughnessmap_fragment>\nroughnessFactor=mix(roughnessFactor,.16,smoothstep(-6.4,-6.0,vWPos.y)*(1.0-smoothstep(-4.4,-3.4,vWPos.y))*step(.3,dSat));\nfloat dAs=(1.0-smoothstep(.10,.16,dLum))*(1.0-smoothstep(.30,.45,dSat))*step(.6,dUp),dDst=length(vViewPosition),dGz=1.0-smoothstep(.015,.07,abs(normalize(cameraPosition-vWPos).y));\nroughnessFactor=mix(roughnessFactor,.04,dAs*smoothstep(80.0,200.0,dDst)*(1.0-smoothstep(450.0,700.0,dDst))*dGz*(.55+.45*sin(uTime*2.3+vWPos.x*.21+vWPos.z*.17)));')
   .replace('#include <normal_fragment_maps>','#include <normal_fragment_maps>\nnormal=dtBump(-vViewPosition,normal,vec2(dFdx(dH),dFdy(dH))*dBmp*dFade,faceDirection);');
 };
@@ -1978,13 +1992,23 @@ const farU={uCells:{value:farCells},uRow:{value:0}};
 function setFarCell(i,j,on){const k=((j%64+64)%64)*16+i+4;if(k<0||i+4>15)return;farCells.image.data[k]=on?255:0;farCells.needsUpdate=true}
 const MAT_FAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,metalness:0,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:4});
 MAT_FAR.onBeforeCompile=sh=>{
-  Object.assign(sh.uniforms,farU);
-  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec3 hid;uniform sampler2D uCells;uniform float uRow;')
+  Object.assign(sh.uniforms,farU,snowU);
+  sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute vec3 hid;uniform sampler2D uCells;uniform float uRow;varying vec3 vSWPos;varying vec3 vSWNrm;')
     .replace('#include <project_vertex>',`#include <project_vertex>
       bool hideV=false; // hid.z: 0 always shown, 1 a town cell (hidden once built in detail), 2 roadside props (hidden near the car)
       if(hid.z>1.5)hideV=abs(hid.y-uRow)<${RAD_T+1}.5;
       else if(hid.z>.5)hideV=texture2D(uCells,vec2((hid.x+4.5)/16.0,(mod(hid.y,64.0)+.5)/64.0)).r>.5;
-      if(hideV)gl_Position=vec4(0.0,0.0,-2.0,1.0);`);
+      if(hideV)gl_Position=vec4(0.0,0.0,-2.0,1.0);
+      vSWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vSWNrm=normalize(mat3(modelMatrix)*objectNormal);`);
+  sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
+varying vec3 vSWPos;varying vec3 vSWNrm;
+${SNOW_GLSL}`)
+    .replace('#include <color_fragment>',`#include <color_fragment>
+      float sn=snowAt(vSWPos.z);
+      if(sn>0.0){vec3 sc=vColor.rgb;float sMx=max(sc.r,max(sc.g,sc.b)),sSat=(sMx-min(sc.r,min(sc.g,sc.b)))/(sMx+1e-3),sLum=dot(sc,vec3(.2126,.7152,.0722));
+        float sN=fract(sin(dot(floor(vSWPos.xz/23.0),vec2(12.9898,78.233)))*43758.5453); // patchy, in 23 m cells
+        float sCov=smoothstep(.55,.85,normalize(vSWNrm).y)*sn*(.75+.25*sN)*(1.0-(1.0-smoothstep(.10,.16,sLum))*(1.0-smoothstep(.30,.45,sSat)));
+        diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.82,.87,.95),sCov);}`);
 };
 // coastal mountains: they rise 0.8-1.9 km inland to ridges and peaks of 300-900 m
 function mtnY(x,z){
@@ -3708,7 +3732,7 @@ function tripLine(){
 function commitPlan(){BASE=PLAN.to;PLAN=null;flushFar();refreshRegionUI()}
 function roadTripGo(){trip.due=false;const ids=Object.keys(REGIONS);requestRegion(ids[(ids.indexOf(BASE.id)+1)%ids.length],true)}
 function updateRegion(dt){
-  const w=planW(car.z),now=w>=.5?PLAN.to:BASE;
+  const w=planW(car.z),now=w>=.5?PLAN.to:BASE;setSnow();
   applyLook(BASE,PLAN?PLAN.to:BASE,w);
   if(now!==RG){if(PLAN&&now===PLAN.to){Object.assign(tripInfo,{welcome:'Welcome to '+now.label,until:performance.now()+8000});wakeHud()}
     const from=RG;RG=now;settings.region=RG.id;saveSettings();setPeopleStyle(isRW(RG));loadNature();refreshOffTip();radioHandoff(from,RG)}
