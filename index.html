@@ -1035,6 +1035,16 @@ const PASTEL=[0xf3c6c1,0xbfe3d9,0xf6e3a8,0xc9d6f2,0xf1d0e6];
 // up north: weathered harbour sheds, painted wooden shopfronts, Victorian house colours
 const HARBORC=[0x8d969a,0x7f8a8e,0xa59a88,0x6f7f86,0xb7ab95,0x9a7f6a],HSIGN=[0x2f5d8a,0xa8322d,0x2f5d4a,0x3a3f46],ROOFC=[0x4a4f55,0x5d4b3f,0x55606a,0x6b4f45];
 const MAINC=[0xa0523d,0x5f7f8f,0xd8c9a6,0x6b8f6a,0xc9a24a,0x8a6a8f,0xe6dccb,0x7a5a44],MSIGN=[0x2f5d4a,0xa8322d,0x2a3550,0xf1ece2,0x3a2e26],AWN=[0x7a5e44,0x5a6a4a,0x8a3a2e,0x4a5a6a];
+// the High Sierra's villages: dark stained wood, plaster, dark roofs (the snow settles on them), skis and puffy jackets in bright colours
+const CHALETW=[0x6b4630,0x5a3a28,0x7a5236,0x8a6040,0x4e3526],CHALETR=[0x3a3f46,0x4a3a34,0x5a2e2a,0x2f3a34],SKIC=[0xe8505b,0x2fb3a8,0xf2a541,0x5b6ee1,0xf2efe6,0x2b2b30,0xd14fa1];
+function snowman(b,x,y,z,ry,r){ // three balls, a carrot, a top hat, a scarf, stick arms
+  b.add(G.sph,0xf2f5f8,x,y+.45,z,.55,.5,.55);b.add(G.sph,0xf2f5f8,x,y+1.15,z,.4,.38,.4);b.add(G.sph,0xf2f5f8,x,y+1.7,z,.27,.27,.27);
+  const fx=Math.sin(ry),fz=Math.cos(ry),sx=Math.cos(ry),sz=-Math.sin(ry);b.add(G.cone,0xe0782a,x+fx*.33,y+1.7,z+fz*.33,.05,.26,.05,ry,Math.PI/2);
+  b.add(G.cyl,0x2b2b30,x,y+2.05,z,.18,.32,.18);b.add(G.cyl,0x2b2b30,x,y+1.9,z,.3,.03,.3);b.add(G.cyl,pick([0xa8322d,0x2f5d4a,0x3a5a7a,0xe0a526],r),x,y+1.45,z,.36,.1,.36);
+  for(const s of[-1,1])b.add(G.box,0x5a3a28,x+sx*s*.65,y+1.32,z+sz*s*.65,.04,.04,.75,ry+Math.PI/2,0,s*.5);
+}
+function skiCarrier(b,x,y,z,ry,r){stander(b,x,y,z,ry,r,false); // someone with their skis over a shoulder
+  const c=pick(SKIC,r),sx=Math.cos(ry),sz=-Math.sin(ry);for(const o of[.17,.27])b.add(G.box,c,x+sx*o,y+1.62,z+sz*o,.07,.03,1.75,ry,-.55)}
 const VICTC=[0xc4655a,0x5f8fa3,0xd9b45c,0x7a9a6a,0xefe6d4,0x8a6aa0,0x3f6f7a,0xe8a87c],HYDRANGEA=[0x6a8fd6,0x8a7ad8,0xd88ab8,0xe0a0c8];
 // a fishing boat moored on the swell: hull, bow, wheelhouse, mast (along local x, length L)
 function boat(b,x,z,ry,r){
@@ -1097,7 +1107,7 @@ function pierCheck(){
   for(const [z,x] of piers){const d=Math.hypot(car.x-x,car.z-z);if(d<420&&d>120&&!piersCued.has(z)){piersCued.add(z);react('pier',pickBit('pier',ST.bits.pier),40,300,true)}}
 }
 function buildBlock(i,j,d){
-  const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group(),rw=isRW(regionOf(Math.floor(j/PER)));RW_STYLE=rw;const al=isAlp(regionOf(Math.floor(j/PER))); // al: the High Sierra's pines and shrubs
+  const b=new Builder(),rnd=rng(Math.floor(hash(i,j,7)*4294967296)),grp=new THREE.Group(),rw=isRW(regionOf(Math.floor(j/PER)));RW_STYLE=rw;const al=isAlp(regionOf(Math.floor(j/PER)));AL_STYLE=al; // al: the High Sierra's pines and shrubs
   const x0=i*B+HW,z0=j*B+HW,cx=x0+S/2,cz=z0+S/2,ix=i*B,jz=j*B;
   let rot=0;
   const P=(u,v)=>{const a=rot*Math.PI/2,c=Math.cos(a),s=Math.sin(a),x=u-S/2,z=v-S/2;return[cx+x*c+z*s,cz-x*s+z*c]};
@@ -1106,6 +1116,7 @@ function buildBlock(i,j,d){
     if(rw){put(al?PINES()[h<14?0:1]:FIRS[h<14?0:h<17?1:2],null,u,.3,v,s,s,s*(.9+rnd()*.2),rnd()*6.28);return} // up north: firs and young redwoods
     if(rnd()<.55)put(FANPALMS[h<14?0:h<16.5?1:2],null,u,.3,v,s,s,s,rnd()*6.28);else put(PALMS[h<13.5?0:h<16?1:2],null,u,.3,v,s,s,s,rnd()*6.28)}; // over half are tall fan palms
   const tree=(u,v,s=1)=>{
+    if(al){put(PINES()[s<.9?0:1],null,u,.3,v,s,s,s,rnd()*6.28);return} // the Sierra: a young fir
     if(rw){put(G.trunk,0x8a8478,u,1.9*s,v,.24*s,3.2*s,.24*s);put(BLOB,rnd()<.12?pick([0xc8782e,0xd29a3a],rnd):pick([0x5a7f3e,0x4f7538,0x668a44],rnd),u,4.4*s,v,2.3*s,2.2*s,2.3*s,rnd()*6);return} // alders and maples (one turning)
     put(G.trunk,0x7a5a40,u,1.7*s,v,.25*s,2.8*s,.25*s);put(BLOB,rnd()<.22?pick(JACARANDA,rnd):pick([0x5f8f3e,0x6e9a45,0x4f7f3a],rnd),u,3.9*s,v,2.2*s,1.9*s,2.2*s,rnd()*6)}; // some are purple jacarandas
   const parkedL=[],gb=new Builder();gb.gain=2.6; // parked model cars (drawn by the traffic system) and glowing parts
@@ -1230,6 +1241,43 @@ function buildBlock(i,j,d){
       put(G.box,0x8a6a4a,S/2,.8,S-4.5,3,.15,.8);put(G.box,0x8a6a4a,S/2,1.25,S-4.1,3,.6,.12); // a bench
       if(rnd()<.6)for(let u=4;u<=S-4;u+=1.15){const t=(u-4)/(S-8);gput(G.box,0xffd27a,u,4.1-.45*Math.sin(Math.PI*t),front+2.3,.15,.15,.15)} // string lights
       for(let v=8;v<S-8;v+=14)if(rnd()<.6)palm(1.7,v,11+rnd()*3);
+    }else if(d==='main'&&al){ // the village main street: steep-roofed chalets with deep eaves and balconies, A-frames, ski and rental shops,
+      // a bakery, a fondue place, a cocoa shop; every window lit, string lights, snow piled at the curb
+      rot=j%2?2:0;
+      const n=3+Math.floor(rnd()*2),seg=(S-8)/n,front=S-7,depth=10,vm=front-depth/2;
+      for(let k=0;k<n;k++){
+        const u=4+seg*(k+.5),w=seg-1.4,shop=Math.floor(rnd()*6),wood=pick(CHALETW,rnd),roof=pick(CHALETR,rnd);
+        if(shop===5){ // an A-frame: the roof comes right down to the snow, a tall lit glass front
+          const h=Math.min(11,w*1.15);put(G.gable,roof,u,.3,vm,w+1,h,depth+.6);put(G.gable,wood,u,.3,front+.32,w*.84,h*.84,.12);
+          gput(G.gable,0xffc070,u,.7,front+.4,w*.5,h*.55,.1);put(G.box,0x3a2e26,u,.7+h*.2,front+.47,w*.36,.12,.06);put(G.box,0x3a2e26,u,.7+h*.27,front+.47,.12,h*.54,.06); // the glass and its frame
+          put(G.box,0x7a5e44,u,.55,front+1.6,w*.9,.25,2.6); // the deck
+        }else{
+          const h=4.8+rnd()*1.4,rh=w*.48,plaster=rnd()<.5;
+          put(G.box,plaster?0xe8dfcc:wood,u,h*.25+.3,vm,w,h*.5,depth);put(G.box,wood,u,h*.75+.3,vm,w+.12,h*.5,depth+.12); // stone-white or wood below, timber above
+          put(G.gable,roof,u,h+.3,vm,w+1.8,rh,depth+1.8);put(G.gable,wood,u,h+.3,vm,w+1.2,rh*.88,depth+2); // deep eaves; the gable end in wood
+          gput(G.box,0xffc070,u,h+.3+rh*.32,front+1.02,w*.24,rh*.36,.08); // the gable window
+          gput(G.box,0xffc070,u-w*.14,1.75,front+.06,w*.48,1.9,.1);put(G.box,0x3a2e26,u+w*.3,1.45,front+.07,w*.17,2.3,.12); // the shop window, lit, and the door
+          for(const s2 of[-1,1])gput(G.box,0xffb862,u+s2*w*.24,h*.75+.3,front+.08,w*.2,1.15,.1); // upstairs
+          put(G.box,darker(wood,.8),u,h*.5+.35,front+.9,w*.86,.16,1.7);put(G.box,darker(wood,.7),u,h*.5+1.05,front+1.72,w*.86,.9,.08); // the balcony
+          for(let x=-w*.4;x<=w*.4;x+=.55)put(G.box,darker(wood,.7),u+x,h*.5+.75,front+1.72,.08,.75,.1);
+          put(G.box,0x2a2420,u-w*.14,3.05,front+.16,w*.5,.55,.1);put(G.box,0xf1ece2,u-w*.14,3.05,front+.22,w*.38,.12,.04); // the sign board
+          const bx=u+w*.42,hang=(c)=>{put(G.box,0x2b2b30,bx,3.55,front+.6,.07,.07,1.1);put(G.box,c,bx,3.05,front+1,.08,.9,.7)}; // a hanging blade sign
+          if(shop===0){hang(0x2a3550);for(let q=0;q<5;q++)put(G.box,pick(SKIC,rnd),u-w*.38+q*.42,1.15,front+.75,.09,1.75,.04,0,-.15);put(G.box,0xe8505b,bx,3.15,front+1.05,.03,.75,.08,0,.5);put(G.box,0xf2efe6,bx,3.15,front+1.05,.03,.75,.08,0,-.5)} // the ski shop: skis in the rack, crossed skis on the sign
+          else if(shop===1){hang(0x2f5d4a);for(let q=0;q<4;q++)put(G.box,pick(SKIC,rnd),u-w*.38+q*.6,.95,front+.7,.32,1.45,.05,0,-.12)} // the rental shop: snowboards against the wall
+          else if(shop===2){hang(0x7a5236);for(const o of[-.13,.13])put(G.donut,0xc98a3a,bx,3.1,front+1+o,.17,.17,.035,Math.PI/2)} // the bakery: a golden pretzel
+          else if(shop===3){hang(0xa8322d);put(G.hsph,0x2b2b30,bx,3.25,front+1,.06,.24,.24,0,Math.PI);for(const s2 of[-1,1])gput(G.box,0xffd9a0,u+s2*w*.47,2.3,front+.35,.25,.35,.25)} // the fondue place: a pot on the sign, lanterns by the door
+          else{hang(0xf1ece2);put(G.cyl,0x8a3a2e,bx,3.05,front+1,.06,.3,.2)} // the cocoa shop: a mug
+          if(rnd()<.45){put(G.box,0x7a5a3a,u,.95,front+2.2,2,.12,.5);put(G.box,0x7a5a3a,u,1.35,front+2.45,2,.6,.1)} // a bench
+        }
+      }
+      put(G.box,0x8a6e52,S/2,.36,front+1.9,S-5,.12,3.6); // the sidewalk, trodden snow over boards
+      for(let u=3;u<=S-3;u+=1.15){const t=(u-3)/(S-6);gput(G.box,0xffd27a,u,4.3-.5*Math.abs(Math.sin(Math.PI*t*3)),front+3.4,.14,.14,.14)} // string lights along the street
+      for(const u of[2,S-2]){put(G.box,0x2b2b30,u,2.1,front+3.4,.14,4.2,.14);gput(G.box,0xffd9a0,u,4.3,front+3.4,.4,.5,.4)} // two lanterns
+      for(let q=0;q<3;q++)put(G.ball,0xe8edf3,6+rnd()*(S-12),.45,S-.6,1.4+rnd()*1.2,.7,.9,rnd()*6); // snow piled at the curb
+      for(let q=0,m=1+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(5+rnd()*(S-10),front+2.6),ry=rot*Math.PI/2+(rnd()-.5)*2;rnd()<.4?skiCarrier(b,px,.42,pz,ry,rnd):stander(b,px,.42,pz,ry,rnd,false)} // people out for cocoa, someone off to the hill
+      for(let u=7;u<S-6;u+=3.2)put(G.box,0xe8e4da,u,.34,front-depth-8,.15,.02,5); // the lot out back
+      const n2=1+Math.floor(rnd()*3);for(let k=0;k<n2;k++)parked(8+Math.floor(rnd()*9)*3.2+1.6,front-depth-8,0);
+      for(const u of[1.8,S-1.8])tree(u,S-2,.85);
     }else if(d==='main'){ // main street: wooden false-front shops on a covered boardwalk, a diner with a pie on the roof, pickups out front
       rot=j%2?2:0; // facing rows pair up across the same street, so main street has shopfronts on both sides
       const bw=S-10,depth=11,n=3+Math.floor(rnd()*2),seg=bw/n,front=S-6.8,back=front-depth,diner=rnd()<.35?Math.floor(rnd()*n):-1; // shops right on the sidewalk, parking out back
@@ -1308,17 +1356,26 @@ function buildBlock(i,j,d){
     }else if(d==='cabins'){ // log cabins under the trees: porches, mossy roofs, woodpiles, warm windows, smoke from a chimney or two
       for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){
         if(rnd()<.12){tree(u,v);continue}
+        if(al&&rnd()<.3){ // an A-frame cabin: steep roof to the ground, a lit glass gable, a stovepipe, a deck
+          const w=7+rnd()*1.5,dd=8+rnd()*2,h=w*1.1,fr=v<S/2?-1:1,fz=v+fr*dd/2;put(G.gable,pick(CHALETR,rnd),u,.3,v,w,h,dd);
+          put(G.gable,pick(CHALETW,rnd),u,.3,fz+fr*.05,w*.84,h*.84,.12);gput(G.gable,0xffc070,u,.75,fz+fr*.12,w*.44,h*.5,.1);
+          put(G.box,0x7a5e44,u,.5,fz+fr*1.3,w*1.05,.2,2.4);put(G.cyl,0x2b2b30,u+w*.2,h*.62+1.2,v,.18,2.2,.18);
+          if(rnd()<.7){const [sx,sz]=P(u+w*.2,v);grp.add(smokeAt(sx,h*.62+2.4,sz))}
+          if(rnd()<.4){const [sx,sz]=P(u+(u<S/2?-1:1)*(w/2+2),v+fr*(dd/2+3));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd)}
+          continue}
         const w=7+rnd()*2,dd=6.5+rnd()*1.5,h=3.4+rnd()*.6,fr=v<S/2?-1:1,fz=v+fr*dd/2,lg=pick([0x7a5236,0x6b4630,0x8a6040],rnd);
         put(G.box,lg,u,h/2+.3,v,w,h,dd);
         for(const y of[1,1.8,2.6,3.3])put(G.box,darker(lg,.75),u,y,v,w+.06,.1,dd+.06); // the log courses
-        put(G.gable,rnd()<.6?0x4f6236:pick([0x6b3a2a,0x4a4f55],rnd),u,h+.3,v,w+.9,2.6,dd+.8); // the roof, mossy on most
+        put(G.gable,al?pick(CHALETR,rnd):rnd()<.6?0x4f6236:pick([0x6b3a2a,0x4a4f55],rnd),u,h+.3,v,w+.9,al?3.4:2.6,dd+.8); // the roof, mossy on most (in the Sierra dark and steeper, for the snow)
+        if(al)for(let q=0;q<7;q++)put(G.cone,0xdff0fa,u-w*.46+q*w*.153,h+.08,fz+fr*.42,.06,.35+rnd()*.45,.06,0,Math.PI); // icicles along the eave
         put(G.box,0x3a2e26,u,1.35,fz+fr*.06,.95,2.1,.1);
         for(const s of[-1,1])gput(G.box,0xffc77a,u+s*w*.28,1.9,fz+fr*.07,.9,.75,.06); // warm windows
         put(G.box,0x8a6e52,u,.45,fz+fr*1.2,w*.9,.2,2.2);for(const s of[-1,1])put(G.box,0x6b4f38,u+s*w*.42,1.6,fz+fr*2.2,.18,2.4,.18);put(G.box,darker(lg,.8),u,2.85,fz+fr*1.2,w*.95,.14,2.5); // the porch
         gput(G.box,0xffd9a0,u+w*.3,2.45,fz+fr*.15,.25,.25,.25); // the porch light
         const chx=u+(rnd()<.5?-1:1)*w*.3,chz=v-fr*dd*.15;put(G.box,0x7c7872,chx,h+1.3,chz,.9,3.2,.9); // a stone chimney
-        if(rnd()<.35){const [sx,sz]=P(chx,chz);grp.add(smokeAt(sx,h+2.9,sz))} // a fire going
+        if(rnd()<(al?.7:.35)){const [sx,sz]=P(chx,chz);grp.add(smokeAt(sx,h+2.9,sz))} // a fire going (in most, up in the Sierra)
         if(rnd()<.6){const wx=u+(u<S/2?-1:1)*(w/2+1.2);for(let q=0;q<3;q++)put(G.box,0x7a5238,wx,.6+q*.42,v,1,.38,2.6)} // the woodpile
+        if(al&&rnd()<.35){const [sx,sz]=P(u+(rnd()-.5)*w,v+fr*(dd/2+3.5));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd)} // a snowman in the yard
       }
     }else if(d==='lodge'){ // the roadside stop: a motor lodge with a VACANCY sign, or the general store and the gas station, or the chainsaw-carving yard
       rot=j%2?2:0;const kind=hash(i,j,61),bear=(u,v,s)=>{put(G.cyl,0x8a6040,u,.45,v,.5*s,.3,.5*s);put(G.sph,0x6b4428,u,.6+.85*s,v,.5*s,.85*s,.42*s);put(G.sph,0x6b4428,u,.6+1.85*s,v,.34*s,.34*s,.32*s);for(const e of[-1,1])put(G.sph,0x6b4428,u+e*.22*s,.6+2.13*s,v,.1*s,.1*s,.08*s)};
@@ -1501,7 +1558,7 @@ function signTex(top,bottom){
 }
 function buildTerrain(j){
   const b=new Builder(),gb=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
-  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j)),al=isAlp(regionAtRow(j));RW_STYLE=rw; // this stretch's own colours, scenery and people's clothes
+  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j)),al=isAlp(regionAtRow(j));RW_STYLE=rw;AL_STYLE=al; // this stretch's own colours, scenery and people's clothes
   for(let s=0;s<=NZ;s++){
     const z=z0+s*B/NZ,rc=roadX(z),o1=(off(z+1)-off(z-1))/2,len=Math.hypot(1,o1),nx=1/len,nz=-o1/len,pts=[];
     const P=(dx,y,col,along)=>pts.push([along?rc+dx*nx:rc+dx,y,along?z+dx*nz:z,col]);
@@ -1758,9 +1815,12 @@ const MAT_PERSON=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.75
 MAT_PERSON.onBeforeCompile=sh=>{sh.vertexShader=sh.vertexShader.replace('#include <common>','#include <common>\nattribute float part;attribute vec3 iShirt;attribute vec3 iSkin;attribute vec3 iHair;attribute vec3 iPants;attribute vec3 iShin;attribute vec3 iGlass;')
   .replace('#include <color_vertex>','#include <color_vertex>\nif(part>.5)vColor.rgb=part<1.5?iShirt:part<2.5?iSkin:part<3.5?iHair:part<4.5?iPants:part<5.5?iShin:iGlass;')};
 // up north: flannel shirts and rain jackets, jeans, beanies (RW_STYLE is set by whatever is being built or placed)
-let RW_STYLE=false;
+let RW_STYLE=false,AL_STYLE=false; // AL_STYLE: the High Sierra's winter clothes
 const JACKET=[0xa8322d,0x2f5d4a,0x3a5a7a,0xe0a526,0xd2642a,0x6b5a4a,0x8a8f96,0x5a3a5a,0x2b2b30],JEANS=[0x2f3b5a,0x3b4a6a,0x4a4a4f,0x6b5a45,0x2e3a34],BEANIE=[0xa8322d,0xc98a2a,0x8a8f96,0x2f5d4a,0x2a3550,0xe6e0d4];
+const PUFFY=[0xe8505b,0x2fb3a8,0xf2a541,0x5b6ee1,0xd14fa1,0x2b2b30,0xf2efe6,0x3a5a7a,0xa8322d,0x58b368],SNOWP=[0x2b2b30,0x3a3f4a,0x2f3b5a,0xe6e0d4,0x8a8f96];
 function outfitRW(r,kind){
+  if(AL_STYLE){const skin=pick(SKIN,r),c={2:skin,3:kind==='old'?pick([0xc9c4bb,0xe6e2da],r):pick(HAIRC.slice(0,5),r)};c[1]=pick(PUFFY,r);c[4]=r()<.45?pick(SNOWP,r):pick(JEANS,r);c[5]=c[4];
+    c[6]=r()<.15?0x15151a:skin;c[7]=r()<.85?pick(BEANIE.concat(PUFFY.slice(0,4)),r):null;return c} // (c[6]: ski goggles, now and then)
   const skin=pick(SKIN,r),shorts=r()<.08,c={2:skin,3:kind==='old'?pick([0xc9c4bb,0xe6e2da],r):pick(HAIRC.slice(0,5),r)};
   c[1]=pick(JACKET,r);c[4]=shorts?pick(SHORTS,r):pick(JEANS,r);c[5]=shorts?skin:c[4];c[6]=r()<.08?0x15151a:skin;c[7]=r()<(kind==='old'?.5:.35)?pick(BEANIE,r):null;return c;
 }
@@ -1808,7 +1868,7 @@ const pedMesh={body:pedInst(partGeo(PBODY),PEDN,MAT_PERSON,['iShirt','iSkin','iH
   leg:pedInst(partGeo(PLEG),PEDN*2,MAT_PERSON,['iPants','iShin']),hat:pedInst(hatGeo,PEDN,MAT_PED,[]),dog:pedInst(pedDogGeo,PEDN,MAT_PED,[]),board:pedInst(pedBoardGeo,PEDN,MAT_PED,[])};
 const _d=new THREE.Object3D(),_zero=new THREE.Matrix4().makeScale(0,0,0);
 function setLook(p,beach){ // a fresh person each time someone is placed: who they are, what they wear, what they carry
-  RW_STYLE=isRW(regionOf(Math.floor(p.j/PER)));
+  RW_STYLE=isRW(regionOf(Math.floor(p.j/PER)));AL_STYLE=isAlp(regionOf(Math.floor(p.j/PER)));
   const r=Math.random,kind=r()<.12?'kid':r()<.14?'old':'adult',c=outfit(r,beach,kind),k=p.k;
   p.sc=kind==='kid'?.62:.9+r()*.1;p.slow=kind==='old'?.75:1;p.hat=!!c[7];p.dog=kind!=='kid'&&r()<.15;p.board=beach&&kind==='adult'&&r()<(RW_STYLE?.06:.35);
   const set=(m,name,i,col)=>{_c.set(col);m.geometry.attributes[name].setXYZ(i,_c.r,_c.g,_c.b)};
@@ -2205,6 +2265,8 @@ function farCell(b,i,j,d){
     for(const [u,v,f] of spots){const h=22+rnd()*42;b.add(G.box,pick(cols,rnd),x0+u,h/2+.3,z0+v,f,h,f)}}
   else if(d==='park'){for(let k=0;k<6;k++)b.add(BLOB,rnd()<.2?pick(JACARANDA,rnd):pick([0x5f8f3e,0x6e9a45],rnd),x0+6+rnd()*(S-12),4,z0+6+rnd()*(S-12),2.6,2.2,2.6);farPalm(b,x0+5,.3,z0+5,24,rnd)}
   else if(d==='freeway'){b.add(G.box,0x9d968c,cx,10.9,jz+B/2,22,1.2,B);b.add(G.box,0xb9b2a6,cx,5.3,jz+B/2,2.2,10,2.2)}
+  else if(d==='main'&&fr===farPine){const f=j%2?-1:1;for(let k=0;k<3;k++){const x=x0+7+k*15,h=5.4,c=pick(CHALETW,rnd),z=cz+f*8; // the Sierra's chalets
+      b.add(G.box,c,x,h/2+.3,z,12.6,h,10);b.add(G.gable,pick(CHALETR,rnd),x,h+.3,z,14.4,6,11.8)}fr(b,x0+3,.3,z0+3,16+rnd()*6,rnd)}
   else if(d==='harbor'||d==='main'){const n=d==='main'?3:2,side=Math.floor(rnd()*4),ox=[0,13,0,-13][side],oz=[-13,0,13,0][side],along=side%2===0;
     for(let k=0;k<n;k++){const t=(k+.5)/n-.5,w=(S-10)/n-.6,h=5+rnd()*2.5,c=d==='main'?pick(MAINC,rnd):pick(HARBORC,rnd),x=cx+ox+(along?t*(S-10):0),z=cz+oz+(along?0:t*(S-10));
       b.add(G.box,c,x,h/2+.3,z,along?w:11,h,along?11:w);if(d==='harbor')b.add(G.gable,pick(ROOFC,rnd),x,h+.3,z,along?w+.6:11.6,2.6,along?11.6:w+.6,along?0:Math.PI/2)}
@@ -2216,7 +2278,7 @@ function farCell(b,i,j,d){
   else if(d==='camp'){for(let k=0;k<3;k++)b.add(G.gable,pick([0xe07a2a,0x3f8a5a,0x3a6aa8],rnd),x0+8+rnd()*(S-16),.3,z0+8+rnd()*(S-16),2.8,1.9,3.4);b.add(G.box,0xf2efe6,x0+32,2.1,z0+32,3,3.2,9);for(let k=0;k<3;k++)fr(b,x0+3+rnd()*(S-6),.3,z0+3+rnd()*(S-6),15+rnd()*7,rnd)}
   else if(d==='mill'){b.add(G.box,0x8a5a42,x0+12,4.3,cz,13,8,30);b.add(G.gable,0x7a7f84,x0+12,8.3,cz,14,3.6,31);const tw=townOfRow(j);if(tw&&j===tw.a+1)b.add(G.cone,0x7b4a32,x0+32,10,z0+12,6,18.2,6)}
   else if(d==='lodge'){b.add(G.box,0x8a6a4a,cx,2.2,cz,30,3.8,9);b.add(G.gable,0x4f6236,cx,4.1,cz,10,2,31,Math.PI/2)}
-  else if(d==='cabins'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12)continue;b.add(G.box,pick([0x7a5236,0x6b4630,0x8a6040],rnd),x0+u,2,z0+v,8,3.6,7);b.add(G.gable,0x4f6236,x0+u,3.8,z0+v,8.8,2.6,7.8)}}
+  else if(d==='cabins'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12)continue;b.add(G.box,pick([0x7a5236,0x6b4630,0x8a6040],rnd),x0+u,2,z0+v,8,3.6,7);b.add(G.gable,fr===farPine?0x3a3f46:0x4f6236,x0+u,3.8,z0+v,8.8,2.6,7.8)}}
   if(rw&&forestTown(Math.floor(j/PER))&&d!=='edge'&&d!=='mill')for(let k=0;k<2;k++)fr(b,x0+4+rnd()*(S-8),.3,z0+4+rnd()*(S-8),40+rnd()*16,rnd); // the giants over a forest town
 }
 function buildFarTown(k){
