@@ -9,6 +9,7 @@ The big picture: where work starts, who does what, and how the files hand off to
 | FUTURE-WORK.md | Everything not started: ideas, requests, decisions for later | When an idea comes up or ships |
 | STATE.md | Only what's in progress: what was done, decided (and why) and what's left, with dates | Every work session |
 | Git history | What's done | Every commit |
+| LESSONS.md | Bugs and traps that came back, with their fixes | When something bites twice or costs real time |
 | Plan files (REDWOOD-PLAN.md, WINTER-PLAN.md) | The design for one big feature, such as a region | While it's being planned and built |
 | Content files (LYRICS.md, REGION-SONGS.md, PRODUCTION-PACK.md, COFFEE-CABIN-SCRIPT.md) | The words that become audio | While writing, then frozen once recorded |
 
@@ -40,7 +41,7 @@ Each region has its own station, and each station has a song file, a voice scrip
 7. **Test.** Preview "local" (port 8765) in the browser pane. Check the console, and check the change with a screenshot or by reading the page. Use "phone" (port 8766) for a test on the user's phone.
 8. **Ship.** Run `build.ps1`, commit and push. GitHub Pages updates the live site in about a minute.
    - The private Claude artifact copy is optional and lags behind (it can't serve some model files).
-9. **Close out.** Remove the item from FUTURE-WORK.md, shrink its STATE.md section to one dated line, and note anything learned in this file.
+9. **Close out.** Remove the item from FUTURE-WORK.md, shrink its STATE.md section to one dated line, note any change to how the work flows in this file, and add bugs or traps worth remembering to LESSONS.md.
 
 ## Song rules
 

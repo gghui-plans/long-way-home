@@ -13,6 +13,7 @@ A relaxing mobile browser driving game: a convertible drives itself along the Ca
 - The user makes the songs in Suno; Claude writes them, and only runs ElevenLabs (which spends credits) once the script is approved.
 - Keep replies casual and concise. It's a personal project.
 - Before a commit, update STATE.md. When something ships, remove it from FUTURE-WORK.md.
+- When a bug costs real time or comes back, add it to LESSONS.md.
 
 ## Where to look
 
@@ -26,6 +27,7 @@ A relaxing mobile browser driving game: a convertible drives itself along the Ca
 | K-JAM voice script (Rick and Dana) | [production/PRODUCTION-PACK.md](production/PRODUCTION-PACK.md) (drafts: RADIO-SCRIPTS-DRAFT.md, CALLERS-DRAFT.md, SET2-INTROS-DRAFT.md) |
 | Coffee Cabin voice script (Marj and Walt) | [production/COFFEE-CABIN-SCRIPT.md](production/COFFEE-CABIN-SCRIPT.md) |
 | Region plans | [production/REDWOOD-PLAN.md](production/REDWOOD-PLAN.md) (shipped), [production/WINTER-PLAN.md](production/WINTER-PLAN.md) (High Sierra, due Dec 1) |
+| Bugs and traps that came back, with fixes (check before debugging) | [production/LESSONS.md](production/LESSONS.md) |
 | Audio history and file conventions | [production/AUDIO-WORKFLOW.md](production/AUDIO-WORKFLOW.md) |
 | Nature sound licences (credits) | [production/NATURE-SOURCES.md](production/NATURE-SOURCES.md) |
 | Voice IDs | `production/voices.json` |

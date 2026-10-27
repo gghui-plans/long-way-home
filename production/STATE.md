@@ -43,6 +43,7 @@ These are decided but not built. Details are in FUTURE-WORK.md.
 
 ## Recently finished
 
+- 2026-10-27: LESSONS.md started (bugs and traps with fixes), linked from CLAUDE.md and WORKFLOW.md.
 - 2026-10-27: K-JAM set 2 is live: 14 "Postcards from one summer" songs (30 in all), each with a short intro and a two-host story intro. Salt Air Stomp and Heat Shimmer are in FUTURE-WORK.
 - 2026-10-26: CLAUDE.md, WORKFLOW.md and STATE.md set up. The song and plan files that had never been committed are now in git too.
 - 2026-10-18: Marj and Walt's game explainer when a drive starts in the redwoods (d6ccd00).
