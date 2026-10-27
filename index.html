@@ -403,7 +403,7 @@ const REGIONS={
   // scenery (kit) and radio (station) under snow; its own world comes in batch 2 (WINTER-PLAN.md)
   sierra:{id:'sierra',name:'High Sierra',label:'the High Sierra',station:'coffee',hwy:'CA-89',kit:'redwood',alpine:true,
     quiet:['mountain','MOUNTAINS'],tagline:'Chains on, cocoa hot, take it slow.',pc:['#eef4ff','#f2a7b8','#6a6fb8'],
-    look:{fogNear:[110,70],fogFar:[3600,1100],hemi:[0xd6e4ff,0x6a6878,.75],sun:[0xffc49a,.95],env:.5,ocean:0x1d4f6e,cloud:0xf2f4fa,wisp:.35,sunK:.8,snow:1,lake:150,wall:28,peaks:.7},
+    look:{fogNear:[110,70],fogFar:[3600,1100],hemi:[0xd6e4ff,0x6a6878,.75],sun:[0xffc49a,.95],env:.5,ocean:0x1d4f6e,cloud:0xf2f4fa,wisp:.35,sunK:.8,snow:1,lake:150,wall:28,peaks:.7,bends:22},
     sky:{zen:'#3a4f7a',midA:'#8a93b8',midS:'#e7a3a8',horA:'#c9cfdc',horS:'#f6c9a0',glow:'#ffd2a8',ground:'#5a5f6e'},
     tc:{asph:0x3e3d44,shoulder:0xb9bcc4,sand:0xa9a291,wet:0x7d776a,scrub:0x7d806e,grass:0x6d7559,rock:0x8f8d88,rockD:0x5f5d5a,hill:0x55644a,hill2:0x46553f,duff:0x5b4e3e,moss:0x56624a,granite:0x6b675f},
     towns:['Snowberry','Silver Fir','Alpenglow','Whitebark','Powder Ridge','Ember Lake','Hearthstone','Granite Hollow','Juniper Flat','Bear Paw','Cold Spring Crossing','Kettle Lake'],
@@ -950,7 +950,7 @@ function gapAt(z){ // where we are along an open-coast stretch (u 0..1), or null
   const zA=(a+TL+1)*B,zB=((k+1)*PER-1)*B;
   return{k,u:clamp((z-zA)/(zB-zA),0,1)};
 }
-function off(z){const g=gapAt(z);if(!g)return 0;const w=Math.sin(Math.PI*g.u)**2,p=g.k*1.7;return w*(55*Math.sin(z/150+p)+22*Math.sin(z/70+p*2.3)+18)}
+function off(z){const g=gapAt(z);if(!g)return 0;const w=Math.sin(Math.PI*g.u)**2,p=g.k*1.7,bd=lookAt(z,'bends');return w*(55*Math.sin(z/150+p)+22*Math.sin(z/70+p*2.3)+18)+(bd&&bd*w*w*Math.sin(z/46+p*3.1))} // (bends: tighter S-bends near the High Sierra's summit)
 const roadX=z=>PCHX+off(z);
 function coastType(z){const g=gapAt(z);if(!g)return 0;const e=ss(0,.12,g.u)*ss(1,.88,g.u),r=rwW(z); // 0 beach, 1 cliffs
   const la=r<1?e*clamp(.5+.6*Math.sin(z/380+g.k),0,1):0;if(r<=0)return la;
@@ -966,6 +966,12 @@ function groveAt(z){const r=rwW(z);if(r<=0)return 0;const g=gapAt(z);if(!g)retur
   return r*e0*e1*Math.max(near,ss(.02,.18,.5+.5*Math.sin(z/450+g.k*2.3-2)))*(1-ss(.3,.62,hiAt(z)))} // about 80% of the open road; the coast comes in short reveals (in the Sierra, none above the treeline)
 // the High Sierra's climb: how high up the pass at z (0 in the villages, 1 at the summit halfway between them), and the treeline:
 // forest on the lower slopes, bare rock and snow near the top. Rock cuts: two stretches per pass where the road is blasted into the mountain
+// the switchbacks you came up: five legs down the slope below the summit, joined by hairpins (points along the way, per pass)
+const swCache=new Map();
+function switchbacks(k){if(swCache.has(k))return swCache.get(k);const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,zs=(a+L*.5)*B,DX=[-46,-66,-86,-106,-126],pts=[]; // following the road's line, like contours
+  DX.forEach((dx,i)=>{const z0=zs-130,z1=zs+130,fwd=i%2===0;for(let q=0;q<=26;q++){const z=fwd?z0+q*10:z1-q*10;pts.push([roadX(z)+dx,z])}
+    if(i<DX.length-1){const ze=fwd?z1:z0,xc=roadX(ze)+dx-10,sg=fwd?1:-1;for(let q=1;q<8;q++){const t=q/8*Math.PI;pts.push([xc+10*Math.cos(t),ze+sg*14*Math.sin(t)])}}});
+  const out=pts.map(([x,z])=>[x,groundAt(x,z)+.25,z]);if(swCache.size>8)swCache.clear();swCache.set(k,out);return out}
 function hiAt(z){const g=gapAt(z);if(!g)return 0;const a=regW(z,isAlp);return a&&a*Math.sin(Math.PI*g.u)**2}
 const treeAt=z=>1-ss(.3,.62,hiAt(z));
 function rockCutZ(k,q){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;return(a+L*(q?.62+.12*hash(k,2,61):.24+.12*hash(k,1,61)))*B}
@@ -1482,7 +1488,7 @@ function buildTerrain(j){
     const z=z0+s*B/NZ,rc=roadX(z),o1=(off(z+1)-off(z-1))/2,len=Math.hypot(1,o1),nx=1/len,nz=-o1/len,pts=[];
     const P=(dx,y,col,along)=>pts.push([along?rc+dx*nx:rc+dx,y,along?z+dx*nz:z,col]);
     if(!lot){
-      for(const [dx,y,col] of westProfile(z))P(dx,y,col,true);
+      for(const [dx,y,col] of westProfile(z))P(dx,y,col,!al||dx>-13); // (in the Sierra the slope runs straight west, so its tight bends don't skew the drop away from groundAt)
       P(-8,0,TC.asph,true);P(8,0,TC.asph,true);P(9.5,0,TC.shoulder,true);
       for(const dx of al?NEAR_AL:NEAR){const x=rc+dx*nx,zz=z+dx*nz,y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])}
       for(const x of FAR){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
@@ -1606,6 +1612,9 @@ function redwoodScenery(b,gb,grp,j,rnd){
         const zc=z+3,o1=(off(zc+1)-off(zc-1))/2,ry=Math.atan2(o1,1),rc=roadX(zc);b.add(G.box,0xa8a49b,rc+1.3,6.6,zc,23.4,.7,6.05,ry);b.add(G.box,0x8f8b84,rc-10.4,3.3,zc,.6,6.6,.6,ry);b.add(G.box,0x8f8b84,rc-10.4,6.05,zc,.8,.5,6.05,ry)}
     }
   }
+  if(al&&hiAt(zm)>.2){const g=gapAt(zm),sw=g&&switchbacks(g.k); // the switchbacks below: a narrow road cut into the slope, its pieces in this stretch
+    if(sw)for(let q=0;q+1<sw.length;q++){const [xa,ya,za]=sw[q],[xb,yb,zb]=sw[q+1],zm2=(za+zb)/2;if(zm2<z0||zm2>=z0+B)continue;const L=Math.hypot(xb-xa,zb-za);
+      b.add(G.box,0x3e3d44,(xa+xb)/2,(ya+yb)/2,zm2,5,.5,L+.4,Math.atan2(xb-xa,zb-za));b.add(G.box,0xe6eaf0,(xa+xb)/2-2.9,(ya+yb)/2+.3,zm2,.9,.6,L+.4,Math.atan2(xb-xa,zb-za))}}
   if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
     const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1);
     for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);if(hillMul(z)>.05)b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
@@ -3861,7 +3870,9 @@ function initAlpine(){
     for(let q=0;q<2;q++)gb.add(G.box,0xffc070,x+(q?-1:1)*w*.25,h*.45,z+l*.51,1.4,1.2,.2,ry)}
   b.add(G.box,0xe8e2d4,40,5,-30,8,10,12);b.add(G.cone,0x4a3a34,40,13,-36,2.2,7,2.2);b.add(G.box,0x6b5640,-160,.4,-60,60,.5,4); // the church, the dock
   vg.add(b.mesh());vg.add(new THREE.Mesh(gb.geo(),MAT_GLOW));vg.visible=false;scene.add(vg);
-  ALP={deck,wisps,vg,vk:null};
+  const hl=new THREE.SpriteMaterial({map:sTex(gradCanvas(32,32,[[0,'#fff6d8'],[.3,'rgba(255,236,190,.7)'],[1,'rgba(255,220,160,0)']],true)),depthWrite:false,transparent:true});
+  const cars=[0,1,2,3].map(q=>{const sp=new THREE.Sprite(hl);sp.scale.set(5,5,1);sp.userData={t:q*.25};scene.add(sp);return sp}); // headlights crawling up the switchbacks
+  ALP={deck,wisps,vg,vk:null,cars};
 }
 function updateAlpine(dt){
   if(!ALP){if(regW(car.z,isAlp)<=0)return;initAlpine()}
@@ -3875,6 +3886,9 @@ function updateAlpine(dt){
   // driving into cloud now and then near the top: the haze closes in, then you come out above the cloud sea
   const g=gapAt(car.z),mist=g?near*Math.max(0,Math.sin(car.z/170+g.k*1.7))**8:0,q=settings.hq?0:1;
   scene.fog.near=lookFog.near[q]+(12-lookFog.near[q])*mist*.85;scene.fog.far=lookFog.far[q]+(240-lookFog.far[q])*mist*.85;
+  const sw=g&&hi>.15&&regW(car.z,isAlp)>.5?switchbacks(g.k):null;
+  for(const sp of ALP.cars){sp.visible=!!sw;if(!sw)continue;const u=sp.userData;u.t=(u.t+dt*.012)%1;const f=(1-u.t)*(sw.length-1),q=Math.floor(f),e=f-q,a=sw[q],c=sw[Math.min(q+1,sw.length-1)];
+    sp.position.set(a[0]+(c[0]-a[0])*e,a[1]+(c[1]-a[1])*e+1,a[2]+(c[2]-a[2])*e)}
   if(g&&regW(car.z,isAlp)>.5){const k=g.k;if(ALP.vk!==k){ALP.vk=k;const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,z=(a+L*.27)*B;ALP.vg.position.set(roadX(z)-720,0,z)}
     ALP.vg.position.y=SEA-dr+.4;ALP.vg.visible=top<.4}else ALP.vg.visible=false;
 }

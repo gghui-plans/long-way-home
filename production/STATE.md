@@ -66,7 +66,7 @@ Last updated: 2026-10-27
   2. The drop starts right at the guardrail.
   3. A sea of clouds below at the summit with far peaks poking through; the lake shows lower down near the villages. **Built** (`updateAlpine`, three cloud layers), with 8 and 10.
   4. A steep rock-and-snow face right beside the road on the uphill side, rock showing through.
-  5. Tighter S-bends near the summit (true hairpins aren't possible) and switchbacks drawn on the slope below, with a few headlights crawling up.
+  5. Tighter S-bends near the summit (true hairpins aren't possible) and switchbacks drawn on the slope below, with a few headlights crawling up. **Built** (`look.bends`, `switchbacks(k)`): five legs and hairpins below each summit, the lowest disappearing into the cloud. They show best on the bends ahead; straight down they're out of the camera's view. The Sierra's slope mesh now runs straight west so the bends don't skew it.
   6. Elevation on the road sign ("CA-89 NORTH · 7,240 FT"), rising and falling with the climb.
   7. A summit pull-out: elevation sign, a couple of parked cars, people taking photos at the rail.
   8. Clouds at road level near the top (drive through a wisp, come out above the cloud sea). **Built:** wisps drift across the road and every so often the haze closes right in.
