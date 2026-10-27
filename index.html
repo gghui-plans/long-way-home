@@ -401,7 +401,7 @@ const REGIONS={
     nature:['ocean','ocean-close','wind','forest','creek','canopy','creak-1','creak-2','thrush-1','thrush-2','thrush-3','jay-1','jay-2','raven-1','raven-2','woodpecker-1','woodpecker-2','elk-1','foghorn','sealion-1','sealion-2','sealion-3']},
   // the mountains: a snowy pass, lakeside ski villages, cold golden hour with alpenglow. For now it borrows the Redwood Coast's
   // scenery (kit) and radio (station) under snow; its own world comes in batch 2 (WINTER-PLAN.md)
-  sierra:{id:'sierra',name:'High Sierra',label:'the High Sierra',station:'coffee',hwy:'CA-89',kit:'redwood',alpine:true,
+  sierra:{id:'sierra',name:'High Sierra',label:'the High Sierra',station:'coffee',hwy:'CA-89',kit:'redwood',alpine:true,elev:[6230,8150], // elev: feet at the lake and at the summit
     quiet:['mountain','MOUNTAINS'],tagline:'Chains on, cocoa hot, take it slow.',pc:['#eef4ff','#f2a7b8','#6a6fb8'],
     look:{fogNear:[110,70],fogFar:[3600,1100],hemi:[0xd6e4ff,0x6a6878,.75],sun:[0xffc49a,.95],env:.5,ocean:0x1d4f6e,cloud:0xf2f4fa,wisp:.35,sunK:.8,snow:1,lake:150,wall:28,peaks:.7,bends:22},
     sky:{zen:'#3a4f7a',midA:'#8a93b8',midS:'#e7a3a8',horA:'#c9cfdc',horS:'#f6c9a0',glow:'#ffd2a8',ground:'#5a5f6e'},
@@ -972,6 +972,9 @@ function switchbacks(k){if(swCache.has(k))return swCache.get(k);const a=k*PER+to
   DX.forEach((dx,i)=>{const z0=zs-130,z1=zs+130,fwd=i%2===0;for(let q=0;q<=26;q++){const z=fwd?z0+q*10:z1-q*10;pts.push([roadX(z)+dx,z])}
     if(i<DX.length-1){const ze=fwd?z1:z0,xc=roadX(ze)+dx-10,sg=fwd?1:-1;for(let q=1;q<8;q++){const t=q/8*Math.PI;pts.push([xc+10*Math.cos(t),ze+sg*14*Math.sin(t)])}}});
   const out=pts.map(([x,z])=>[x,groundAt(x,z)+.25,z]);if(swCache.size>8)swCache.clear();swCache.set(k,out);return out}
+// the summit pull-out: a shelf beside the road at the top of each pass (0..1 near it)
+function pulloutZ(k){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;return(a+L*.5)*B+30}
+function pulloutAt(z){const g=gapAt(z);if(!g||!alpAt(z))return 0;return ss(70,45,Math.abs(z-pulloutZ(g.k)))}
 function hiAt(z){const g=gapAt(z);if(!g)return 0;const a=regW(z,isAlp);return a&&a*Math.sin(Math.PI*g.u)**2}
 const treeAt=z=>1-ss(.3,.62,hiAt(z));
 function rockCutZ(k,q){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;return(a+L*(q?.62+.12*hash(k,2,61):.24+.12*hash(k,1,61)))*B}
@@ -1472,7 +1475,7 @@ function westProfile(z){ // [dx,y,color] from far offshore to the shoulder
   if(gv>0){const GY=[-30,-8,1.4,2.3,2.5,1.5,.5,0],GC=[T.rockD,T.rockD,T.moss,T.duff,T.duff,T.duff,T.duff,T.shoulder];pr.forEach((p,k)=>{p[1]+=(GY[k]-p[1])*gv;if(gv>.5)p[2]=GC[k]})}
   const cd=creekAt(z);if(cd<28){const k=ss(28,12,cd);pr.forEach(p=>{if(p[0]<-9.6&&p[0]>-80&&p[1]>-2){const w=k*ss(-80,-60,p[0])*ss(-9.5,-12,p[0]);p[1]+=(-2-p[1])*w}})} // a creek's channel (after the forest floor, so it isn't smoothed away)
   const dl=lookAt(z,'lake');if(dl>0){const dr=dropAt(z),k=1+3*Math.min(1,dl/150); // the mountainside, stretched out wide enough to see it fall away; its foot always below the lowest lake
-    pr.forEach(p=>{const t=clamp((-12-p[0])/80,0,1);p[1]-=dr*(1-(1-t)**3);if(p[0]<-12)p[0]=-12+(p[0]+12)*k});pr[0][1]=Math.min(pr[0][1],SEA-dl-12)} // steepest right behind the guardrail
+    const po=pulloutAt(z);pr.forEach(p=>{const t=clamp((-12-p[0]-10*po)/(80-10*po),0,1);p[1]-=dr*(1-(1-t)**3);if(p[0]<-12)p[0]=-12+(p[0]+12)*k});pr[0][1]=Math.min(pr[0][1],SEA-dl-12)} // steepest right behind the guardrail
   return pr;
 }
 function signTex(top,bottom){
@@ -1490,7 +1493,7 @@ function buildTerrain(j){
     if(!lot){
       for(const [dx,y,col] of westProfile(z))P(dx,y,col,!al||dx>-13); // (in the Sierra the slope runs straight west, so its tight bends don't skew the drop away from groundAt)
       P(-8,0,TC.asph,true);P(8,0,TC.asph,true);P(9.5,0,TC.shoulder,true);
-      for(const dx of al?NEAR_AL:NEAR){const x=rc+dx*nx,zz=z+dx*nz,y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])}
+      for(const dx of al?NEAR_AL:NEAR){const x=rc+dx*(al?1:nx),zz=z+dx*(al?0:nz),y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])} // (straight east in the Sierra too, so its steep face isn't skewed on the bends)
       for(const x of FAR){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     }else for(const x of FAR.slice(3)){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     rows.push({z,rc,nx,nz,pts});
@@ -1564,7 +1567,7 @@ function buildTerrain(j){
     for(let k=0;k<3;k++)b.add(al?PINES()[Math.floor(rnd()*2)]:pick(FIRS,rnd),null,-190-rnd()*140,.2,z0+rnd()*B,1,1,1,rnd()*6.28);
     for(let k=0;k<10;k++){const s=1.3+rnd()*.8;b.add(pick(al?SHRUBS():FERNS,rnd),null,-183-rnd()*60,.24,z0+rnd()*B,s,s,s,rnd()*6.28)}
   }
-  const mesh=b.mesh();grp.add(mesh);grp.userData={mesh,j};
+  const mesh=b.mesh();grp.add(mesh);Object.assign(grp.userData,{mesh,j}); // (userData may already hold parked cars)
   if(gb.pos.length)grp.add(new THREE.Mesh(gb.geo(),MAT_GLOW));
   return grp;
 }
@@ -1577,6 +1580,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
   const z0=j*B,zm=z0+B/2,gv=Math.max(groveAt(zm),ftAtZ(zm)),c=coastType(zm),hm=hillMul(zm),T=regionAtZ(zm).tc,beams=[],al=isAlp(regionAtZ(zm)); // al: the High Sierra
   const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
+  const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1); // the road's heading at z
   const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32); // keep the creek, the meadow and the big tree's foot open
   const giant=(dx,z,s)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),k=rnd();if(al){if(rnd()>treeAt(z))return;b.add(PINES()[k<.4?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
   const young=(dx,z)=>{if(clear(dx,z))return;if(al&&rnd()>treeAt(z))return;const [x,y]=at(dx,z),s=.8+rnd()*.5;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
@@ -1603,7 +1607,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
     if(rnd()<.7*gv){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(18+rnd()*40),z0+rnd()*B);beams.push([x,y,z,3+rnd()*5,60+rnd()*30])} // off the road, so the car never drives through one
   }
   if(al){ // above the treeline: granite boulders scattered over the snow on both slopes
-    const hi=hiAt(zm);for(let k=0;k<Math.round(8*ss(.25,.7,hi));k++){const side=rnd()<.55?1:-1,[x,y,z]=at(side*(14+rnd()*(side>0?70:40)),z0+rnd()*B),s=1+rnd()*3.5;b.add(G.ball,pick(GRANITE,rnd),x,y+s*.1,z,s*1.3,s*.75,s,rnd()*6)}
+    const hi=hiAt(zm);for(let k=0;k<Math.round(8*ss(.25,.7,hi));k++){const side=rnd()<.55?1:-1,[x,y,z]=at(side*(14+rnd()*(side>0?70:40)),z0+rnd()*B),s=1+rnd()*3.5;if(side<0&&pulloutAt(z)>0)continue;b.add(G.ball,pick(GRANITE,rnd),x,y+s*.1,z,s*1.3,s*.75,s,rnd()*6)}
     for(let k=0;k<Math.round(14*ss(.2,.6,hi));k++){const [x,y,z]=at(14+rnd()*34,z0+rnd()*B),s=3+rnd()*5; // dark rock outcrops breaking through the steep face; snow settles on their tops
       b.add(G.ball,pick([0x5f5b55,0x6a665f,0x55524c],rnd),x,y-s*.25,z,s*(1+rnd()*.6),s*(.6+rnd()*.5),s*(.9+rnd()*.6),rnd()*6,(rnd()-.5)*.6,(rnd()-.5)*.6)}
     if(rockCutAt(zm)>0){ // a rock cut: icicles hanging off the blasted face; in the first cut of each pass, a snow shed roofed over the road
@@ -1615,11 +1619,17 @@ function redwoodScenery(b,gb,grp,j,rnd){
   if(al&&hiAt(zm)>.2){const g=gapAt(zm),sw=g&&switchbacks(g.k); // the switchbacks below: a narrow road cut into the slope, its pieces in this stretch
     if(sw)for(let q=0;q+1<sw.length;q++){const [xa,ya,za]=sw[q],[xb,yb,zb]=sw[q+1],zm2=(za+zb)/2;if(zm2<z0||zm2>=z0+B)continue;const L=Math.hypot(xb-xa,zb-za);
       b.add(G.box,0x3e3d44,(xa+xb)/2,(ya+yb)/2,zm2,5,.5,L+.4,Math.atan2(xb-xa,zb-za));b.add(G.box,0xe6eaf0,(xa+xb)/2-2.9,(ya+yb)/2+.3,zm2,.9,.6,L+.4,Math.atan2(xb-xa,zb-za))}}
+  if(al&&pulloutAt(zm)>0){const pz=pulloutZ(gapAt(zm).k); // the summit pull-out: plowed gravel out to its own rail, the elevation sign, a few parked cars, people at the rail taking pictures
+    for(let z=z0;z<z0+B;z+=5){const po=pulloutAt(z+2.5);if(po<.3)continue;const [x]=at(-10-15*po,z+2.5);b.add(G.box,0x4a4848,x,.04,z+2.5,30*po,.08,5.1,tan(z+2.5))}
+    if(Math.abs(pz-zm)<B/2){const [sx,sy]=at(-14,pz+38),m=new THREE.Mesh(new THREE.PlaneGeometry(7,2.6),new THREE.MeshStandardMaterial({roughness:.85,map:signTex('SUMMIT','ELEV '+elevFt(pz).toLocaleString('en-US')+' FT')}));
+      m.position.set(sx,sy+3.6,pz+38);m.rotation.y=Math.PI/2;grp.add(m);for(const s2 of[-1,1])b.add(G.box,0x8f8f96,sx-.1,sy+1.7,pz+38+s2*2.6,.2,4.6,.2);
+      const pk=grp.userData.parked=[];for(let q=0;q<3;q++)if(rnd()<.8){const [x]=at(-20-rnd()*4,pz-18+q*9);pk.push({type:pick(PARKT,rnd),x,z:pz-18+q*9,ry:Math.PI/2,col:new THREE.Color(pick(CARCOL,rnd))})}
+      for(let q=0;q<5;q++){const z=pz-20+rnd()*40,[x]=at(-36.5-rnd()*1.5,z);stander(b,x,0,z,Math.PI/2+(rnd()-.5)*.8,rnd,false)}}
+  }
   if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
-    const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1);
-    for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);if(hillMul(z)>.05)b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
+    for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);if(hillMul(z)>.05&&!(side<0&&pulloutAt(z)>.2))b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
     for(const side of[-1,1])if((j+(side>0?0:1))%2===0){const z=z0+B*.5,[x,y]=at(side*10.3,z);b.add(G.box,0x2b2b30,x,y+2.1,z,.09,4.2,.09);b.add(G.box,0xe8702a,x,y+4.05,z,.11,.5,.11)} // a pole every 120 m each side, staggered
-    for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,[xa,ya]=at(-10.1,za),[xb,yb]=at(-10.1,zb);if(hillMul(zb)<.05)continue;b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
+    for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,gx=z=>-10.1-30*ss(.2,.6,pulloutAt(z)),[xa,ya]=at(gx(za),za),[xb,yb]=at(gx(zb),zb);if(hillMul(zb)<.05)continue;b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
       b.add(G.box,0xb4b7bc,(xa+xb)/2,(ya+yb)/2+.72,(za+zb)/2,.06,.32,Math.hypot(xb-xa,zb-za)+.05,Math.atan2(xb-xa,zb-za))} // the guardrail
   }
   if(md>.3){ // a meadow opening on the east side: grass, a split-rail fence along the road, now and then a gravel pull-out with a picnic table
@@ -1675,7 +1685,7 @@ function stream(px,pz,force){
   if(ci!==lastCi||cj!==lastCj||force){
     lastCi=ci;lastCj=cj;
     for(const [k,g] of blocks){const [i,j]=g.userData.ij;if(Math.abs(i-ci)>RAD+1||Math.abs(j-cj)>RAD+2){drop(g);blocks.delete(k);setFarCell(i,j,0);for(const p of g.userData.parked||[])parkedCars.delete(p)}}
-    for(const [j,g] of terr)if(Math.abs(j-cj)>RAD_T+1){drop(g);terr.delete(j)}
+    for(const [j,g] of terr)if(Math.abs(j-cj)>RAD_T+1){drop(g);terr.delete(j);for(const p of g.userData.parked||[])parkedCars.delete(p)}
     queue=[];
     for(let dj=-RAD_T;dj<=RAD_T;dj++){const j=cj+dj;if(!terr.has(j))queue.push([Math.abs(dj)*.9,'t',j])}
     for(let di=-RAD;di<=RAD;di++)for(let dj=-RAD-1;dj<=RAD+1;dj++){const i=ci+di,j=cj+dj;if(blocks.has(i+','+j)||!cellKind(i,j))continue;queue.push([Math.abs(di)+Math.abs(dj),i,j])}
@@ -1684,7 +1694,7 @@ function stream(px,pz,force){
   let n=force?999:2;
   while(n-->0&&queue.length){
     const [,i,j]=queue.shift();
-    if(i==='t'){if(terr.has(j))continue;const g=buildTerrain(j);terr.set(j,g);scene.add(g);continue}
+    if(i==='t'){if(terr.has(j))continue;const g=buildTerrain(j);terr.set(j,g);scene.add(g);for(const p of g.userData.parked||[])parkedCars.add(p);continue}
     const k=i+','+j;if(blocks.has(k))continue;
     const g=buildBlock(i,j,cellKind(i,j));g.userData.ij=[i,j];blocks.set(k,g);scene.add(g);setFarCell(i,j,1);for(const p of g.userData.parked)parkedCars.add(p);
   }
@@ -2536,7 +2546,8 @@ function crossStreet(){ // the street at the next intersection
   return car.d%2===0?ewName(car.bj):nsName(car.bi);
 }
 function currentTown(){const t=car.piece==='hwy'?townOfRow(car.bj):townOfRow(Math.round(car.z/B))||townOfRow(car.bj);return t?townName(t.k):''}
-function signSmall(){return car.piece==='hwy'?`${regionAtZ(car.z).hwy} ${car.d===0?'NORTH':'SOUTH'}`:currentTown().toUpperCase()}
+const elevFt=z=>{const R=regionAtZ(z);return R.elev?Math.round((R.elev[0]+(R.elev[1]-R.elev[0])*hiAt(z))/10)*10:0}; // how high up, in feet (regions with an elevation)
+function signSmall(){const ft=car.piece==='hwy'&&elevFt(car.z);return car.piece==='hwy'?`${regionAtZ(car.z).hwy} ${car.d===0?'NORTH':'SOUTH'}`+(ft?' · '+ft.toLocaleString('en-US')+' FT':''):currentTown().toUpperCase()}
 function placeKey(){
   if(car.piece==='hwy')return rwAt(car.z)&&groveAt(car.z)>.4?'grove':'coast';
   const ci=Math.floor(car.x/B),cj=Math.floor(car.z/B);

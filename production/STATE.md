@@ -67,8 +67,8 @@ Last updated: 2026-10-27
   3. A sea of clouds below at the summit with far peaks poking through; the lake shows lower down near the villages. **Built** (`updateAlpine`, three cloud layers), with 8 and 10.
   4. A steep rock-and-snow face right beside the road on the uphill side, rock showing through.
   5. Tighter S-bends near the summit (true hairpins aren't possible) and switchbacks drawn on the slope below, with a few headlights crawling up. **Built** (`look.bends`, `switchbacks(k)`): five legs and hairpins below each summit, the lowest disappearing into the cloud. They show best on the bends ahead; straight down they're out of the camera's view. The Sierra's slope mesh now runs straight west so the bends don't skew it.
-  6. Elevation on the road sign ("CA-89 NORTH · 7,240 FT"), rising and falling with the climb.
-  7. A summit pull-out: elevation sign, a couple of parked cars, people taking photos at the rail.
+  6. Elevation on the road sign ("CA-89 NORTH · 7,240 FT"), rising and falling with the climb. **Built** (region `elev`: 6,230 ft at the lake, 8,150 at the summit). Check it fits the sign on a phone.
+  7. A summit pull-out: elevation sign, a couple of parked cars, people taking photos at the rail. **Built:** a plowed shelf by the drop at each summit with its own guardrail, the SUMMIT / ELEV sign, up to 3 parked cars, 5 people at the rail. The uphill face is now laid out straight too, so its rocks sit on it.
   8. Clouds at road level near the top (drive through a wisp, come out above the cloud sea). **Built:** wisps drift across the road and every so often the haze closes right in.
   9. Wind up high: snow blowing off the ridges and across the road at the summit, wind noise rising as you climb.
   10. A tiny village far below by the lake (rooftops and lights). **Built:** one per pass on a point in the lake, a quarter of the way up; hidden once the cloud closes over the lake. The forest towns' woods no longer run 1.4 km out over the lake.
