@@ -23,7 +23,7 @@ A relaxing mobile browser driving game: a convertible drives itself along the Ca
 | Ideas and to-dos for later (the backlog) | [production/FUTURE-WORK.md](production/FUTURE-WORK.md) |
 | K-JAM songs (LA, 101.1) | [production/LYRICS.md](production/LYRICS.md) |
 | Region songs (Coffee Cabin, Fireside) | [production/REGION-SONGS.md](production/REGION-SONGS.md) |
-| K-JAM voice script (Rick and Dana) | [production/PRODUCTION-PACK.md](production/PRODUCTION-PACK.md) (drafts: RADIO-SCRIPTS-DRAFT.md, CALLERS-DRAFT.md) |
+| K-JAM voice script (Rick and Dana) | [production/PRODUCTION-PACK.md](production/PRODUCTION-PACK.md) (drafts: RADIO-SCRIPTS-DRAFT.md, CALLERS-DRAFT.md, SET2-INTROS-DRAFT.md) |
 | Coffee Cabin voice script (Marj and Walt) | [production/COFFEE-CABIN-SCRIPT.md](production/COFFEE-CABIN-SCRIPT.md) |
 | Region plans | [production/REDWOOD-PLAN.md](production/REDWOOD-PLAN.md) (shipped), [production/WINTER-PLAN.md](production/WINTER-PLAN.md) (High Sierra, due Dec 1) |
 | Audio history and file conventions | [production/AUDIO-WORKFLOW.md](production/AUDIO-WORKFLOW.md) |

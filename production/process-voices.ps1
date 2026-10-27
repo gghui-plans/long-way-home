@@ -53,6 +53,9 @@ foreach ($r in [regex]::Matches($part1, '(?m)^\| ([a-z]+(?:-[a-z0-9]+)+) \| ([^|
 }
 
 $timings = [ordered]@{}
+# keep the bits this script doesn't make: the K-JAM handoff clips come from the Cabin's pipeline but share this folder
+$tf = Join-Path $out 'timings.json'
+if (Test-Path $tf) { (Get-Content $tf -Raw | ConvertFrom-Json).PSObject.Properties | ForEach-Object { $timings[$_.Name] = $_.Value } }
 foreach ($b in $bits.Keys) {
   $src = Join-Path $raw "$b.mp3"
   if (-not (Test-Path $src)) { "missing $b"; continue }
@@ -128,6 +131,7 @@ foreach ($b in $bits.Keys) {
 }
 ($timings | ConvertTo-Json -Depth 4 -Compress) | Set-Content -Encoding ASCII (Join-Path $out 'timings.json')
 "wrote timings for $($timings.Count) bits"
-# the pause splitter loses track past ~8 lines (long caller scenes): re-time those from the spoken words with whisper
-$long = @($bits.Keys | Where-Object { $bits[$_].Count -gt 8 -and $timings.Contains($_) })
+# the pause splitter loses track past ~8 lines (long caller scenes), and on the quick back-and-forth of the story intros
+# (introb with several lines): re-time those from the spoken words with whisper
+$long = @($bits.Keys | Where-Object { ($bits[$_].Count -gt 8 -or ($_ -like 'introb-*' -and $bits[$_].Count -gt 1)) -and $timings.Contains($_) })
 if ($long.Count) { & node (Join-Path $PSScriptRoot 'time-voices.js') @long }

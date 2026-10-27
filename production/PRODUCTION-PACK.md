@@ -375,6 +375,20 @@ Tips:
 | intro-longboard-summer | RICK | Smog Cutters. Longboard Summer. I tried surfing once. The ocean won. | dry |
 | intro-pacific-coast-cruise | DANA | Something mellow for the coast. The Turn Signals, Pacific Coast Cruise. | soft, warm |
 | intro-long-way-home | DANA | And this one's for you, out there taking the long way home. Rush Hour Rebels. | heartfelt, warm |
+| intro-top-down-radio-up | DANA | First day of summer! Rush Hour Rebels, Top Down, Radio Up! | big, sunny |
+| intro-ice-cream-truck | RICK | The Carpoolers. Ice Cream Truck. A song about chasing a vehicle on foot. I've done it. It was a bus. | dry |
+| intro-couples-skate | DANA | Lights down low, grab a partner. The Turn Signals, Couples Skate. | warm, soft |
+| intro-motel-pool | RICK | Tailgate Thunder. Motel Pool. The sign says the pool closes at ten. This song ignores the sign. I'm choosing to look away. | dry, disapproving |
+| intro-drive-in-double-feature | RICK | Cruise Control. Drive-In Double Feature. Sitting in a parked car for four hours. I do that every day for free. | dry, weary |
+| intro-taco-truck-moon | DANA | Who's still hungry? The Parking Meters, Taco Truck Moon! | bright, upbeat |
+| intro-high-score | RICK | Hazard Lights. High Score. I once held the top score on a racing game. Only time I've gone fast in this city. | dry |
+| intro-laundromat-love | RICK | Dana's Cousin Kevin has a new song. Nobody asked. Laundromat Love. | dry, weary |
+| intro-fireworks-on-the-water | RICK | The Fender Benders. Great band. Terrible way to meet people. Fireworks on the Water. | dry |
+| intro-photo-booth | DANA | Say cheese! The Turn Signals, Photo Booth! | bright, upbeat |
+| intro-block-party | DANA | Bring a chair, bring a friend! Gridlock Prophets, Block Party! | bright, upbeat |
+| intro-one-hour-sailboat | RICK | Valet Overdrive. One-Hour Sailboat. Two people who can't sail, renting a boat. Same energy as a left turn on a yellow. | dry |
+| intro-rooftop-at-dusk | DANA | Something dreamy for golden hour. Cruise Control, Rooftop at Dusk. | soft, warm |
+| intro-last-night-of-summer | RICK | The Turn Signals. Last Night of Summer. Don't worry. It comes back. Like traffic. | dry, quietly tender |
 | after-01-1 | DANA | A classic! | happy |
 | after-02-1 | RICK | They broke up in traffic, you know. Different lanes. | dry |
 | after-03-1 | DANA | Windows down, volume up! | hyped |
@@ -508,6 +522,100 @@ Tips:
 | introb-longboard-summer | DANA | Surf's up! Smog Cutters, Longboard Summer! | bright, upbeat |
 | introb-pacific-coast-cruise | RICK | The Turn Signals. Pacific Coast Cruise. Nobody talk. | calm, dry |
 | introb-long-way-home | RICK | Rush Hour Rebels. Long Way Home. The only way home, really. The other ways are closed. | dry |
+| introb-top-down-radio-up-1 | DANA | Rick, what did you do on the first day of summer when you were a kid? | bright, curious |
+| introb-top-down-radio-up-2 | RICK | Washed my mother's station wagon. | dry, a little embarrassed |
+| introb-top-down-radio-up-3 | DANA | That's it? | laughing |
+| introb-top-down-radio-up-4 | RICK | Then I drove it to the beach. Windows down, radio up. Some guy on the radio telling everybody where the traffic was. I thought, what a job. | slow, remembering, warming up |
+| introb-top-down-radio-up-5 | DANA | Aww! And now that guy is you! | touched |
+| introb-top-down-radio-up-6 | RICK | Now that guy is me. Nobody listens to him either. | dry, a little rueful |
+| introb-top-down-radio-up-7 | DANA | Rush Hour Rebels! Top Down, Radio Up! | bright |
+| introb-ice-cream-truck-1 | RICK | Summer of eighty-two, I drove an ice cream truck. | grave, like a confession |
+| introb-ice-cream-truck-2 | DANA | Rick! You were the ice cream man? | gasps, delighted |
+| introb-ice-cream-truck-3 | RICK | Eight hours a day. Same song. I still hear it at red lights. | haunted, half joking |
+| introb-ice-cream-truck-4 | DANA | The kids must have loved you. | dreamy |
+| introb-ice-cream-truck-5 | RICK | Whole neighborhoods running after me. Only time in my life anybody was happy to see me in traffic. | slow, almost fond |
+| introb-ice-cream-truck-6 | DANA | The Carpoolers, Ice Cream Truck! | warm, laughing |
+| introb-couples-skate-1 | DANA | Rick. Be honest. Did you ever couples skate? | teasing |
+| introb-couples-skate-2 | RICK | [pause] Once. Summer of seventy-nine. Debbie Pruitt. | caught off guard, then fond |
+| introb-couples-skate-3 | DANA | Rick! How did it go? | gasps, delighted |
+| introb-couples-skate-4 | RICK | I held the wall. She held the wall. We held the wall together for three songs. | dry, building, a little proud |
+| introb-couples-skate-5 | DANA | That's actually really sweet. | touched |
+| introb-couples-skate-6 | RICK | She married the DJ. | deadpan, a little wistful |
+| introb-couples-skate-7 | DANA | The Turn Signals, Couples Skate! | laughing |
+| introb-motel-pool-1 | DANA | Every summer, my dad drove us up the coast, and he picked the motel by the pool. | nostalgic, bright |
+| introb-motel-pool-2 | RICK | Not the room. | dry, knowing |
+| introb-motel-pool-3 | DANA | Never the room! One year the pool was the size of a hot tub. Four of us kids in it. Plus Kevin. | cheerful |
+| introb-motel-pool-4 | RICK | Kevin was there. | weary, already dreading it |
+| introb-motel-pool-5 | DANA | Kevin did a cannonball. Emptied it. | proud |
+| introb-motel-pool-6 | RICK | The whole pool. | deadpan, impressed despite himself |
+| introb-motel-pool-7 | DANA | Most of it! Tailgate Thunder, Motel Pool! | bright |
+| introb-drive-in-double-feature-1 | DANA | My first date was at a drive-in. He had a convertible. | dreamy |
+| introb-drive-in-double-feature-2 | RICK | Top up or down? | suspicious, curious |
+| introb-drive-in-double-feature-3 | DANA | Down! It started raining halfway through the first movie. | laughing |
+| introb-drive-in-double-feature-4 | RICK | So you left. | dry, assuming the worst |
+| introb-drive-in-double-feature-5 | DANA | We stayed for both! Under a beach umbrella. I couldn't tell you one thing about either movie. | proud |
+| introb-drive-in-double-feature-6 | RICK | That's not romance, Dana. That's an upholstery claim. | dry, mock serious |
+| introb-drive-in-double-feature-7 | DANA | Cruise Control, Drive-In Double Feature! | laughing |
+| introb-taco-truck-moon-1 | RICK | Thirty years I've come in before sunrise. There's a taco truck on the corner by the station. | quiet, warm |
+| introb-taco-truck-moon-2 | DANA | Hector! | warm |
+| introb-taco-truck-moon-3 | RICK | Hector. Every morning, four o'clock, two tacos. And he always says, "Drive safe, Rick." | fond, smiling |
+| introb-taco-truck-moon-4 | DANA | That's so sweet. | touched |
+| introb-taco-truck-moon-5 | RICK | I'm not driving, Hector. I'm parked on a freeway. It's different. | dry, affectionate, mock annoyed |
+| introb-taco-truck-moon-6 | DANA | He listens every morning, you know. [bright] Hector, this one's for you! The Parking Meters, Taco Truck Moon! | whispering, conspiratorial |
+| introb-high-score-1 | DANA | The summer I was sixteen, I worked at the boardwalk arcade. I had the high score on every machine. D-A-N. | excited |
+| introb-high-score-2 | RICK | You worked there. | suspicious, narrowing in |
+| introb-high-score-3 | DANA | Yep! | proud |
+| introb-high-score-4 | RICK | You had the keys. | dry, closing the case |
+| introb-high-score-5 | DANA | [guilty] ...Free play is still playing. | pause |
+| introb-high-score-6 | RICK | Hazard Lights. High Score. Dana cheated. | dry, triumphant |
+| introb-high-score-7 | DANA | I practiced! | protesting |
+| introb-laundromat-love-1 | DANA | Kevin says Laundromat Love is about how he met his wife. | excited |
+| introb-laundromat-love-2 | RICK | He told us they met at a merge. | suspicious, catching her out |
+| introb-laundromat-love-3 | DANA | At the laundromat! One dryer left, and they both went for it. | explaining |
+| introb-laundromat-love-4 | RICK | That's not a merge, Dana. That's a collision. | dry, unimpressed |
+| introb-laundromat-love-5 | DANA | She let him have it. Then she folded his socks. | dreamy |
+| introb-laundromat-love-6 | RICK | [pause] ...Okay. That's a merge. Dana's Cousin Kevin, Laundromat Love. | grudging, softening |
+| introb-fireworks-on-the-water-1 | RICK | One Fourth of July, I did the traffic from the helicopter. | quiet, remembering |
+| introb-fireworks-on-the-water-2 | DANA | You hate flying! | gasps |
+| introb-fireworks-on-the-water-3 | RICK | I hate most things, Dana. Keep up. [pause] [slow, quiet] Nine o'clock, every town on the coast went off at once. Twenty shows, all the way down the water. | dry, a little impatient |
+| introb-fireworks-on-the-water-4 | DANA | Rick... that sounds beautiful. | softly |
+| introb-fireworks-on-the-water-5 | RICK | [gruff] Traffic was terrible. The Fender Benders. Fireworks on the Water. | clears throat |
+| introb-photo-booth-1 | DANA | Rick. What's the photo-booth strip in your sun visor? | sly |
+| introb-photo-booth-2 | RICK | Nothing. | too quickly |
+| introb-photo-booth-3 | DANA | Four pictures! And you're smiling! | teasing |
+| introb-photo-booth-4 | RICK | That's not smiling. The flash went off early. | defensive |
+| introb-photo-booth-5 | DANA | It's torn down the middle. Who has the other half? | gently |
+| introb-photo-booth-6 | RICK | [pause] Gary. | quiet, caught out |
+| introb-photo-booth-7 | DANA | Gary who moved? | touched |
+| introb-photo-booth-8 | RICK | Gary always signaled. The Turn Signals. Photo Booth. | gruff, hiding emotion |
+| introb-block-party-1 | DANA | My street had a block party every summer. My dad ran the grill in a hat shaped like a hot dog. | excited |
+| introb-block-party-2 | RICK | Of course he did. | dry, unsurprised |
+| introb-block-party-3 | DANA | And every year he made the same speech. "Look around. These are your neighbors." | warm |
+| introb-block-party-4 | RICK | [pause] ...I don't know my neighbors. | quiet, realizing |
+| introb-block-party-5 | DANA | Rick. | gently |
+| introb-block-party-6 | RICK | One of them waves. I wave back. We're very close. | defensive, a little proud |
+| introb-block-party-7 | DANA | Bring a chair, Rick! Gridlock Prophets, Block Party! | bright |
+| introb-one-hour-sailboat-1 | DANA | Kevin and I rented a little sailboat once. One hour. | excited |
+| introb-one-hour-sailboat-2 | RICK | Neither of you can sail. | dry, already worried |
+| introb-one-hour-sailboat-3 | DANA | Nope! We drifted out past the harbor, and the wind just... stopped. | cheerful |
+| introb-one-hour-sailboat-4 | RICK | How long were you out there? | concerned |
+| introb-one-hour-sailboat-5 | DANA | Six hours! Kevin wrote three songs. | breezy |
+| introb-one-hour-sailboat-6 | RICK | Six hours, not moving, nowhere to go. Dana, that's my commute with a sail. | dry, wry |
+| introb-one-hour-sailboat-7 | DANA | Valet Overdrive, One-Hour Sailboat! | laughing |
+| introb-rooftop-at-dusk-1 | DANA | Confession. Some nights after the show, I go up on the station roof to watch the sunset. | hushed |
+| introb-rooftop-at-dusk-2 | RICK | That door says authorized personnel only. | dry, rule follower |
+| introb-rooftop-at-dusk-3 | DANA | I'm personnel! | cheerful |
+| introb-rooftop-at-dusk-4 | RICK | Are you authorized? | suspicious |
+| introb-rooftop-at-dusk-5 | DANA | The whole city goes orange. Then the brake lights come on, all the way to the ocean, like a big red river. | dreamy, ignoring him |
+| introb-rooftop-at-dusk-6 | RICK | [pause] ...What time? | quiet, hooked |
+| introb-rooftop-at-dusk-7 | DANA | Seven fifteen. Cruise Control, Rooftop at Dusk. | delighted |
+| introb-last-night-of-summer-1 | DANA | Rick, what does the last night of summer mean to you? | wistful |
+| introb-last-night-of-summer-2 | RICK | Tuesday. | dry, deflecting |
+| introb-last-night-of-summer-3 | DANA | Come on. | laughing |
+| introb-last-night-of-summer-4 | RICK | [pause] My mother let me take the station wagon out one last time. I'd drive the coast with the top down. | quiet, opening up |
+| introb-last-night-of-summer-5 | DANA | Rick, a station wagon doesn't have a top. | confused |
+| introb-last-night-of-summer-6 | RICK | I rolled all the windows down and pretended. [pause] [gruff] Don't look at me like that. | softly |
+| introb-last-night-of-summer-7 | DANA | The Turn Signals. Last Night of Summer. | tender |
 
 **Reactions** (play when something happens: the real clock on the first break, steering, cruise speed, a postcard, a pier ahead)
 
