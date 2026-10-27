@@ -1589,11 +1589,11 @@ function redwoodScenery(b,gb,grp,j,rnd){
     if(rnd()<.45){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(14+rnd()*30),z0+rnd()*B),rr=1.4+rnd()*1.2;b.add(G.cyl,0x6b4330,x,y+.6,z,rr,1.6,rr);b.add(G.cyl,0xb08a62,x,y+1.42,z,rr*.92,.05,rr*.92)}
     if(rnd()<.7*gv){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(18+rnd()*40),z0+rnd()*B);beams.push([x,y,z,3+rnd()*5,60+rnd()*30])} // off the road, so the car never drives through one
   }
-  if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side
+  if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
     const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1);
-    for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
+    for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=5+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.4,z);if(hillMul(z)>.05)b.add(BLOB,0xe6eaf0,x,y+.05,z,.8+rnd()*.5,.5+rnd()*.35,3.6+rnd()*1.8,tan(z))}
     for(const side of[-1,1])if((j+(side>0?0:1))%2===0){const z=z0+B*.5,[x,y]=at(side*10.3,z);b.add(G.box,0x2b2b30,x,y+2.1,z,.09,4.2,.09);b.add(G.box,0xe8702a,x,y+4.05,z,.11,.5,.11)} // a pole every 120 m each side, staggered
-    for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,[xa,ya]=at(-10.1,za),[xb,yb]=at(-10.1,zb);b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
+    for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,[xa,ya]=at(-10.1,za),[xb,yb]=at(-10.1,zb);if(hillMul(zb)<.05)continue;b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
       b.add(G.box,0xb4b7bc,(xa+xb)/2,(ya+yb)/2+.72,(za+zb)/2,.06,.32,Math.hypot(xb-xa,zb-za)+.05,Math.atan2(xb-xa,zb-za))} // the guardrail
   }
   if(md>.3){ // a meadow opening on the east side: grass, a split-rail fence along the road, now and then a gravel pull-out with a picnic table
@@ -2042,7 +2042,7 @@ ${SNOW_GLSL}`)
       if(sn>0.0){vec3 sc=vColor.rgb;float sMx=max(sc.r,max(sc.g,sc.b)),sSat=(sMx-min(sc.r,min(sc.g,sc.b)))/(sMx+1e-3),sLum=dot(sc,vec3(.2126,.7152,.0722));
         float sN=fract(sin(dot(floor(vSWPos.xz/23.0),vec2(12.9898,78.233)))*43758.5453); // patchy, in 23 m cells
         float sCov=smoothstep(.55,.85,normalize(vSWNrm).y)*sn*(.75+.25*sN)*(1.0-(1.0-smoothstep(.10,.16,sLum))*(1.0-smoothstep(.30,.45,sSat)));
-        diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.82,.87,.95),sCov);}`);
+        diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(.82,.87,.95),vec3(.98,.8,.85),smoothstep(350.0,900.0,vSWPos.y)),sCov);} // pink alpenglow on the high snow`);
 };
 // coastal mountains: they rise 0.8-1.9 km inland to ridges and peaks of 300-900 m
 function mtnY(x,z){
@@ -2070,7 +2070,7 @@ function buildFarChunk(c){
   const TC=tcAt(z0+FARCH/2),lakeC=lookAt(z0+FARCH/2,'lake')>0; // this stretch's own colours; a lake to the west
   for(let s=0;s<=NZ;s++){
     const z=z0+s*FARCH/NZ,rc=roadX(z),lot=lotRow(Math.floor(z/B)),pts=[];
-    if(lakeC){const dl=lookAt(z,'lake'),rk=Math.min(1,dl/150);pts.push([rc-1750,SEA-40+(280+160*Math.sin(z/900)+80*Math.sin(z/340+1))*rk,TC.rock],[rc-1450,SEA-dl-40,TC.rockD])} // the lake's far shore: a ridge across the water, its foot below the lowest lake (same point count all chunk); it rises through a handover
+    if(lakeC){const dl=lookAt(z,'lake'),pk=(300+220*Math.abs(Math.sin(z/1100))+150*Math.abs(Math.sin(z/430+1))+50*Math.sin(z/170))*Math.min(1,dl/150);pts.push([rc-2300,SEA-40+pk,TC.rock],[rc-1850,SEA-40+pk*.3,TC.rock],[rc-1450,SEA-dl-40,TC.rockD])} // the lake's far shore: peaks across the water, steep up top, its foot below the lowest lake (same point count all chunk); it rises through a handover
     if(ftAtZ(z)){const D=TC.duff||TC.wet;for(const dx of[-1400,-900,-600,-400,-260,-180,-120,-60,-20,-9.5])pts.push([rc+dx,.15,D])} // a forest town: woods to the west, not sea (same point count as below)
     else{const dl=lookAt(z,'lake');pts.push([rc-900,SEA-16-dl,TC.wet],[rc-260-dl*2,SEA-9-dl,TC.wet]);for(const [dx,y,cc] of westProfile(z))pts.push([rc+dx,y,cc])}
     pts.push([rc-8,0,TC.asph],[rc+8,0,TC.asph],[rc+9.5,0,TC.shoulder]);
