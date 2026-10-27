@@ -913,6 +913,7 @@ function foamRing(x,z,r0,r1){
 // glowing parts (neon, string lights, lamps): colours brighter than white, so the sunset glow (bloom) picks them up
 const MAT_GLOW=new THREE.MeshBasicMaterial({vertexColors:true});
 const spinners=new Set(); // Ferris wheels, turned in the main loop
+const turners=new Set(); // groups turned about the vertical (the High Sierra's skaters), at userData.v radians a second
 
 // ---------- traffic signals: fixed cycle, two offset groups by intersection parity
 const CYC=24;
@@ -1030,6 +1031,17 @@ function district(i,j){
   return'park';
 }
 
+// the High Sierra's villages each have a rink (one block in from the highway), a sledding hill (on the inland edge, by the ski hill)
+// and the ski area's gondola station (in the mill's column). null for every other lot
+function alpSpot(i,j){const t=townOfRow(j);if(!t||!isAlp(regionOf(t.k)))return null;return i===-1&&j===t.a+1?'rink':i===XMAX-1&&j===t.a+1?'sled':null}
+const BOARD_TEX=new Map();
+function boardTex(t1,t2,bg,fg){ // a painted board: one or two lines of words (cached; the same board is reused)
+  const key=[t1,t2,bg,fg].join('|');if(BOARD_TEX.has(key))return BOARD_TEX.get(key);
+  const c=document.createElement('canvas');c.width=256;c.height=128;const x=c.getContext('2d');x.fillStyle=bg;x.fillRect(0,0,256,128);x.strokeStyle=fg;x.lineWidth=5;x.strokeRect(8,8,240,112);
+  x.fillStyle=fg;x.textAlign='center';let f=t2?42:54;const font=()=>x.font='800 '+f+'px Figtree, sans-serif';font();while(x.measureText(t1).width>226&&f>14){f-=2;font()}
+  x.fillText(t1,128,t2?62:84);if(t2){x.font='700 26px Figtree, sans-serif';x.fillText(t2,128,100)}
+  const m=new THREE.MeshStandardMaterial({roughness:.85,map:sTex(c)});BOARD_TEX.set(key,m);return m;
+}
 // ---------- one city block (cell i,j owns its west road, north road and NW intersection)
 const PASTEL=[0xf3c6c1,0xbfe3d9,0xf6e3a8,0xc9d6f2,0xf1d0e6];
 // up north: weathered harbour sheds, painted wooden shopfronts, Victorian house colours
@@ -1223,6 +1235,35 @@ function buildBlock(i,j,d){
     const gcol={strip:0x5d5a63,homes:0x7aa857,downtown:0xb4aca0,park:0x6ea250,shore:0xd9c49a,freeway:0xa79a7a,harbor:0x7d7870,lodge:0x66615b,cabins:0x56703f,main:0x5f5c60,victorian:0x5f7d45,woods:0x4b3f2b,camp:0x66713f,mill:0x8a8270}[d];
     put(G.box,gcol,S/2,.17,S/2,S-7,.32,S-7);
 
+    const spot=al?alpSpot(i,j):null;
+    if(spot==='rink'){ // the village rink: ice inside white boards, string lights crossing over it, a warming hut, skaters going round
+      put(G.box,0xe8edf3,S/2,.34,S/2,S-7,.03,S-7);const g0=gb.gain;gb.gain=.95;gput(G.box,0xc4dce8,S/2,.42,S/2-2,30,.04,22);gb.gain=g0; // the ice (unlit, so the snow doesn't settle on it)
+      for(const s2 of[-1,1]){put(G.box,0xf2efe6,S/2,.8,S/2-2+s2*11,30.4,.9,.25);put(G.box,0xf2efe6,S/2+s2*15,.8,S/2-2,.25,.9,22.4);put(G.box,0xc8322d,S/2,1.22,S/2-2+s2*11,30.4,.1,.28)} // the boards
+      const C4=[[S/2-15,S/2-13],[S/2+15,S/2-13],[S/2+15,S/2+9],[S/2-15,S/2+9]];for(const [pu,pv] of C4)put(G.box,0x2b2b30,pu,3.1,pv,.16,6.2,.16);
+      for(const [a0,a1] of[[C4[0],C4[2]],[C4[1],C4[3]]])for(let q=0;q<=26;q++){const t=q/26;gput(G.box,[0xffd27a,0xff6a5a,0x7ad8ff,0x9aff8a][q%4],a0[0]+(a1[0]-a0[0])*t,6.1-1.5*Math.sin(Math.PI*t),a0[1]+(a1[1]-a0[1])*t,.2,.2,.2)} // string lights
+      put(G.box,0x7a5236,S/2,1.9,S-3.5,10,3.2,5);put(G.gable,0x3a3f46,S/2,3.5,S-3.5,6,2.4,11,Math.PI/2); // the warming hut
+      for(const s2 of[-1,1])gput(G.box,0xffc070,S/2+s2*2.8,2.1,S-6.06,1.6,1.1,.1);put(G.box,0x3a2e26,S/2,1.4,S-6.07,1,2.2,.1);
+      for(const s2 of[-1,1])put(G.box,0x7a5a3a,S/2+s2*10,.75,S-6.5,3,.12,.6);
+      for(let q=0,m=1+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(S/2-13+rnd()*26,S-7.5);stander(b,px,.33,pz,rot*Math.PI/2+Math.PI+(rnd()-.5),rnd,false)} // watching from the side
+      const [rx0,rz0]=P(S/2,S/2-2);
+      for(const [R0,n,v0] of[[9.5,7,.3],[5,3,-.42]]){const sb=new Builder(),sg=new THREE.Group(); // two rings of skaters, the inner one the other way round
+        for(let q=0;q<n;q++){const a=q/n*6.28+rnd()*.5,x=R0*Math.cos(a),z=R0*Math.sin(a);person(sb,x,.45,z,v0>0?Math.atan2(z,-x):Math.atan2(-z,x),rnd,'stand')}
+        sg.add(sb.mesh());sg.position.set(rx0,0,rz0);sg.userData.v=v0;grp.add(sg);turners.add(sg)}
+    }else if(spot==='sled'){ // the sledding hill on the edge of town: sleds coming down, someone towing one back up, a fence at the bottom
+      const hx=S/2+7,hz=S/2,HX=19,HY=7.5,HZ=17,hy=(u,v)=>{const q=1-((u-hx)/HX)**2-((v-hz)/HZ)**2;return q>0?.3+HY*Math.sqrt(q):.3};
+      put(G.sph,0xeef2f6,hx,.3,hz,HX,HY,HZ);
+      for(let q=0;q<5;q++){const u=hx-3-rnd()*13,v=hz+(rnd()-.5)*20,y=hy(u,v),[x,z]=P(u,v),ry=rot*Math.PI/2-Math.PI/2;
+        put(G.box,pick([0xe8505b,0x2fb3a8,0xf2a541,0x5b6ee1],rnd),u,y+.12,v,1.3,.14,.7);person(b,x,y+.2,z,ry,rnd,'ground')}
+      for(let q=0;q<2;q++){const u=hx-2+rnd()*4,v=hz+(rnd()-.5)*6,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rnd()*6.28,rnd,false)} // at the top
+      {const u=hx-9,v=hz+9,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rot*Math.PI/2+Math.PI/2,rnd,false);put(G.box,0xe8505b,u-1.4,hy(u-1.4,v)+.12,v,1.2,.14,.6)} // towing a sled back up
+      put(G.box,0xc8322d,3,.75,S/2,.12,.45,S-10);for(let v=6;v<S-4;v+=4)put(G.box,0x7a5a3a,3,.6,v,.14,1.2,.14); // the fence at the bottom
+      for(const [u,v] of[[S-3,4],[S-4,S-5],[S-2,S/2]])put(PINES()[1+Math.floor(rnd()*2)],null,u,.3,v,1,1,1,rnd()*6.28);
+    }else if(d==='mill'&&al){ // the ski area's lot (where the mill would be): parked cars, a shuttle bus, ski racks, people heading for the hill
+      for(const v of[12,30]){for(let u=6;u<S-8;u+=3.2)put(G.box,0xe8e4da,u,.34,v,.15,.02,5);for(let k=0;k<9;k++)if(rnd()<.55)parked(7.6+k*3.2,v,0)}
+      put(G.box,0x2f5d8a,S-5,1.9,21,2.6,2.7,11);put(G.box,0x1f2a36,S-5,2.5,21,2.66,.9,10.2);put(G.box,0xf2efe6,S-5,3.3,21,2.5,.14,10.8);put(G.box,0xf2c230,S-5,1.3,21,2.64,.2,11.02); // the shuttle bus
+      put(G.box,0x2b2b30,3.5,1.1,40,.14,1.4,9);for(let q=0;q<11;q++)put(G.box,pick(SKIC,rnd),3.65,1.05,36+q*.8,.04,1.85,.09,0,0,.14); // a ski rack
+      for(let q=0,m=2+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(8+rnd()*(S-18),21+(rnd()-.5)*4);skiCarrier(b,px,.33,pz,rot*Math.PI/2+Math.PI/2+(rnd()-.5),rnd)}
+    }else
     if(d==='harbor'){ // the harbour front: weathered sheds and a cannery, chowder and bait shacks, crab pots, buoys, a bench
       rot=Math.floor(rnd()*4);
       const bw=S-10,depth=11,n=2+Math.floor(rnd()*2),seg=bw/n,back=4.5,front=back+depth;
@@ -1381,7 +1422,7 @@ function buildBlock(i,j,d){
       rot=j%2?2:0;const kind=hash(i,j,61),bear=(u,v,s)=>{put(G.cyl,0x8a6040,u,.45,v,.5*s,.3,.5*s);put(G.sph,0x6b4428,u,.6+.85*s,v,.5*s,.85*s,.42*s);put(G.sph,0x6b4428,u,.6+1.85*s,v,.34*s,.34*s,.32*s);for(const e of[-1,1])put(G.sph,0x6b4428,u+e*.22*s,.6+2.13*s,v,.1*s,.1*s,.08*s)};
       if(kind<.45){ // the motor lodge: a long row of rooms, doors and porch lights, the sign on its pole
         const depth=8,front=S-9,back=front-depth;
-        put(G.box,0x8a6a4a,S/2,2.2,back+depth/2,30,3.8,depth);put(G.gable,0x4f6236,S/2,4.1,back+depth/2,depth+1.2,2,31,Math.PI/2);
+        put(G.box,0x8a6a4a,S/2,2.2,back+depth/2,30,3.8,depth);put(G.gable,al?0x3a3f46:0x4f6236,S/2,4.1,back+depth/2,depth+1.2,2,31,Math.PI/2);
         for(let k=0;k<7;k++){const u=S/2-12.9+k*4.3;put(G.box,pick([0xa8322d,0x2f5d4a,0x3a5a7a],rnd),u,1.45,front+.06,1,2.2,.1);gput(G.box,0xffd9a0,u+1.1,2.7,front+.1,.2,.2,.2)}
         put(G.box,0x7a5e44,S/2,.4,front+1.3,30,.2,2.6);
         put(G.box,0x5a5a5e,S-7,3.6,S-5,.3,7.2,.3);put(G.box,0x2a3550,S-7,7.4,S-5,4.2,1.7,.4);gput(G.box,0xff4a4a,S-7,7.4,S-4.75,3.3,.5,.08);gput(G.box,0x4fff8a,S-7,6.25,S-4.75,2.5,.35,.08); // MOTOR LODGE, VACANCY
@@ -1396,6 +1437,14 @@ function buildBlock(i,j,d){
         for(const s of[-1,1])for(const t of[-1,1])put(G.box,0xd9d4ca,33+s*4,2.2,front-4+t*3,.3,4.4,.3);
         for(const s of[-1,1]){put(G.box,0xa8322d,33+s*1.6,.9,front-4,.7,1.4,.5);put(G.box,0xf2efe6,33+s*1.6,1.7,front-4,.6,.2,.45)}
         put(G.box,0xd9d4ca,33,1.6,front-12,4,2.6,3); // the kiosk
+        if(al){ // the chain installer: a car by the pumps, someone down in the snow fitting chains, more chains hanging on a rack, the sign
+          parked(37.2,front-4,0);{const [x,z]=P(39.2,front-5.5);person(b,x,.33,z,rot*Math.PI/2-Math.PI/2,rnd,'ground')}
+          for(let q=0;q<3;q++)put(G.donut,0x4a4a4f,40.2,.38,front-1.5+q*.8,.32,.32,.32,0,Math.PI/2);
+          put(G.box,0x2b2b30,42,1.4,front-9,.12,2.4,3);for(let q=0;q<4;q++)put(G.donut,0x6a6a70,42.1,1.9,front-10.2+q*.8,.3,.3,.3,Math.PI/2);
+          put(G.box,0x5a5a5e,S-2,1.6,front+1.5,.15,3.2,.15);{const m=new THREE.Mesh(new THREE.PlaneGeometry(3,1.5),boardTex('CHAINS','INSTALLED HERE','#f2c230','#1d1d22')),[x,z]=P(S-2,front+1.6);
+            m.position.set(x,2.6,z);m.rotation.y=rot*Math.PI/2;grp.add(m)}
+          for(const u of[30.5,35.5])put(G.cone,0xf0782a,u,.65,front+.6,.3,.7,.3);
+        }
       }else{ // the chainsaw-carving yard: bears of every size, a shed, a sign
         put(G.box,0x8a6040,13,1.9,14,8,3.2,6);put(G.gable,0x4f6236,13,3.5,14,8.8,1.8,6.8);
         put(G.box,0x7a5e44,S/2,3,S-5,.25,2.6,.25);put(G.box,0xe8dcc0,S/2,4.3,S-5,4,1.3,.2);put(G.box,0xa8322d,S/2,4.3,S-4.88,3.4,.4,.05);
@@ -1630,6 +1679,11 @@ function buildTerrain(j){
       m.position.set(x,6,z);m.rotation.y=east?0:Math.PI;grp.add(m);
       for(const s of[-1,1])b.add(G.box,0x8f8f96,x+s*2.6,3.2,z-(east?.1:-.1),.2,6.4,.2);
     };
+    if(al){const w1=townOfRow(j-2),w2=townOfRow(j+2),welcome=(t,face)=>{ // the High Sierra: a carved wooden sign at each end of the village, its name and elevation
+      const z=zm,x=roadX(z)+17,y=inlandY(x,z),m=new THREE.Mesh(new THREE.PlaneGeometry(6,3),boardTex(townName(t.k).toUpperCase(),'ELEV '+regionOf(t.k).elev[0].toLocaleString('en-US')+' FT','#5a3a28','#f2e6c8'));
+      m.position.set(x,y+3.4,z+face*.2);m.rotation.y=face>0?0:Math.PI;grp.add(m);b.add(G.box,0x4a3020,x,y+3.4,z,6.4,3.4,.3);b.add(G.gable,0x3a3f46,x,y+5.1,z,.9,.7,7.2,Math.PI/2);
+      for(const o of[-3.3,3.3])b.add(G.cyl,0x6b4630,x+o,y+2.6,z,.22,5.2,.22)};
+      if(w1&&j-2===w1.a+w1.TL)welcome(w1,1);if(w2&&j+2===w2.a)welcome(w2,-1)}
     if(t1&&j-12===t1.a+t1.TL)sign(t1,true); // northbound driver, town ahead to the north
     if(t2&&j+12===t2.a)sign(t2,false);      // southbound driver, town ahead to the south
   }
@@ -2245,6 +2299,8 @@ function farCell(b,i,j,d){
   const rnd=rng(Math.floor(hash(i,j,77)*4294967296)),ix=i*B,jz=j*B,x0=ix+HW,z0=jz+HW,cx=x0+S/2,cz=z0+S/2,A=0x4b4851;
   if(d==='edge'){if(legExists(i,j,2))b.add(G.box,A,ix,0,jz+B/2,W,.04,B);if(legExists(i,j,1))b.add(G.box,A,ix+B/2,0,jz,B,.04,W);return}
   const rw=isRW(regionOf(Math.floor(j/PER))),fr=isAlp(regionOf(Math.floor(j/PER)))?farPine:farRedwood; // the Sierra's pines
+  const sp=fr===farPine?alpSpot(i,j):null;if(sp){b.add(G.box,A,ix+B/2,0,jz+B/2,B+W,.04,B+W);b.add(G.box,0xcdc3b3,cx,.15,cz,S,.3,S); // the rink, the sledding hill
+    if(sp==='rink')b.add(G.box,0xc4dce8,cx,.4,cz-2,30,.1,22);else b.add(G.sph,0xeef2f6,cx+7,.3,cz,19,7.5,17);return}
   if(d==='forestedge'){const xe=ix+B-HW;b.add(G.box,0x4b3f2b,(ix+xe)/2,.12,jz+B/2,xe-ix,.24,B);for(let k=0;k<3;k++)fr(b,ix+6+rnd()*(xe-ix-12),0,jz+6+rnd()*(B-12),44+rnd()*14,rnd);return}
   if(d==='beach'&&rw){const xe=ix+B-HW;b.add(G.box,0xcdbb98,(ix+xe)/2,.15,jz+B/2,xe-ix,.3,B);for(let z=jz+8;z<jz+B;z+=17)fr(b,xe-2,0,z,14+rnd()*8,rnd);
     const tw=townOfRow(j);if(tw&&j===tw.a+Math.floor(tw.TL/2)&&hash(tw.k,9,3)<.65)b.add(G.box,0x8a7458,ix-55,1.15,jz+B/2,110,.5,9); // the wharf from afar
@@ -2276,6 +2332,7 @@ function farCell(b,i,j,d){
     if(rnd()<.7)fr(b,x0+2,.3,z0+rnd()*S,16+rnd()*7,rnd)}
   else if(d==='woods'){for(let k=0;k<4;k++)fr(b,x0+6+rnd()*(S-12),.3,z0+6+rnd()*(S-12),20+rnd()*10,rnd)}
   else if(d==='camp'){for(let k=0;k<3;k++)b.add(G.gable,pick([0xe07a2a,0x3f8a5a,0x3a6aa8],rnd),x0+8+rnd()*(S-16),.3,z0+8+rnd()*(S-16),2.8,1.9,3.4);b.add(G.box,0xf2efe6,x0+32,2.1,z0+32,3,3.2,9);for(let k=0;k<3;k++)fr(b,x0+3+rnd()*(S-6),.3,z0+3+rnd()*(S-6),15+rnd()*7,rnd)}
+  else if(d==='mill'&&fr===farPine){b.add(G.box,0x2f5d8a,x0+S-5,1.9,z0+21,2.6,2.7,11)} // the ski area's lot
   else if(d==='mill'){b.add(G.box,0x8a5a42,x0+12,4.3,cz,13,8,30);b.add(G.gable,0x7a7f84,x0+12,8.3,cz,14,3.6,31);const tw=townOfRow(j);if(tw&&j===tw.a+1)b.add(G.cone,0x7b4a32,x0+32,10,z0+12,6,18.2,6)}
   else if(d==='lodge'){b.add(G.box,0x8a6a4a,cx,2.2,cz,30,3.8,9);b.add(G.gable,0x4f6236,cx,4.1,cz,10,2,31,Math.PI/2)}
   else if(d==='cabins'){for(const [u,v] of[[11,11],[33,11],[11,33],[33,33]]){if(rnd()<.12)continue;b.add(G.box,pick([0x7a5236,0x6b4630,0x8a6040],rnd),x0+u,2,z0+v,8,3.6,7);b.add(G.gable,fr===farPine?0x3a3f46:0x4f6236,x0+u,3.8,z0+v,8.8,2.6,7.8)}}
@@ -4072,6 +4129,7 @@ function loop(now){
   updateRegion(cardShot?0:dt);updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();if(frame%30===0)pierCheck();
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
+  for(const w of turners){if(!w.parent||!w.parent.parent)turners.delete(w);else w.rotation.y+=dt*w.userData.v}
   followSun(car.x,car.z);detailU.uOrigin.value.set(Math.floor(car.x/512)*512,0,Math.floor(car.z/512)*512);
   waveTex.offset.set(car.x/100+clock*.012,-car.z/100+clock*.007);
   if(!hudEl.hidden){const sg=signal.on?signal.side:'';if(sg!==lastSig){lastSig=sg;sigLEl.classList.toggle('on',sg==='L');sigREl.classList.toggle('on',sg==='R')}
