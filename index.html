@@ -405,7 +405,7 @@ const REGIONS={
     quiet:['mountain','MOUNTAINS'],tagline:'Chains on, cocoa hot, take it slow.',pc:['#eef4ff','#f2a7b8','#6a6fb8'],
     look:{fogNear:[110,70],fogFar:[3600,1100],hemi:[0xd6e4ff,0x6a6878,.75],sun:[0xffc49a,.95],env:.5,ocean:0x1d4f6e,cloud:0xf2f4fa,wisp:.35,sunK:.8,snow:1,lake:150,wall:28,peaks:.7},
     sky:{zen:'#3a4f7a',midA:'#8a93b8',midS:'#e7a3a8',horA:'#c9cfdc',horS:'#f6c9a0',glow:'#ffd2a8',ground:'#5a5f6e'},
-    tc:{asph:0x3e3d44,shoulder:0xb9bcc4,sand:0xa9a291,wet:0x7d776a,scrub:0x7d806e,grass:0x6d7559,rock:0x8f8d88,rockD:0x5f5d5a,hill:0x55644a,hill2:0x46553f,duff:0x5b4e3e,moss:0x56624a,granite:0x8f8b84},
+    tc:{asph:0x3e3d44,shoulder:0xb9bcc4,sand:0xa9a291,wet:0x7d776a,scrub:0x7d806e,grass:0x6d7559,rock:0x8f8d88,rockD:0x5f5d5a,hill:0x55644a,hill2:0x46553f,duff:0x5b4e3e,moss:0x56624a,granite:0x6b675f},
     towns:['Snowberry','Silver Fir','Alpenglow','Whitebark','Powder Ridge','Ember Lake','Hearthstone','Granite Hollow','Juniper Flat','Bear Paw','Cold Spring Crossing','Kettle Lake'],
     ns:['Sierra Hwy','Chairlift Rd','Gondola Way','Snowshoe Ln','Lodgepole Ave','Jeffrey Pine St','Aspen Dr','Mule Deer Rd','Boulder St','Cabin Ridge Rd','Sled Hill Ln','Summit Blvd','Ice House Rd','Trailhead Dr','Timberline Dr','Glacier Way'],
     ew:['Lakeshore Blvd','Main St','Village Way','Dock St','Ski Run Blvd','Firelight Ln','Lantern St','Woodsmoke Dr','Snowmelt Ave','Hearth St','Cocoa St','Mitten Ln','Pinecone Ave','Marina Way'],
@@ -963,7 +963,13 @@ const ftAtZ=z=>{const t=townOfRow(Math.floor(z/B));return t&&forestTown(t.k)?1:0
 function groveAt(z){const r=rwW(z);if(r<=0)return 0;const g=gapAt(z);if(!g)return 0;
   const e0=forestTown(g.k)?1:ss(0,.1,g.u),e1=forestTown(g.k+1)?1:ss(1,.9,g.u); // next to a forest town the trees run right up to it
   const near=Math.max(forestTown(g.k)?ss(.12,0,g.u):0,forestTown(g.k+1)?ss(.88,1,g.u):0);
-  return r*e0*e1*Math.max(near,ss(.02,.18,.5+.5*Math.sin(z/450+g.k*2.3-2)))} // about 80% of the open road; the coast comes in short reveals
+  return r*e0*e1*Math.max(near,ss(.02,.18,.5+.5*Math.sin(z/450+g.k*2.3-2)))*(1-ss(.3,.62,hiAt(z)))} // about 80% of the open road; the coast comes in short reveals (in the Sierra, none above the treeline)
+// the High Sierra's climb: how high up the pass at z (0 in the villages, 1 at the summit halfway between them), and the treeline:
+// forest on the lower slopes, bare rock and snow near the top. Rock cuts: two stretches per pass where the road is blasted into the mountain
+function hiAt(z){const g=gapAt(z);if(!g)return 0;const a=regW(z,isAlp);return a&&a*Math.sin(Math.PI*g.u)**2}
+const treeAt=z=>1-ss(.3,.62,hiAt(z));
+function rockCutZ(k,q){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2;return(a+L*(q?.62+.12*hash(k,2,61):.24+.12*hash(k,1,61)))*B}
+function rockCutAt(z){const g=gapAt(z);if(!g||!alpAt(z))return 0;return Math.max(ss(80,55,Math.abs(z-rockCutZ(g.k,0))),ss(80,55,Math.abs(z-rockCutZ(g.k,1))))}
 // forest variety up north. Second growth: younger, denser, brighter stands (0..1)
 function secondGrowth(z){const g=gapAt(z);if(!g)return 0;return ss(.35,.65,.5+.5*Math.sin(z/620+g.k*1.9+1.3))}
 // meadows: one or two clearings per open stretch, where the elk graze
@@ -1435,17 +1441,18 @@ function inlandY(x,z){
   const N=.7+.3*Math.sin(x/170+z/230)+.2*Math.sin(x/61-z/97);
   base*=1+(N-1)*ss(20,60,dx);
   const m=Math.max(hillMul(z),ss(XE,XE+300,x));
-  const wl=lookAt(z,'wall'),g=wl&&gapAt(z);if(g)base+=wl*(.4+.6*Math.sin(Math.PI*g.u)**2)*ss(13,48,dx)*N; // the High Sierra: granite walls right above the road, highest at the summit
+  const wl=lookAt(z,'wall'),g=wl&&gapAt(z);if(g){const h=Math.sin(Math.PI*g.u)**2; // the High Sierra: granite walls right above the road, a steep face near the summit, the rock cuts
+    base+=wl*((.4+.6*h)*ss(13,48,dx)*N+1.2*h*ss(12,38,dx)+h*ss(12,26,dx)*(.13*Math.sin(z/17+dx/6)+.09*Math.sin(z/37-dx/13)))+wl*.36*rockCutAt(z)*ss(11,13.5,dx)*(1+.2*Math.sin(z/5.3))} // ledges and gullies, so snow sits on the ledges and the rock shows between
   const y=base*m-.05*(1-m)+mtnY(x,z); // plus the coastal mountains further inland
   const cd=creekAt(z);if(cd<28){const k=ss(28,12,cd)*ss(9.5,13,dx)*ss(140,110,dx);if(k>0&&y>-2)return y+(-2-y)*k} // a creek's channel
   return y;
 }
 const inlandCol=(x,z,y)=>{const T=tcAt(z);
-  if(T.granite&&y>5)return T.granite; // the Sierra's walls and slopes: granite (the snow settles on the flatter parts)
+  if(T.granite&&(y>5||y>1.2&&rockCutAt(z)>.3))return rockCutAt(z)>.3&&y<16?T.granite:[0xd9dee6,T.granite,0xd9dee6,0x57534d,0xd9dee6][((Math.floor(y/7+Math.sin(z/43)*.8)%5)+5)%5]; // the Sierra's walls and slopes: mostly snow-plastered, with bands of granite; the rock cuts bare (the snow settles on the flatter parts)
   if(T.duff&&y<40&&meadowAt(z)>.45)return T.grass; // a meadow
   if(T.duff&&y<40&&(groveAt(z)>.4||ftAtZ(z)))return T.duff; // forest floor under the redwoods (the ferns and sorrel give it its patches)
   return y<1?T.scrub:y<8?((Math.floor(x/37+z/53)&1)?T.scrub:T.grass):y<30?T.hill:T.hill2};
-const NEAR=[13,24,45,80,140],FAR=[150,260,400,XE,XE+30,XE+80,XE+160,XE+300,XE+500,XE+700];
+const NEAR=[13,24,45,80,140],NEAR_AL=[11,12.2,13.5,16,19,24,30,37,45,60,80,140],FAR=[150,260,400,XE,XE+30,XE+80,XE+160,XE+300,XE+500,XE+700];
 function waterDx(z){const pr=westProfile(z);for(let k=0;k+1<pr.length;k++){const [d0,y0]=pr[k],[d1,y1]=pr[k+1];if(y0<=SEA&&y1>SEA)return d0+(SEA-y0)/(y1-y0)*(d1-d0)}return-60} // where the sea meets the shore, from the road
 const shoreX=z=>townOfRow(Math.floor(z/B))?XMIN*B-B-19.3:roadX(z)+waterDx(z);
 // the High Sierra climbs on a level road (test): the land to the west falls away to the lake, deepest at the summit halfway
@@ -1459,7 +1466,7 @@ function westProfile(z){ // [dx,y,color] from far offshore to the shoulder
   if(gv>0){const GY=[-30,-8,1.4,2.3,2.5,1.5,.5,0],GC=[T.rockD,T.rockD,T.moss,T.duff,T.duff,T.duff,T.duff,T.shoulder];pr.forEach((p,k)=>{p[1]+=(GY[k]-p[1])*gv;if(gv>.5)p[2]=GC[k]})}
   const cd=creekAt(z);if(cd<28){const k=ss(28,12,cd);pr.forEach(p=>{if(p[0]<-9.6&&p[0]>-80&&p[1]>-2){const w=k*ss(-80,-60,p[0])*ss(-9.5,-12,p[0]);p[1]+=(-2-p[1])*w}})} // a creek's channel (after the forest floor, so it isn't smoothed away)
   const dl=lookAt(z,'lake');if(dl>0){const dr=dropAt(z),k=1+3*Math.min(1,dl/150); // the mountainside, stretched out wide enough to see it fall away; its foot always below the lowest lake
-    pr.forEach(p=>{p[1]-=dr*ss(-12,-92,p[0]);if(p[0]<-12)p[0]=-12+(p[0]+12)*k});pr[0][1]=Math.min(pr[0][1],SEA-dl-12)}
+    pr.forEach(p=>{const t=clamp((-12-p[0])/80,0,1);p[1]-=dr*(1-(1-t)**3);if(p[0]<-12)p[0]=-12+(p[0]+12)*k});pr[0][1]=Math.min(pr[0][1],SEA-dl-12)} // steepest right behind the guardrail
   return pr;
 }
 function signTex(top,bottom){
@@ -1477,7 +1484,7 @@ function buildTerrain(j){
     if(!lot){
       for(const [dx,y,col] of westProfile(z))P(dx,y,col,true);
       P(-8,0,TC.asph,true);P(8,0,TC.asph,true);P(9.5,0,TC.shoulder,true);
-      for(const dx of NEAR){const x=rc+dx*nx,zz=z+dx*nz,y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])}
+      for(const dx of al?NEAR_AL:NEAR){const x=rc+dx*nx,zz=z+dx*nz,y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])}
       for(const x of FAR){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     }else for(const x of FAR.slice(3)){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     rows.push({z,rc,nx,nz,pts});
@@ -1507,7 +1514,7 @@ function buildTerrain(j){
     }
     // scenery
     const zm=z0+B/2,c=coastType(zm),rc=roadX(zm),hm=hillMul(zm);
-    if(hm>.3){ // telephone poles on the inland shoulder, wires sagging pole to pole along the highway
+    if(hm>.3&&!(al&&hiAt(zm)>.3)){ // telephone poles on the inland shoulder, wires sagging pole to pole along the highway (not up the Sierra's steep face)
       const pole=z=>{const x=roadX(z)+12.5;return[x,inlandY(x,z),z]};
       for(const zo of[5,35]){const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
         if(hillMul(z0+zo+30)>.3)for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
@@ -1565,8 +1572,8 @@ function redwoodScenery(b,gb,grp,j,rnd){
   const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
   const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32); // keep the creek, the meadow and the big tree's foot open
-  const giant=(dx,z,s)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),k=rnd();if(al){b.add(PINES()[k<.4?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
-  const young=(dx,z)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),s=.8+rnd()*.5;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
+  const giant=(dx,z,s)=>{if(clear(dx,z))return;const [x,y]=at(dx,z),k=rnd();if(al){if(rnd()>treeAt(z))return;b.add(PINES()[k<.4?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
+  const young=(dx,z)=>{if(clear(dx,z))return;if(al&&rnd()>treeAt(z))return;const [x,y]=at(dx,z),s=.8+rnd()*.5;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
   if(gv>.12){
     // the giants: a couple right at the road's edge, more further in, on both sides where the forest reaches the bluff
     const n=Math.round((2+5*gv)*(1-.55*sg)); // fewer giants in second growth
@@ -1588,6 +1595,16 @@ function redwoodScenery(b,gb,grp,j,rnd){
       b.add(G.cyl,0x5a3a2a,x,y+rr*.7,z,rr,L,rr,ry,Math.PI/2);if(!al)b.add(G.box,0x5f7a3a,x,y+rr*1.55,z,rr*1.1,.12,L*.9,ry)}
     if(rnd()<.45){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(14+rnd()*30),z0+rnd()*B),rr=1.4+rnd()*1.2;b.add(G.cyl,0x6b4330,x,y+.6,z,rr,1.6,rr);b.add(G.cyl,0xb08a62,x,y+1.42,z,rr*.92,.05,rr*.92)}
     if(rnd()<.7*gv){const side=rnd()<.5?-1:1,[x,y,z]=at(side*(18+rnd()*40),z0+rnd()*B);beams.push([x,y,z,3+rnd()*5,60+rnd()*30])} // off the road, so the car never drives through one
+  }
+  if(al){ // above the treeline: granite boulders scattered over the snow on both slopes
+    const hi=hiAt(zm);for(let k=0;k<Math.round(8*ss(.25,.7,hi));k++){const side=rnd()<.55?1:-1,[x,y,z]=at(side*(14+rnd()*(side>0?70:40)),z0+rnd()*B),s=1+rnd()*3.5;b.add(G.ball,pick(GRANITE,rnd),x,y+s*.1,z,s*1.3,s*.75,s,rnd()*6)}
+    for(let k=0;k<Math.round(14*ss(.2,.6,hi));k++){const [x,y,z]=at(14+rnd()*34,z0+rnd()*B),s=3+rnd()*5; // dark rock outcrops breaking through the steep face; snow settles on their tops
+      b.add(G.ball,pick([0x5f5b55,0x6a665f,0x55524c],rnd),x,y-s*.25,z,s*(1+rnd()*.6),s*(.6+rnd()*.5),s*(.9+rnd()*.6),rnd()*6,(rnd()-.5)*.6,(rnd()-.5)*.6)}
+    if(rockCutAt(zm)>0){ // a rock cut: icicles hanging off the blasted face; in the first cut of each pass, a snow shed roofed over the road
+      for(let k=0;k<22;k++){const z=z0+rnd()*B,cut=rockCutAt(z);if(cut<.6)continue;const x=roadX(z)+11.6+rnd()*1.2,y=inlandY(x,z)-.2-rnd()*2,L=.5+rnd()*1.4;b.add(G.cone,pick([0xdbe8f2,0xc9dcea,0xeef5fa],rnd),x,y-L/2,z,.09+rnd()*.07,L,.09+rnd()*.07,0,Math.PI)}
+      const g=gapAt(zm),sz=g&&rockCutZ(g.k,0);if(sz!=null&&Math.abs(zm-sz)<=B*1.5)for(let z=z0;z<z0+B;z+=6){if(Math.abs(z+3-sz)>55)continue;
+        const zc=z+3,o1=(off(zc+1)-off(zc-1))/2,ry=Math.atan2(o1,1),rc=roadX(zc);b.add(G.box,0xa8a49b,rc+1.3,6.6,zc,23.4,.7,6.05,ry);b.add(G.box,0x8f8b84,rc-10.4,3.3,zc,.6,6.6,.6,ry);b.add(G.box,0x8f8b84,rc-10.4,6.05,zc,.8,.5,6.05,ry)}
+    }
   }
   if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
     const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1);
@@ -1617,11 +1634,11 @@ function redwoodScenery(b,gb,grp,j,rnd){
       if(al)for(let k=0;k<4;k++){const [x,y,z]=at(14+rnd()*80,z0+rnd()*B),s=1+rnd()*3;b.add(G.ball,pick(GRANITE,rnd),x,y+s*.2,z,s*1.3,s*.8,s,rnd()*6)}
       else for(let k=0;k<3;k++){const zc=z0+rnd()*B,xc=roadX(zc)+15+rnd()*45,fl=rnd()<.6?[0x7b62c9,0x8a70d6]:[0xe8c33c,0xf0d050];for(let q=0;q<9;q++){const x=xc+(rnd()-.5)*6,z=zc+(rnd()-.5)*6,y=inlandY(x,z);b.add(BLOB,0x56663a,x,y+.25,z,.4,.3,.4);b.add(G.cone,pick(fl,rnd),x,y+.62,z,.11,.5,.11)}} // lupine: a leafy clump under each flower spike
     }
-    if(c>.35&&gv<.3){ // bluff tops: scrub, and now and then a cypress leaning away from the sea wind
+    if(c>.35&&gv<.3&&!al){ // bluff tops: scrub, and now and then a cypress leaning away from the sea wind
       for(let k=0;k<4;k++){const [x,y,z]=at(-12-rnd()*8,z0+rnd()*B);b.add(BLOB,pick([0x5f6e3c,0x6b7a44],rnd),x,y+.3,z,1.1+rnd(),.6,1.1+rnd(),rnd()*6)}
       if(!al&&rnd()<.3){const [x,y,z]=at(-14-rnd()*10,z0+rnd()*B);b.add(G.trunk,0x5a4636,x+.9,y+2,z,.3,4.2,.3,0,0,-.45);b.add(BLOB,0x34502f,x+2.6,y+4.3,z,3.2,1.3,2.2,.2)}
     }
-    if(c<.35){ // beaches: driftwood, a walker in a jacket, a bonfire now and then, surfers in wetsuits
+    if(c<.35&&!(al&&dropAt(zm)>1)){ // beaches (a lake shore in the Sierra, not up on the pass): driftwood, a walker in a jacket, a bonfire now and then, surfers in wetsuits
       const wx=roadX(zm)+waterDx(zm);
       for(let k=0;k<5;k++){const z=z0+rnd()*B,x=roadX(z)-18-rnd()*22,rr=.16+rnd()*.12;b.add(G.cyl,pick([0xcfc6b8,0xb9ad9c,0xd9d2c4],rnd),x,.25+rr,z,rr,2+rnd()*5,rr,rnd()*6.28,Math.PI/2)}
       if(rnd()<.35)stander(b,roadX(zm)-30-rnd()*8,.25,zm,-Math.PI/2+(rnd()-.5),rnd,false);
