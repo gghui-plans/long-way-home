@@ -64,14 +64,14 @@ Last updated: 2026-10-27
 - **Feedback, decided 2026-10-27, building ("build" given the same day):** the user liked the road but said it "just looks like Redwood with snow" and wants to feel higher up in the mountains (reference photos: a guardrail with the drop right behind it and a sea of clouds below; a steep rock-and-snow face beside the road). To build, in this order:
   1. Above the treeline at the top: trees thin out as you climb, bare rock and snow near the summit, forest only on the lower slopes by the villages. **Built** (`hiAt`, `treeAt`), with 2, 4 and 11.
   2. The drop starts right at the guardrail.
-  3. A sea of clouds below at the summit with far peaks poking through; the lake shows lower down near the villages.
+  3. A sea of clouds below at the summit with far peaks poking through; the lake shows lower down near the villages. **Built** (`updateAlpine`, three cloud layers), with 8 and 10.
   4. A steep rock-and-snow face right beside the road on the uphill side, rock showing through.
   5. Tighter S-bends near the summit (true hairpins aren't possible) and switchbacks drawn on the slope below, with a few headlights crawling up.
   6. Elevation on the road sign ("CA-89 NORTH · 7,240 FT"), rising and falling with the climb.
   7. A summit pull-out: elevation sign, a couple of parked cars, people taking photos at the rail.
-  8. Clouds at road level near the top (drive through a wisp, come out above the cloud sea).
+  8. Clouds at road level near the top (drive through a wisp, come out above the cloud sea). **Built:** wisps drift across the road and every so often the haze closes right in.
   9. Wind up high: snow blowing off the ridges and across the road at the summit, wind noise rising as you climb.
-  10. A tiny village far below by the lake (rooftops and lights).
+  10. A tiny village far below by the lake (rooftops and lights). **Built:** one per pass on a point in the lake, a quarter of the way up; hidden once the cloud closes over the lake. The forest towns' woods no longer run 1.4 km out over the lake.
   11. Rock cuts: blasted rock walls where the road is carved in, with icicles, and a snow shed on one stretch. **Built:** two cuts per pass, the first roofed as a snow shed. The steep uphill face is snow-plastered with granite bands and dark rock outcrops; telephone poles stop above the treeline.
   - Not picked: a deeper blue sky at the top, birds circling below, radio crackle at the summit.
 - **Left in batch 2:** the villages' own buildings (A-frames, chalets, ski and rental shops, the ski hill with runs and lift towers, the rink, the sledding hill, the chain installer, gondola in place of the Ferris wheels, a boat dock and paddle-wheeler); lakeside villages instead of forest towns; pines thinning toward the summit; real lake shores at the villages; signs. Then batches 3 (life and weather), 5 (map and handoff) and 6 (audio and polish).

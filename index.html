@@ -1553,7 +1553,7 @@ function buildTerrain(j){
     if(t2&&j+12===t2.a)sign(t2,false);      // southbound driver, town ahead to the south
   }
   if(ftAtZ(z0+B/2)){ // a forest town carries on into the forest to the west, where down south there'd be beach and sea
-    b.add(G.box,TC.duff||0x4b3f2b,-800,.12,z0+B/2,1240,.24,B);
+    b.add(G.box,TC.duff||0x4b3f2b,al?-310:-800,.12,z0+B/2,al?260:1240,.24,B); // (in the Sierra only a strip of woods, then the lake)
     for(let k=0;k<5;k++){const s=.85+rnd()*.35;b.add(al?PINES()[1+Math.floor(rnd()*3)]:REDWOODS[Math.floor(rnd()*3)],null,-186-Math.pow(rnd(),1.5)*170,-.6,z0+rnd()*B,s,s,s,rnd()*6.28)}
     for(let k=0;k<3;k++)b.add(al?PINES()[Math.floor(rnd()*2)]:pick(FIRS,rnd),null,-190-rnd()*140,.2,z0+rnd()*B,1,1,1,rnd()*6.28);
     for(let k=0;k<10;k++){const s=1.3+rnd()*.8;b.add(pick(al?SHRUBS():FERNS,rnd),null,-183-rnd()*60,.24,z0+rnd()*B,s,s,s,rnd()*6.28)}
@@ -2088,7 +2088,7 @@ function buildFarChunk(c){
   for(let s=0;s<=NZ;s++){
     const z=z0+s*FARCH/NZ,rc=roadX(z),lot=lotRow(Math.floor(z/B)),pts=[];
     if(lakeC){const dl=lookAt(z,'lake'),pk=(300+220*Math.abs(Math.sin(z/1100))+150*Math.abs(Math.sin(z/430+1))+50*Math.sin(z/170))*Math.min(1,dl/150);pts.push([rc-2300,SEA-40+pk,TC.rock],[rc-1850,SEA-40+pk*.3,TC.rock],[rc-1450,SEA-dl-40,TC.rockD])} // the lake's far shore: peaks across the water, steep up top, its foot below the lowest lake (same point count all chunk); it rises through a handover
-    if(ftAtZ(z)){const D=TC.duff||TC.wet;for(const dx of[-1400,-900,-600,-400,-260,-180,-120,-60,-20,-9.5])pts.push([rc+dx,.15,D])} // a forest town: woods to the west, not sea (same point count as below)
+    if(ftAtZ(z)){const D=TC.duff||TC.wet;for(const dx of[-1400,-900,-600,-400,-260,-180,-120,-60,-20,-9.5])pts.push([rc+dx,lakeC&&dx<-400?SEA-lookAt(z,'lake')-30:.15,D])} // a forest town: woods to the west, not sea (same point count as below)
     else{const dl=lookAt(z,'lake');pts.push([rc-900,SEA-16-dl,TC.wet],[rc-260-dl*2,SEA-9-dl,TC.wet]);for(const [dx,y,cc] of westProfile(z))pts.push([rc+dx,y,cc])}
     pts.push([rc-8,0,TC.asph],[rc+8,0,TC.asph],[rc+9.5,0,TC.shoulder]);
     for(const dx of NEAR){const x=rc+dx,y=inlandY(x,z);pts.push([x,y,inlandCol(x,z,y)])}
@@ -3835,6 +3835,49 @@ $('mapSheet').addEventListener('click',e=>{if(e.target===$('mapSheet'))closeMap(
 $('mapCoast').addEventListener('click',()=>setMapMode('coast'));
 $('mapTown').addEventListener('click',()=>setMapMode('town'));
 
+// ---------- the High Sierra below you: a sea of cloud under the summit (the lake shows lower down), cloud drifting across the road near
+// the top (you drive through it now and then), and a village far below on the lake. Built on first use, so LA and the Redwood Coast
+// never make these meshes (each new mesh draws a random id)
+let ALP=null;
+function cloudCanvas(n,seed){ // soft white puffs on a clear canvas, wrapped at the edges so it tiles
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d'),r=rng(seed);
+  for(let k=0;k<n;k++){const px=r()*256,py=r()*256,rr=14+r()*44,a=.28+r()*.3;
+    for(const ox of[-256,0,256])for(const oy of[-256,0,256]){const g=x.createRadialGradient(px+ox,py+oy,0,px+ox,py+oy,rr);g.addColorStop(0,'rgba(255,255,255,'+a+')');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(px+ox-rr,py+oy-rr,rr*2,rr*2)}}
+  return c;
+}
+function initAlpine(){
+  const deck=[0,1,2].map(k=>{const t=sTex(cloudCanvas(70,6100+k));t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(7+k*5,7+k*5); // three layers: shadowed below, lit on top
+    const m=new THREE.Mesh(new THREE.PlaneGeometry(9000,9000),new THREE.MeshBasicMaterial({map:t,color:[0xbac2d2,0xe8e2ea,0xfff4ee][k],transparent:true,opacity:0,depthWrite:false}));
+    m.rotation.x=-Math.PI/2;m.renderOrder=1;m.frustumCulled=false;scene.add(m);return m});
+  const pc=document.createElement('canvas');pc.width=pc.height=128;{const x=pc.getContext('2d'),g=x.createRadialGradient(64,64,0,64,64,62);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.5,'rgba(255,255,255,.45)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,128,128)}
+  const puff=sTex(pc),r=rng(6300); // one soft puff, for the cloud drifting across the road
+  const wisps=[...Array(14)].map(()=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:puff,color:0xfdf6f4,transparent:true,opacity:0,depthWrite:false}));
+    sp.userData={dx:-90+r()*180,z:null,y:2+r()*16,w:50+r()*70,v:2+r()*3};sp.scale.set(sp.userData.w,sp.userData.w*.42,1);scene.add(sp);return sp});
+  // the village far below: a snowy point out in the lake, a dozen houses and a church, windows lit
+  const b=new Builder(),gb=new Builder(),vg=new THREE.Group();gb.gain=2.2;
+  for(let k=0;k<7;k++)b.add(G.cyl,0xd9dee6,-60+k*28+r()*20,-.6,-40+r()*80,70+r()*50,1.4,60+r()*50); // the point it sits on
+  for(let k=0;k<16;k++){const x=-120+r()*230,z=-90+r()*180,w=7+r()*6,h=4+r()*3,l=8+r()*7,ry=r()*.6;
+    b.add(G.box,[0x8a5a3a,0xb9a58a,0x6f4a35,0xc9bfae][Math.floor(r()*4)],x,h/2,z,w,h,l,ry);b.add(G.gable,0x4a3a34,x,h,z,w*1.05,h*.8,l*1.05,ry);
+    for(let q=0;q<2;q++)gb.add(G.box,0xffc070,x+(q?-1:1)*w*.25,h*.45,z+l*.51,1.4,1.2,.2,ry)}
+  b.add(G.box,0xe8e2d4,40,5,-30,8,10,12);b.add(G.cone,0x4a3a34,40,13,-36,2.2,7,2.2);b.add(G.box,0x6b5640,-160,.4,-60,60,.5,4); // the church, the dock
+  vg.add(b.mesh());vg.add(new THREE.Mesh(gb.geo(),MAT_GLOW));vg.visible=false;scene.add(vg);
+  ALP={deck,wisps,vg,vk:null};
+}
+function updateAlpine(dt){
+  if(!ALP){if(regW(car.z,isAlp)<=0)return;initAlpine()}
+  const hi=hiAt(car.z),dr=dropAt(car.z),top=ss(.45,.85,hi),near=ss(.6,.92,hi);
+  ALP.deck.forEach((m,k)=>{m.position.set(car.x,SEA-dr*.55+k*11,car.z);m.material.opacity=top*[.95,.8,.6][k];m.visible=top>0;
+    const t=m.material.map,s=9000/t.repeat.x;t.offset.set(car.x/s+clock*(.0015+k*.001),-car.z/s)});
+  const fwd=Math.cos(car.yaw)>=0?1:-1;
+  for(const sp of ALP.wisps){const u=sp.userData;u.dx+=u.v*dt;if(u.dx>110)u.dx-=220; // drifting across the road on the wind; recycled ahead once passed
+    if(u.z==null||(u.z-car.z)*fwd<-120)u.z=car.z+fwd*(u.z==null?-100+Math.random()*700:350+Math.random()*350);sp.position.set(roadX(u.z)+u.dx,u.y,u.z);
+    const d=sp.position.distanceTo(camera.position);sp.material.opacity=near*.6*ss(6,40,d)*ss(700,350,d);sp.visible=near>0}
+  // driving into cloud now and then near the top: the haze closes in, then you come out above the cloud sea
+  const g=gapAt(car.z),mist=g?near*Math.max(0,Math.sin(car.z/170+g.k*1.7))**8:0,q=settings.hq?0:1;
+  scene.fog.near=lookFog.near[q]+(12-lookFog.near[q])*mist*.85;scene.fog.far=lookFog.far[q]+(240-lookFog.far[q])*mist*.85;
+  if(g&&regW(car.z,isAlp)>.5){const k=g.k;if(ALP.vk!==k){ALP.vk=k;const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,z=(a+L*.27)*B;ALP.vg.position.set(roadX(z)-720,0,z)}
+    ALP.vg.position.y=SEA-dr+.4;ALP.vg.visible=top<.4}else ALP.vg.visible=false;
+}
 // ---------- camera, resize, loop
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
 let baseFov=56;
@@ -3875,7 +3918,7 @@ function loop(now){
   camLook.lerp(_t.set(fx*7,1.6,fz*7),1-Math.exp(-dt*5));
   camera.position.set(car.x+camPos.x,camPos.y,car.z+camPos.z);camera.lookAt(car.x+camLook.x,camLook.y,car.z+camLook.z);
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
-  ocean.position.set(car.x,SEA-dropAt(car.z),car.z);
+  ocean.position.set(car.x,SEA-dropAt(car.z),car.z);updateAlpine(dt);
   updateAmbience();
   updateRegion(cardShot?0:dt);updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();if(frame%30===0)pierCheck();
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
