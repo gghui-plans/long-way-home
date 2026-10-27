@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-26
+Last updated: 2026-10-27
 
 ## Active
 
@@ -45,6 +45,7 @@ Last updated: 2026-10-26
 - **Worked on:** the plan is in WINTER-PLAN.md, and 16 Fireside jazz songs are written in REGION-SONGS.md (not generated).
 - **Decided:** fireside jazz, no Christmas on the station (decorations only, switched on by date). Suno downloads aren't capped (2026-10-18).
 - **Behind schedule:** WINTER-PLAN's timeline had code batch 1 in the week of Oct 19–25, and it hasn't started. Lyrics are due Nov 2 and songs Nov 3.
+- **Now (2026-10-27):** batch 1 runs overnight in its own session, on a `winter` branch in a worktree. Its preview is "winter" (port 8767), so it doesn't clash with "local" on main.
 - **Left:** everything in WINTER-PLAN.md. The open items are the station and host names, the voices, the top up or down in snow, and the snowfall pattern.
 
 ## Waiting for "build"

@@ -33,5 +33,5 @@ A relaxing mobile browser driving game: a convertible drives itself along the Ca
 ## Commands
 
 - Build the site: `powershell -ExecutionPolicy Bypass -File build.ps1 -SiteUrl https://longwayhome.itsgordonhui.com/`, then commit and push.
-- Local preview: `.claude/launch.json` "local" (production/serve.js on port 8765; the built site is at `/docs/`). "phone" serves on 8766 to the wifi.
+- Local preview: `.claude/launch.json` "local" (production/serve.js on port 8765; the built site is at `/docs/`). "phone" serves on 8766 to the wifi, and "winter" on 8767 (for a worktree, so it doesn't clash with "local"). All three serve whichever checkout they run in.
 - Every script in `production/` explains its usage in its first lines. WORKFLOW.md says which to run when.
