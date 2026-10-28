@@ -2226,7 +2226,7 @@ function updateTraffic(dt){
 // hides the moment its detailed block is built (a small map of built cells, read in the vertex shader).
 const FARCH=8*B,FAR_N=8; // chunks of 8 rows; how many each way
 const farCells=new THREE.DataTexture(new Uint8Array(16*64),16,64,THREE.RedFormat);farCells.needsUpdate=true;
-const farU={uCells:{value:farCells},uRow:{value:0}};
+const farU={uCells:{value:farCells},uRow:{value:0},uGlow:{value:1}}; // uGlow: how pink the alpenglow on the far snow (the High Sierra's weather dims it while it snows)
 function setFarCell(i,j,on){const k=((j%64+64)%64)*16+i+4;if(k<0||i+4>15)return;farCells.image.data[k]=on?255:0;farCells.needsUpdate=true}
 const MAT_FAR=new THREE.MeshStandardMaterial({vertexColors:true,roughness:.95,metalness:0,polygonOffset:true,polygonOffsetFactor:2,polygonOffsetUnits:4});
 MAT_FAR.onBeforeCompile=sh=>{
@@ -2239,14 +2239,14 @@ MAT_FAR.onBeforeCompile=sh=>{
       if(hideV)gl_Position=vec4(0.0,0.0,-2.0,1.0);
       vSWPos=(modelMatrix*vec4(transformed,1.0)).xyz;vSWNrm=normalize(mat3(modelMatrix)*objectNormal);`);
   sh.fragmentShader=sh.fragmentShader.replace('#include <common>',`#include <common>
-varying vec3 vSWPos;varying vec3 vSWNrm;
+varying vec3 vSWPos;varying vec3 vSWNrm;uniform float uGlow;
 ${SNOW_GLSL}`)
     .replace('#include <color_fragment>',`#include <color_fragment>
       float sn=snowAt(vSWPos.z);
       if(sn>0.0){vec3 sc=vColor.rgb;float sMx=max(sc.r,max(sc.g,sc.b)),sSat=(sMx-min(sc.r,min(sc.g,sc.b)))/(sMx+1e-3),sLum=dot(sc,vec3(.2126,.7152,.0722));
         float sN=fract(sin(dot(floor(vSWPos.xz/23.0),vec2(12.9898,78.233)))*43758.5453); // patchy, in 23 m cells
         float sCov=smoothstep(.55,.85,normalize(vSWNrm).y)*sn*(.75+.25*sN)*(1.0-(1.0-smoothstep(.10,.16,sLum))*(1.0-smoothstep(.30,.45,sSat)));
-        diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(.82,.87,.95),vec3(.98,.8,.85),smoothstep(350.0,900.0,vSWPos.y)),sCov);} // pink alpenglow on the high snow`);
+        diffuseColor.rgb=mix(diffuseColor.rgb,mix(vec3(.82,.87,.95),vec3(.98,.8,.85),smoothstep(350.0,900.0,vSWPos.y)*uGlow),sCov);} // pink alpenglow on the high snow`);
 };
 // coastal mountains: they rise 0.8-1.9 km inland to ridges and peaks of 300-900 m
 function mtnY(x,z){
@@ -4085,7 +4085,7 @@ $('mapTown').addEventListener('click',()=>setMapMode('town'));
 // ---------- the High Sierra below you: a sea of cloud under the summit (the lake shows lower down), cloud drifting across the road near
 // the top (you drive through it now and then), and a village far below on the lake. Built on first use, so LA and the Redwood Coast
 // never make these meshes (each new mesh draws a random id)
-let ALP=null;
+let ALP=null;const SKY_WX=['horA','horS','midA','midS','glow']; // the sky colours a snowfall greys over
 function softTex(n,stops){ // a soft round image, [[radius 0..1,[r,g,b,a]],...], written straight into pixels: some phone browsers sprinkle
   // random noise into anything drawn on a canvas (against fingerprinting), which showed as rainbow static in the faint edges
   const d=new Uint8Array(n*n*4);
@@ -4133,11 +4133,33 @@ function initAlpine(){
   for(const x of[-.5,.5]){ch.add(G.sph,0xffffff,x,-2.2,0,.26,.38,.22);ch.add(G.sph,0xf1c9a5,x,-1.78,0,.13,.15,.13);ch.add(G.box,0x2b2b30,x,-3.2,.5,.1,.06,1.6)}
   const sk=new Builder();sk.add(G.sph,0xffffff,0,1.15,0,.24,.42,.22);sk.add(G.sph,0xf1c9a5,0,1.7,0,.13,.15,.13);sk.add(G.box,0x2b2b30,0,.5,0,.3,.8,.2);for(const x of[-.13,.13])sk.add(G.box,0x2b2b30,x,.04,0,.08,.04,1.7);
   const ski={cab:inst(cb2,60,[0xc8322d,0xe8505b,0x2f5d8a,0xf2a541]),chair:inst(ch,70,PUFFY),sk:inst(sk,30,PUFFY),o:new THREE.Object3D()};
-  ALP={banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski};
+  // falling snow: flakes in a box that wraps round the camera, worked out on the graphics card from each flake's seed and how far the
+  // wind and the fall have carried them (one draw call; how many show follows how hard it snows)
+  const NF=5000,fp=new Float32Array(NF*3);for(let i=0;i<NF*3;i++)fp[i]=r();const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.BufferAttribute(fp,3));fg.setDrawRange(0,0);
+  const fallU={uOff:{value:new THREE.Vector3()},uCam:{value:new THREE.Vector3()},uTime:{value:0},uPx:smokeU.uPx,uA:{value:0}};
+  const fall=new THREE.Points(fg,new THREE.ShaderMaterial({uniforms:fallU,transparent:true,depthWrite:false,
+    vertexShader:`uniform vec3 uOff,uCam;uniform float uTime,uPx,uA;varying float vA;
+void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.7+s.z*37.3);
+  vec3 p=s*bx+vec3(uOff.x*(.8+.4*s.y)+.45*sin(uTime*.9+s.z*50.0),-uOff.y*sp,uOff.z+.45*sin(uTime*.7+s.x*60.0));
+  p=uCam+mod(p-uCam+bx*.5,bx)-bx*.5;
+  vec4 mv=viewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;float d=-mv.z;
+  gl_PointSize=min(.065*uPx/max(d,.5),uPx*.012);vA=uA*smoothstep(.6,2.2,d)*(1.0-smoothstep(13.0,18.0,length(p-uCam)));}`,
+    fragmentShader:`varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.9,.92,.96),vA*smoothstep(.5,.12,d));
+#include <tonemapping_fragment>
+#include <colorspace_fragment>
+}`}));fall.frustumCulled=false;fall.visible=false;scene.add(fall);
+  const wq=new URLSearchParams(location.search).get('wx'); // (testing only: ?wx=40 starts the weather 40 s into a snowfall)
+  ALP={banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
+    fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
+  for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
 }
 function updateAlpine(dt){
   if(!ALP){if(regW(car.z,isAlp)<=0)return;initAlpine()}
   const hi=hiAt(car.z),dr=dropAt(car.z),top=ss(.45,.85,hi),near=ss(.6,.92,hi);
+  // the weather on the game clock: about 3 minutes clear, then 2 of snow (easing in and out over 20 s, some spells heavier than others), then a sun
+  // break as it clears. ALP.wx: the spell itself (0..1); ALP.snow: how hard it's snowing where you are (heavier near the summit, none outside the Sierra)
+  const wt=clock+ALP.wx0,ph=wt%300,rw=regW(car.z,isAlp);ALP.wx=(.6+.4*hash(Math.floor(wt/300),3,97))*ss(0,20,ph)*ss(120,100,ph);
+  const sn=ALP.snow=ALP.wx*(.45*rw+.55*hi),brk=rw*ss(100,125,ph)*ss(175,135,ph);
   {const g=gapAt(car.z),m=ALP.banks;m.visible=top>0&&!!g;if(m.visible){if(ALP.bk!==g.k){ALP.bk=g.k;const zs=pulloutZ(g.k);m.position.x=roadX(zs);m.position.z=zs}
     m.position.y=SEA-dr+(dr*.62+40)*top-40;m.position.x+=dt*1.2}} // fixed over each summit (so they slide past as you drive), drifting slowly on the wind
   const fwd=Math.cos(car.yaw)>=0?1:-1;
@@ -4148,12 +4170,16 @@ function updateAlpine(dt){
   {const P=ALP.drift.geometry.attributes.position,a=P.array,cx=camera.position.x,cz=camera.position.z;ALP.drift.visible=windy>0;ALP.drift.material.opacity=windy*.85;
     if(windy>0){for(let i=0;i<a.length;i+=3){a[i]-=(14+(i%7))*dt;a[i+1]-=(.6+(i%5)*.3)*dt;if(a[i+1]<0)a[i+1]+=9;a[i+2]+=Math.sin(clock*1.3+i)*.8*dt;if(a[i]<-35)a[i]+=70}
       ALP.drift.position.set(cx,groundAt(cx,camera.position.z)-.2,cz);P.needsUpdate=true}}
+  {const F=ALP.fallU,on=sn>.002&&shedAt(car.z)<1;ALP.fall.visible=on;if(on){ // the flakes: carried west toward the drop on the wind (hard up high, with the blowing grains), falling about a metre and a half a second
+    F.uOff.value.x-=(.5+11*windy)*dt;F.uOff.value.y+=1.4*dt;F.uOff.value.z+=.3*dt;F.uCam.value.copy(camera.position);F.uTime.value=clock;
+    F.uA.value=.9*Math.min(1,sn*4)*(1-shedAt(car.z));ALP.fall.geometry.setDrawRange(0,Math.round(5000*Math.min(1,sn*1.6)))}}
   for(const p of ALP.plumes){const u=p.userData;if(u.z==null||(u.z-car.z)*fwd<-200)u.z=car.z+fwd*(u.z==null?Math.random()*600:400+Math.random()*300);
     const x=roadX(u.z)+u.dx,y=inlandY(x,u.z),w=60+30*Math.sin(clock*.4+u.ph);p.position.set(x-w*.35,y+4+4*Math.sin(clock*.7+u.ph),u.z);p.scale.set(w,w*.16,1);
     p.material.opacity=windy*ss(.35,.8,hiAt(u.z))*(.35+.25*Math.sin(clock*.9+u.ph));p.visible=windy>0}
   // driving into cloud now and then near the top: the haze closes in, then you come out above the cloud sea
   const g=gapAt(car.z),mist=g?near*Math.max(0,Math.sin(car.z/170+g.k*1.7))**8:0,q=settings.hq?0:1;
-  scene.fog.near=lookFog.near[q]+(12-lookFog.near[q])*mist*.85;scene.fog.far=lookFog.far[q]+(240-lookFog.far[q])*mist*.85;
+  const fn=lookFog.near[q]+(12-lookFog.near[q])*mist*.85,ff=lookFog.far[q]+(240-lookFog.far[q])*mist*.85,fk=ss(0,.9,sn); // and in a snowfall the haze closes in too (whichever is thicker)
+  scene.fog.near=fn+(Math.min(fn,28)-fn)*fk;scene.fog.far=ff+(Math.min(ff,460)-ff)*fk;
   const sw=g&&hi>.15&&regW(car.z,isAlp)>.5?switchbacks(g.k):null;
   for(const sp of ALP.cars){sp.visible=!!sw;if(!sw)continue;const u=sp.userData;u.t=(u.t+dt*.012)%1;const f=(1-u.t)*(sw.length-1),q=Math.floor(f),e=f-q,a=sw[q],c=sw[Math.min(q+1,sw.length-1)];
     sp.position.set(a[0]+(c[0]-a[0])*e,a[1]+(c[1]-a[1])*e+1,a[2]+(c[2]-a[2])*e)}
@@ -4173,8 +4199,11 @@ function updateAlpine(dt){
         o.position.set(x,hillY(x,z),z);o.rotation.set(0,Math.atan2(-1,zf(x-1)-z),0);o.updateMatrix();S.sk.setMatrixAt(q,o.matrix)}
       S.sk.instanceMatrix.needsUpdate=true}}
   // summit light: the sky a deeper blue overhead and the sun lower (longer shadows) as the camera rises. applyLook sets the sky fresh whenever the look changes, so take the base from there
-  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen)}
-  const lf=liftAt(car.z);SKYL.zen.copy(ALP.zen0).lerp(ALP.deep,lf*.7);sunTilt=1-.45*lf;sky.material.uniforms.sunDir.value.copy(SUN_VIS);sky.material.uniforms.sunDir.value.y*=sunTilt;
+  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value]}
+  // in a snowfall the sky greys over and the sun dims behind it (the haze takes the horizon's colour, so it greys too) and the alpenglow fades; the sun break brings them back
+  const gl=Math.min(1,sn*1.5);for(const k of SKY_WX)SKYL[k].copy(ALP.sk0[k]).lerp(ALP.grey,gl*.75); // (gl: the gloom, already well grey in a light village snowfall)
+  hemi.intensity=ALP.b0[0]*(1+.12*gl);sunLight.intensity=ALP.b0[1]*(1-.6*gl+.12*brk);skySunK.value=ALP.b0[2]*(1-.9*gl);farU.uGlow.value=1-.9*gl;
+  const lf=liftAt(car.z);SKYL.zen.copy(ALP.zen0).lerp(ALP.deep,lf*.7).lerp(ALP.grey2,gl*.6);sunTilt=1-.45*lf;sky.material.uniforms.sunDir.value.copy(SUN_VIS);sky.material.uniforms.sunDir.value.y*=sunTilt;
 }
 // ---------- camera, resize, loop
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
@@ -4224,9 +4253,9 @@ function loop(now){
   camLook.lerp(_t.set(fx*7-4*lift,1.6+1.2*lift,fz*7),1-Math.exp(-dt*5));
   camera.position.set(car.x+camPos.x,camPos.y,car.z+camPos.z);camera.lookAt(car.x+camLook.x,camLook.y,car.z+camLook.z);
   const fov=baseFov+clamp((car.v-14)*.3,0,6);if(Math.abs(camera.fov-fov)>.05){camera.fov+=(fov-camera.fov)*Math.min(1,dt*2);camera.updateProjectionMatrix()}
-  ocean.position.set(car.x,SEA-dropAt(car.z),car.z);updateAlpine(dt);
+  ocean.position.set(car.x,SEA-dropAt(car.z),car.z);
   updateAmbience();
-  updateRegion(cardShot?0:dt);updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();if(frame%30===0)pierCheck();
+  updateRegion(cardShot?0:dt);updateAlpine(dt);updateSkyline(car.x,car.z,car.d,clock);updateLife(cardShot?0:dt,clock);updateRays();focusTick(dt);if(frame%6===0)updateLyrics();if(frame%30===0)pierCheck();
   smokeU.uTime.value=clock;smokeU.uPx.value=renderer.domElement.height*.5/Math.tan(camera.fov*Math.PI/360);
   detailU.uTime.value=foamU.uTime.value=swellU.uSwell.value=clock;for(const w of spinners){if(!w.parent||!w.parent.parent)spinners.delete(w);else w.rotation.x+=dt*.09}
   for(const w of turners){if(!w.parent||!w.parent.parent)turners.delete(w);else w.rotation.y+=dt*w.userData.v}
