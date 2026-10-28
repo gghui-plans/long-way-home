@@ -2597,8 +2597,8 @@ const herd={g:new THREE.Group(),z:1e9,next:0,elk:[0,1,2,3,4,5].map(k=>{
 herd.elk.forEach(e=>herd.g.add(e.g));herd.g.visible=false;LIFE.add(herd.g);
 function placeHerd(t){ // a meadow ahead: up north, a clearing in the forest first, else the open coast's gentle slopes east of the road
   const fwd=Math.cos(car.yaw)>=0?1:-1,k0=Math.floor(car.z/B/PER);let z=null;herd.next=t+3;
-  for(let k=k0-1;k<=k0+1&&z==null;k++)for(let q=0;q<2;q++){const c=meadowZ(k,q);if(c!=null&&rwAt(c)&&(c-car.z)*fwd>200&&(c-car.z)*fwd<800){z=c;break}}
-  if(z==null){z=car.z+fwd*(220+Math.random()*260);if(!rwAt(z)||townOfRow(Math.floor(z/B))||groveAt(z)>.25||hillMul(z)<.6){herd.g.visible=false;return}}
+  for(let k=k0-1;k<=k0+1&&z==null;k++)for(let q=0;q<2;q++){const c=meadowZ(k,q);if(c!=null&&rwAt(c)&&!alpAt(c)&&(c-car.z)*fwd>200&&(c-car.z)*fwd<800){z=c;break}}
+  if(z==null){z=car.z+fwd*(220+Math.random()*260);if(!rwAt(z)||alpAt(z)||townOfRow(Math.floor(z/B))||groveAt(z)>.25||hillMul(z)<.6){herd.g.visible=false;return}}
   herd.z=z;const cx=roadX(z)+30+Math.random()*22;herd.g.visible=true;
   herd.elk.forEach((e,k)=>{const x=cx+(Math.random()-.5)*26,zz=z+(Math.random()-.5)*30;e.g.position.set(x,inlandY(x,zz)-.05,zz);e.g.rotation.y=Math.random()*6.28})
 }
@@ -2629,6 +2629,7 @@ function updateLife(dt,t){
   gulls.forEach((g,k)=>{const u=g.userData;
     if(!u.c||Math.hypot(u.c[0]-car.x,u.c[1]-car.z)>260){const z=car.z+Math.cos(car.yaw)*(40+Math.random()*180);u.c=[shoreX(z)+6+Math.random()*20,z];u.y=13+Math.random()*10;u.r=10+Math.random()*14;u.w=(.35+Math.random()*.3)*(Math.random()<.5?-1:1);u.ph=Math.random()*6}
     const a=u.ph+t*u.w;g.position.set(u.c[0]+Math.cos(a)*u.r,u.y+Math.sin(t*.7+k)*1.5,u.c[1]+Math.sin(a)*u.r);g.rotation.set(0,Math.atan2(-Math.sin(a)*u.w,Math.cos(a)*u.w),u.w>0?-.3:.3);
+    g.visible=!alpAt(u.c[1]); // (not in the High Sierra: ravens there)
     const f=Math.sin(t*1.3+k*2)>.3?Math.sin(t*14+k)*.6:.12;u.L.rotation.z=f;u.R.rotation.z=-f});
   // joggers and dog walkers on the dry sand
   for(const o of movers){
@@ -4225,9 +4226,22 @@ void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.
 #include <tonemapping_fragment>
 #include <colorspace_fragment>
 }`}));fall.frustumCulled=false;fall.visible=false;scene.add(fall);
+  // mule deer grazing low down near the villages (grey-brown winter coats, pale rumps), heads coming up as you pass; ravens wheeling over the drop near the summit
+  const db=new Builder(),C=0x7d6650,LG=0x5a4a3c;db.add(G.sph,C,0,.98,0,.25,.29,.62);db.add(G.sph,0xcbbba0,0,.84,.05,.2,.16,.48);db.add(G.sph,0xefe8dc,0,1.02,-.56,.19,.2,.1);db.add(G.sph,0x2b2420,0,1.1,-.64,.05,.08,.04); // barrel, belly, the pale rump, the black-tipped tail
+  for(const sx of[-1,1])for(const sz of[-1,1]){db.add(G.cyl,LG,sx*.13,.48,sz*.42,.045,.9,.045);db.add(G.box,0x2b2420,sx*.13,.04,sz*.42+.03,.06,.06,.09)}
+  const dh=new Builder(); // pivots at the shoulders
+  dh.add(G.cyl,C,0,.15,.17,.1,.42,.12,0,.75);dh.add(G.sph,C,0,.33,.4,.1,.11,.19,0,.5);dh.add(G.sph,0xe8e0d2,0,.2,.3,.07,.08,.07);dh.add(G.box,0x2b2420,0,.25,.56,.07,.07,.07);
+  for(const s of[-1,1])dh.add(G.sph,0x6a5442,s*.12,.46,.32,.035,.11,.06,0,0,s*.8); // the big mule-deer ears
+  const dbg=db.geo(),dhg=dh.geo(),deerG=new THREE.Group();deerG.visible=false;scene.add(deerG);
+  const deer=[...Array(6)].map((_,k)=>{const g=new THREE.Group(),neck=new THREE.Group(),bm=new THREE.Mesh(dbg,MAT_PED),hm=new THREE.Mesh(dhg,MAT_PED);bm.castShadow=hm.castShadow=true;
+    neck.position.set(0,1.12,.48);neck.add(hm);g.add(bm,neck);g.scale.setScalar(k===5?.75:.95+r()*.15);deerG.add(g);return{g,neck,a:0,graze:r()<.6,t:r()*5}});
+  const rb=new Builder();rb.add(BLOB,0x17171c,0,0,0,.17,.15,.5);rb.add(BLOB,0x1b1b21,0,.06,.45,.1,.1,.13);rb.add(G.box,0x2a2a30,0,.04,.6,.05,.05,.15);rb.add(G.box,0x17171c,0,0,-.52,.24,.03,.26); // body, head, the heavy beak, a wedge tail
+  const rwg=new Builder();rwg.add(G.box,0x141418,.5,0,0,1,.04,.32);rwg.add(G.box,0x0e0e12,.95,0,-.04,.2,.045,.28); // a long wing, fingered tips
+  const rbg=rb.geo(),rwgg=rwg.geo(),ravens=[...Array(4)].map(()=>{const g=new THREE.Group(),L=new THREE.Group(),R=new THREE.Group(),rm=new THREE.Mesh(rwgg,MAT_PED);
+    g.add(new THREE.Mesh(rbg,MAT_PED));L.add(new THREE.Mesh(rwgg,MAT_PED));rm.rotation.y=Math.PI;R.add(rm);L.position.set(.14,.08,0);R.position.set(-.14,.08,0);g.add(L,R);g.visible=false;scene.add(g);g.userData={L,R,c:null};return g});
   const wq=new URLSearchParams(location.search).get('wx'); // (testing only: ?wx=40 starts the weather 40 s into a snowfall)
   ALP={banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
-    fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
+    deer,deerG,dz:null,dnext:0,ravens,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
   for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
 }
 function updateAlpine(dt){
@@ -4251,6 +4265,17 @@ function updateAlpine(dt){
     F.uOff.value.x-=(.5+11*windy)*dt;F.uOff.value.y+=1.4*dt;F.uOff.value.z+=.3*dt;F.uCam.value.copy(camera.position);F.uTime.value=clock;
     F.uA.value=.9*Math.min(1,sn*4)*(1-shedAt(car.z));ALP.fall.geometry.setDrawRange(0,Math.round(5000*Math.min(1,sn*1.6)))}}
   {const on=ALP.wx>.04,f=Math.floor(clock*2.4)&1;for(const l of CC_FL){if(!l.parent||!l.parent.parent){CC_FL.delete(l);continue}l.visible=on&&l.userData.ph===f}} // chain control's lights wig-wag while it snows
+  { // deer: a small group on the slope above the road low down near a village, found ahead now and then; heads come up to watch you go by
+    if((ALP.dz==null||Math.abs(ALP.dz-car.z)>600)&&clock>ALP.dnext){ALP.dnext=clock+3;const z=car.z+fwd*(260+Math.random()*220),gz=gapAt(z);ALP.deerG.visible=false;ALP.dz=null;
+      if(gz&&alpW(z)>.99&&hiAt(z)<.22&&!chainOff(z)&&creekAt(z)>60){ALP.dz=z;ALP.deerG.visible=true;const cx=roadX(z)+22+Math.random()*26,n=3+Math.floor(Math.random()*4);
+        ALP.deer.forEach((e,k)=>{e.g.visible=k<n;const x=cx+(Math.random()-.5)*16,zz=z+(Math.random()-.5)*24;e.g.position.set(x,groundAt(x,zz)-.03,zz);e.g.rotation.y=Math.random()*6.28})}}
+    if(ALP.deerG.visible)for(const e of ALP.deer){if(!e.g.visible)continue;const d=Math.hypot(e.g.position.x-car.x,e.g.position.z-car.z);e.t-=dt;if(e.t<0){e.graze=!e.graze;e.t=2+Math.random()*5}
+      const tg=d<75?-.1:e.graze?1.15:.15;e.a+=(tg-e.a)*Math.min(1,dt*(d<75?4:1.6));e.neck.rotation.x=e.a}}
+  {const show=hi>.4&&alpW(car.z)>.5; // ravens wheeling over the drop near the summit, at road level or a little below
+    ALP.ravens.forEach((g,k)=>{g.visible=show;if(!show)return;const u=g.userData;
+      if(!u.c||Math.abs(u.c[1]-car.z)>320){const z=car.z+fwd*(60+Math.random()*220);u.c=[roadX(z)-40-Math.random()*60,z];u.y=-14+Math.random()*16;u.r=14+Math.random()*16;u.w=(.25+Math.random()*.2)*(Math.random()<.5?-1:1);u.ph=Math.random()*6}
+      const a=u.ph+clock*u.w;g.position.set(u.c[0]+Math.cos(a)*u.r,u.y+Math.sin(clock*.5+k)*1.2,u.c[1]+Math.sin(a)*u.r);g.rotation.set(0,Math.atan2(-Math.sin(a)*u.w,Math.cos(a)*u.w),u.w>0?-.35:.35);
+      const f=Math.sin(clock*.9+k*2)>.55?Math.sin(clock*9+k)*.5:.06;u.L.rotation.z=f;u.R.rotation.z=-f})}
   for(const p of ALP.plumes){const u=p.userData;if(u.z==null||(u.z-car.z)*fwd<-200)u.z=car.z+fwd*(u.z==null?Math.random()*600:400+Math.random()*300);
     const x=roadX(u.z)+u.dx,y=inlandY(x,u.z),w=60+30*Math.sin(clock*.4+u.ph);p.position.set(x-w*.35,y+4+4*Math.sin(clock*.7+u.ph),u.z);p.scale.set(w,w*.16,1);
     p.material.opacity=windy*ss(.35,.8,hiAt(u.z))*(.35+.25*Math.sin(clock*.9+u.ph));p.visible=windy>0}
