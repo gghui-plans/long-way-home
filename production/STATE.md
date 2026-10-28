@@ -24,11 +24,26 @@ Last updated: 2026-10-28
 
 ### High Sierra region (target: live Dec 1)
 
-- **Worked on:** the plan is in WINTER-PLAN.md, and 16 Fireside jazz songs are written in REGION-SONGS.md (not generated).
-- **Decided:** fireside jazz, no Christmas on the station (decorations only, switched on by date). Suno downloads aren't capped (2026-10-18).
-- **Behind schedule:** WINTER-PLAN's timeline had code batch 1 in the week of Oct 19–25, and it hasn't started. Lyrics are due Nov 2 and songs Nov 3.
-- **Now (2026-10-27):** batch 1 runs overnight in its own session, on a `winter` branch in a worktree. Its preview is "winter" (port 8767), so it doesn't clash with "local" on main.
-- **Left:** everything in WINTER-PLAN.md. The open items are the station and host names, the voices, the top up or down in snow, and the snowfall pattern.
+- **Where it lives:**
+  - Code: the `claude/winter-35bb4b` branch, checked out in the worktree `.claude/worktrees/winter-35bb4b`. Not merged and not pushed. Don't push or merge it without the user's word.
+  - Build log: the branch's own STATE.md, under High Sierra. Its other sections are older than this file, so trust this file for everything else.
+  - Plan: WINTER-PLAN.md. Songs: REGION-SONGS.md, High Sierra section.
+- **Done:** code batches 1–3 (the foundation, the world, and life and weather), plus fixes for hitches and for floating things in the blends. The user checked them on the phone on 2026-10-27 and 28 ("looks good"). LA and the Redwood Coast stay pixel-identical after every change.
+- **Decided:**
+  - fireside jazz, with no Christmas songs; decorations switch on by date;
+  - the climb is an illusion: the road stays level and the drop to the lake grows toward the summit;
+  - no harbour towns, so no dock, marina or paddle-wheeler (every village sits on a bench above the lake);
+  - keep the summit camera rise.
+- **Next, in this order (agreed 2026-10-28):**
+  1. **Confirm the station and host names.** Proposed: 96.1 The Fireside, with Lionel (a slow, velvet-voiced jazz DJ) and Skye (an excitable ski patroller); details in WINTER-PLAN section 7. The station name is already in the songs: the instrumentals are credited to "The Fireside House Trio" and the files go in a `fireside` folder.
+  2. **The songs.** The 16 Fireside lyrics are written but none are generated. The user reviews them by Nov 2 and makes them in Suno on Nov 3. They come before Coffee Cabin set 2 because of the Dec 1 deadline.
+  3. **Meanwhile Claude writes** the handoff lines (about 20), then the radio script (about 150 clips).
+  4. **Batch 5 on "build":** goodbyes and welcomes tagged by where you're going or coming from; a Fireside station of its own, borrowing the Coffee Cabin's songs until its own exist; device voices reading the new lines until they're recorded. Today a Redwoods-to-Sierra trip plays no handoff (both use the Coffee Cabin), and K-JAM's welcome-backs mention trees and elk even when you come from the snow. The map buttons and the road trip loop are already in.
+  5. Batch 6 (audio and polish), then batch 7 (phone test and ship).
+- **Behind schedule:** the writing (WINTER-PLAN batch 4) hasn't started. The plan had the station and hosts confirmed in the week of Oct 19–25.
+- **Open:** host voices; top up or down in the snow; the snowfall pattern (built as cycles, about 3 min clear then 2 min snowing); the loop order (built as LA → Redwood Coast → High Sierra → LA); how glossy the wet road is; whether the Coffee Cabin is OK as the stand-in station.
+- **Known weak spots** (batch 3): the frozen waterfall is a thin pillar from the chase cam, the snowmobile tracks fade over brown rock, a few flakes show under the snow shed's ends, the deer are small, and the road goes dark navy in snow.
+- **Phone preview:** from the worktree, `node production/serve.js . 8768 0.0.0.0` serves it to the wifi at http://192.168.2.13:8768/#sierra (add `?wx=40` to start snowing). Its launch.json entry ("winter-phone") is only in the worktree.
 
 ## Waiting for "build"
 
