@@ -1,6 +1,6 @@
 # High Sierra: winter region plan
 
-The third region: a snowy mountain drive with lakeside ski villages, fireside jazz on the radio, and Christmas decorations in December. **Target: live by December 1, 2026.** Planning only; nothing is built. The shared foundation (region and station tables, map, road trip, handoff) already exists from the Redwood Coast; see REDWOOD-PLAN.md.
+The third region: a snowy mountain drive with lakeside ski villages, fireside jazz on the radio, and Christmas decorations in December. **Target: live by December 1, 2026.** Code batches 1–3 are built on the `claude/winter-35bb4b` branch (not merged); STATE.md has where things stand and what's next. The shared foundation (region and station tables, map, road trip, handoff) already exists from the Redwood Coast; see REDWOOD-PLAN.md.
 
 ## Decided
 
@@ -57,7 +57,7 @@ Lakeside ski villages: shorter grids, cozy, with lit windows everywhere (the sam
   - a sledding hill;
   - a gas station with a chain installer;
   - a motor lodge with a VACANCY sign.
-- **The pier becomes a boat dock and marina,** with a paddle-wheel lake boat. The Ferris wheels become a gondola.
+- **The Ferris wheels become a gondola.** Dropped 2026-10-27: the boat dock, marina and paddle-wheel lake boat. Every village sits on a bench above the lake, so there are no harbour towns.
 - **People:** puffy jackets, beanies, ski gear, carrying skis and boards; snowmen in the yards.
 - **Region:** High Sierra. HUD highway: CA-89.
 - **Village names** (fictional, 12 to match the others): Snowberry, Silver Fir, Alpenglow, Whitebark, Powder Ridge, Ember Lake, Hearthstone, Granite Hollow, Juniper Flat, Bear Paw, Cold Spring Crossing, Kettle Lake.
@@ -74,8 +74,7 @@ Lakeside ski villages: shorter grids, cozy, with lit windows everywhere (the sam
 - **Pass and lake:**
   - lit trees at the chain-control stop and the summit pull-out;
   - a snowplow with a wreath on its grille;
-  - skaters in Santa hats;
-  - the lake boat lit up.
+  - skaters in Santa hats.
 - **Postcards:** a "Season's Greetings from <village>" title and a holiday stamp.
 - Visuals only: the radio plays as normal. A few holiday host bits are optional.
 - All lights are instanced glow (the existing glow material). Check performance with the lights on.
@@ -110,6 +109,8 @@ Like the other stations: 7 male, 5 female, 2 duets, 2 instrumentals. Everything 
 Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18), so these 16 songs and the 32 new K-JAM and Coffee Cabin songs don't compete for downloads. The lyrics still need to be final by Nov 2.
 
 ## 7. Radio: The Fireside (proposed, not decided)
+
+**Next step (2026-10-28):** confirm or change the station and host names below. The handoff lines, the radio script and the song credits ("The Fireside House Trio") all wait on them.
 
 **Station:** "96.1, The Fireside. Jazz by the fire, chains on the tires."
 
@@ -169,7 +170,9 @@ Wind through the pines, a soft crunch of tires on snow, the lake lapping at the 
 
 ## Build batches
 
-All work goes on a `winter` branch; `main` stays what's live. Ship once, when it's all done.
+All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.claude/worktrees/winter-35bb4b`); `main` stays what's live. Ship once, when it's all done.
+
+**Status (2026-10-28):** batches 1–3 are built and checked on the phone. Batch 4 (writing) hasn't started. Batch 5 waits on the station and host names. Batches 6 and 7 are to do.
 
 1. **Foundation and altitude test (code):**
    - make the region code work for any number of regions;
@@ -183,7 +186,7 @@ All work goes on a `winter` branch; `main` stays what's live. Ship once, when it
    - station and host names;
    - final song lyrics (drafted) **by November 2**, so you can generate them in Suno on November 3;
    - the radio script (about 150 clips) by mid-November, then you record them.
-5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive).
+5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station (borrowing the Coffee Cabin's songs until its own exist).
 6. **Audio and polish:**
    - songs and clips dropped in (music and voice scripts, whisper for the lyrics);
    - ambient sound;
@@ -196,12 +199,14 @@ All work goes on a `winter` branch; `main` stays what's live. Ship once, when it
 
 | Week | Code | Writing and audio |
 |---|---|---|
-| Oct 19–25 | Batch 1 | Confirm the station, hosts and songs |
-| Oct 26–Nov 1 | Batch 2 | Draft the radio script |
-| Nov 2–8 | Batch 3 | **Nov 3: generate the 16 songs in Suno**; review the script |
-| Nov 9–15 | Batch 5 | Record the clips (ElevenLabs) |
+| Oct 27–28 | Batches 1–3 (done) | |
+| Oct 28–Nov 2 | | Confirm the station and hosts; the user reviews the 16 lyrics; Claude writes the handoff lines |
+| Nov 2–8 | Batch 5 | **Nov 3: generate the 16 songs in Suno**; Claude drafts the radio script |
+| Nov 9–15 | Batch 6 (songs dropped in) | Review the script, record the clips (ElevenLabs) |
 | Nov 16–22 | Batch 6 | Retakes |
 | Nov 23–30 | Batch 7 | |
+
+Revised 2026-10-28. The first version had the code a week later and the station and hosts confirmed by Oct 25.
 
 **If it runs late:** ship the map with the songs and only the most important clips (IDs, intros, handoffs), and add the rest of the script in December. The decorations switch on by date, so they're there from day one either way.
 
@@ -209,5 +214,5 @@ All work goes on a `winter` branch; `main` stays what's live. Ship once, when it
 
 - Station name and frequency, and host names and voices.
 - Convertible top up or down in the snow (the top stays down everywhere else; the hosts could joke about it).
-- Snowfall: weather cycles (proposed) or always snowing.
-- The road trip loop order.
+- Snowfall: weather cycles or always snowing. Built as cycles (about 3 min clear, then 2 min snowing); confirm.
+- The road trip loop order. Built as LA → Redwood Coast → High Sierra → LA; confirm.
