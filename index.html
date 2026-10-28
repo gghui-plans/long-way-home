@@ -1001,6 +1001,19 @@ function pulloutAt(z){const g=gapAt(z);if(!g||!alpAt(z))return 0;return alpW(z)*
 function chainZ(k){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,z=(a+L*.85)*B,c=creekZ(k);return c!=null&&Math.abs(c-z)<170?null:z}
 function chainNear(z){const g=gapAt(z);if(!g||alpW(z)<.999)return 0;const c=chainZ(g.k);return c==null?0:ss(130,70,Math.abs(z-c))} // (wider: where the coarse far land sinks out of its way)
 function chainOff(z){const g=gapAt(z);if(!g||alpW(z)<.999)return 0;const c=chainZ(g.k);return c==null?0:ss(70,48,Math.abs(z-c))}
+// a frozen waterfall on the uphill face, once per pass low on the climb (none where a creek crosses close by), and on most passes snowmobile
+// tracks across the open snow just out of the village to the north, where the slope is still gentle (a path every few metres, its running length)
+function fallsZ(k){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,z=(Math.floor(a+L*(.18+.04*hash(k,5,83)))+.5)*B,c=creekZ(k);return c!=null&&Math.abs(c-z)<120?null:z}
+const fallsNear=(z,d)=>{const g=gapAt(z);if(!g||alpW(z)<.999)return false;const f=fallsZ(g.k);return f!=null&&Math.abs(z-f)<d};
+const sledCache=new Map();
+function sledPath(k){if(sledCache.has(k))return sledCache.get(k);let P=null;
+  if(hash(k,3,91)<.75){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,c=(a+L*.075)*B,ph=hash(k,4,93)*6;P=[];for(let i=0;i<=40;i++){const s=i/40,z=c+(s-.5)*170+12*Math.sin(s*4.5+ph*1.3);P.push([roadX(z)+24+34*s+9*Math.sin(s*7+ph),z])}
+    P.c=c;P.cum=[0];for(let i=1;i<P.length;i++)P.cum.push(P.cum[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));P.L=P.cum[P.length-1]}
+  if(sledCache.size>16)sledCache.clear();sledCache.set(k,P);return P}
+const sledNear=(z,d)=>{const g=gapAt(z);if(!g||alpW(z)<.999)return false;const P=sledPath(g.k);return!!P&&Math.abs(z-P.c)<d}; // (its snowfield, kept clear of trees)
+function landY(x,z){ // the land as drawn east of the Sierra's open road: the near strips' rows every 10 m, their points NEAR_AL out from the road
+  const r=zr=>{const rc=roadX(zr),dx=x-rc,xs=NEAR_AL;let k=0;while(k<xs.length-2&&dx>xs[k+1])k++;const u=clamp((dx-xs[k])/(xs[k+1]-xs[k]),0,1),a=gyAt(rc+xs[k],zr);return a+u*(gyAt(rc+xs[k+1],zr)-a)};
+  const z0=Math.floor(z/10)*10,a=r(z0);return a+(r(z0+10)-a)*(z-z0)/10}
 const CC_FL=new Set();let CCL=null; // chain control's amber lights (they flash while it snows); their shape and glow, made on first use
 let sunTilt=1; // the High Sierra: the sun lower near the summit (1 everywhere else)
 const straightAt=z=>ss(9,3,Math.abs(off(z+25)+off(z-25)-2*off(z))); // 1 on a straight, 0 in a tight bend
@@ -1674,8 +1687,8 @@ function buildTerrain(j){
     const zm=z0+B/2,c=coastType(zm),rc=roadX(zm),hm=hillMul(zm);
     if(hm>.3&&!(al&&hiAt(zm)>.3)){ // telephone poles on the inland shoulder, wires sagging pole to pole along the highway (not up the Sierra's steep face)
       const pole=z=>{const x=roadX(z)+12.5;return[x,inlandY(x,z),z]};
-      for(const zo of[5,35]){if(al&&chainOff(z0+zo)>0)continue;const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
-        if(hillMul(z0+zo+30)>.3&&!(al&&chainOff(z0+zo+30)>0))for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
+      for(const zo of[5,35]){if(al&&(chainOff(z0+zo)>0||fallsNear(z0+zo,14)))continue;const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
+        if(hillMul(z0+zo+30)>.3&&!(al&&(chainOff(z0+zo+30)>0||fallsNear(z0+zo+30,14))))for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
     }
     if(rw)redwoodScenery(b,gb,grp,j,rnd);else{const lk=lookAt(zm,'lake')>0; // lk: a road trip's blend toward the Sierra, the west side dropping to the lake (no beach, no sea stacks)
     if(c<.35&&!lk){
@@ -1737,8 +1750,8 @@ function redwoodScenery(b,gb,grp,j,rnd){
   const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
   const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1); // the road's heading at z
-  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(al&&dx>0&&dx<26&&chainOff(z)>0);
-  const inCC=(x,z)=>{const d=x-roadX(z);return d>0&&d<26&&chainOff(z)>0}; // the High Sierra's chain-control pull-off, kept clear // keep the creek, the meadow and the big tree's foot open
+  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(al&&dx>0&&(dx<26&&chainOff(z)>0||dx<50&&fallsNear(z,9)||dx>16&&dx<80&&sledNear(z,105)));
+  const inCC=(x,z)=>{const d=x-roadX(z);return d>0&&(d<26&&chainOff(z)>0||d<50&&fallsNear(z,9)||d>16&&d<80&&sledNear(z,105))}; // the High Sierra's chain-control pull-off and frozen waterfall, kept clear // keep the creek, the meadow and the big tree's foot open
   const down=dx=>dx<0?dx*2.4-30:dx; // the Sierra: the drop side's trees further down the slope, their tops below the road
   const giant=(dx,z,s)=>{if(clear(dx,z))return;if(al)dx=down(dx);const [x,y]=at(dx,z),k=rnd();if(al){if(rnd()>treeAt(z)||clumpAt(x,z)<-.2)return;b.add(PINES()[k<.7?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
   const young=(dx,z)=>{if(clear(dx,z))return;if(al){if(rnd()>treeAt(z))return;dx=down(dx)}const [x,y]=at(dx,z),s=.8+rnd()*.5;if(al&&clumpAt(x,z)<-.2)return;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
@@ -1795,6 +1808,16 @@ function redwoodScenery(b,gb,grp,j,rnd){
       for(let q=0;q<5;q++){const z=pz-20+rnd()*40,[x]=at(-36.5-rnd()*1.5,z);stander(b,x,0,z,Math.PI/2+(rnd()-.5)*.8,rnd,false)}
       for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))}} // tyre tracks in the gravel
   }
+  if(al&&fallsNear(zm,1)){const fz=zm,rc=roadX(fz),y0=inlandY(rc+15,fz),H=12+5*rnd(),g0=gb.gain;gb.gain=1; // the frozen waterfall: a band of dark granite stepping out of the slope, a curtain of ice
+    // down its face (a faint glow in the thickest columns), icicles along the lip, the ice built up into a cone at its foot
+    for(const [oz,w,h,d] of[[0,11,H+2,3.2],[-8.5,7,H-1.5,2.8],[8,7.5,H-2.5,2.6],[-14,5,H*.6,2.2],[13.5,5,H*.55,2.2]])b.add(G.ball,pick([0x5a5650,0x4f4c47,0x625e57],rnd),rc+16.4+d+(oz?1.6:0),y0+h*.42,fz+oz,d,h*.55,w*.55,(rnd()-.5)*.3,0,(rnd()-.5)*.08);
+    for(let q=-7;q<=7;q++){const z=fz+q*.62+(rnd()-.5)*.25,Lc=H*(.95-Math.abs(q)*.055)*(.75+.25*rnd()),r=.4+rnd()*.32-Math.abs(q)*.015,top=y0+H-.6-Math.abs(q)*.2,core=Math.abs(q)<3;
+      (core?gb:b).add(G.cyl,core?0xa7d0ea:pick([0xe4f1f9,0xd2e6f3,0xc3dcee],rnd),rc+15.9-(core?.25:0)+Math.abs(q)*.06,top-Lc/2,z,r,Lc,r*.8);b.add(G.cone,0xdcecf6,rc+15.9,top-Lc-.35,z,r*.8,.8,r*.7,0,Math.PI)} // the curtain, each column ending in a point
+    for(let k=0;k<10;k++){const z=fz+(rnd()-.5)*14,Lc=.6+rnd()*1.8;b.add(G.cone,pick([0xdbe8f2,0xc9dcea,0xeef5fa],rnd),rc+16.3,y0+H*.9-Lc/2-Math.abs(z-fz)*.25,z,.14,Lc,.14,0,Math.PI)} // icicles along the lip
+    gb.add(G.cone,0xb3d8ee,rc+15.6,y0+1.2,fz,2.4,2.6,2.6);b.add(G.ball,0xd7e7f2,rc+14.6,y0+.3,fz+2.4,1.3,.7,1.5,rnd()*6);b.add(G.ball,0xd7e7f2,rc+14.8,y0+.3,fz-2.6,1.2,.6,1.4,rnd()*6);gb.gain=g0}
+  if(al&&sledNear(zm,130)){{const P=sledPath(gapAt(zm).k); // snowmobile tracks across the snowfield: two faint grooves in the snow
+    for(let i=0;i+1<P.length;i++){const [xa,za]=P[i],[xb,zb]=P[i+1],zc=(za+zb)/2;if(zc<z0||zc>=z0+B)continue;const L=Math.hypot(xb-xa,zb-za)||1,nx=-(zb-za)/L,nz=(xb-xa)/L;
+      for(const o of[-.55,.55]){const E=(x,z,k)=>{const px=x+nx*(o+k),pz=z+nz*(o+k);return[px,landY(px,pz)+.07,pz]};b.quad(E(xa,za,-.16),E(xb,zb,-.16),E(xb,zb,.16),E(xa,za,.16),0x5f6873)}}}}
   const ccz=al&&alpW(zm)>.999&&gapAt(zm)?chainZ(gapAt(zm).k):null;
   if(ccz!=null&&Math.abs(zm-ccz)<240){const cz=ccz,inS=z=>z>=z0&&z<z0+B; // chain control: a plowed pull-off on the uphill side, cones along its edge, cars stopped with people
     // down at a wheel fitting chains, a worker in a hi-vis vest, CHAINS REQUIRED ahead of it with amber lights that flash while it snows
@@ -1819,7 +1842,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
       b.add(BLOB,0xe6eaf0,x,y+.05,z,.55+rnd()*.5,.22+rnd()*.3,1.8+rnd()*2.2,tan(z)+(rnd()-.5)*.5,0,(rnd()-.5)*.3);
       if(rnd()<.5)b.add(BLOB,rnd()<.4?0xcfd3d8:0xe6eaf0,x-side*(.4+rnd()*.4),y+.06,z+(rnd()-.5)*2,.3+rnd()*.4,.18+rnd()*.2,.8+rnd()*1.2,rnd()*6)}}
     for(let z=z0;z<z0+B;z+=5)for(const side of[-1,1]){const zc=z+2.5,[x]=at(side*8.9,zc);if(hillMul(zc)>.05)b.add(G.box,0x5f5a56,x,.025,zc,.9,.03,5.2,tan(zc))} // the slush line along the shoulder
-    for(const side of[-1,1])if((j+(side>0?0:1))%2===0){const z=z0+B*.5,[x,y]=at(side*10.3,z);b.add(G.box,0x2b2b30,x,y+2.1,z,.09,4.2,.09);b.add(G.box,0xe8702a,x,y+4.05,z,.11,.5,.11)} // a pole every 120 m each side, staggered
+    for(const side of[-1,1])if((j+(side>0?0:1))%2===0&&!(side>0&&fallsNear(zm,1))){const z=z0+B*.5,[x,y]=at(side*10.3,z);b.add(G.box,0x2b2b30,x,y+2.1,z,.09,4.2,.09);b.add(G.box,0xe8702a,x,y+4.05,z,.11,.5,.11)} // a pole every 120 m each side, staggered
     for(let k=0;k<15;k++){const za=z0+k*4,zb=za+4,gx=z=>-10.1-30*ss(.2,.6,pulloutAt(z)),[xa,ya]=at(gx(za),za),[xb,yb]=at(gx(zb),zb);if(hillMul(zb)<.05)continue;b.add(G.box,0x8e9196,xa,ya+.4,za,.14,.8,.14);
       b.add(G.box,0xb4b7bc,(xa+xb)/2,(ya+yb)/2+.72,(za+zb)/2,.06,.32,Math.hypot(xb-xa,zb-za)+.05,Math.atan2(xb-xa,zb-za))} // the guardrail
   }
@@ -4239,9 +4262,14 @@ void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.
   const rwg=new Builder();rwg.add(G.box,0x141418,.5,0,0,1,.04,.32);rwg.add(G.box,0x0e0e12,.95,0,-.04,.2,.045,.28); // a long wing, fingered tips
   const rbg=rb.geo(),rwgg=rwg.geo(),ravens=[...Array(4)].map(()=>{const g=new THREE.Group(),L=new THREE.Group(),R=new THREE.Group(),rm=new THREE.Mesh(rwgg,MAT_PED);
     g.add(new THREE.Mesh(rbg,MAT_PED));L.add(new THREE.Mesh(rwgg,MAT_PED));rm.rotation.y=Math.PI;R.add(rm);L.position.set(.14,.08,0);R.position.set(-.14,.08,0);g.add(L,R);g.visible=false;scene.add(g);g.userData={L,R,c:null};return g});
+  const sb=new Builder(),SC=0xd8344a,rs=RW_STYLE;sb.add(G.box,0x2b2b30,0,.28,-.35,.55,.32,1.7);sb.add(G.box,SC,0,.55,.05,.85,.38,2.1);sb.add(G.box,SC,0,.62,.95,.8,.3,.7,0,-.45); // a snowmobile: the track, the body, the hood
+  sb.add(G.box,0x2b3442,0,.92,.55,.7,.32,.06,0,.5);sb.add(G.box,0x1d1d22,0,.8,-.45,.5,.14,1);sb.add(G.box,0x3a3a3e,0,1.02,.32,.8,.05,.05);sb.add(G.box,0xf2efe6,0,.5,-1.12,.6,.1,.04); // windscreen, seat, handlebar, the flap
+  for(const s of[-1,1]){sb.add(G.box,0x3a3a3e,s*.42,.05,1.05,.1,.05,1.2);sb.add(G.box,0x3a3a3e,s*.42,.12,1.68,.1,.05,.25,0,-.6);sb.add(G.box,0x3a3a3e,s*.42,.3,1,.05,.5,.05)} // skis, tips turned up
+  RW_STYLE=true;person(sb,0,.87,-.35,0,r,'sit',{1:0x2fb3a8,2:0xf1c9a5,3:0x3a2a20,4:0x2b2b30,5:0x2b2b30,6:0x15151a,7:0xe8505b});RW_STYLE=rs; // and its rider, in goggles
+  const sled=new THREE.Mesh(sb.geo(),MAT_PED);sled.castShadow=true;sled.visible=false;scene.add(sled);
   const wq=new URLSearchParams(location.search).get('wx'); // (testing only: ?wx=40 starts the weather 40 s into a snowfall)
   ALP={banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
-    deer,deerG,dz:null,dnext:0,ravens,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
+    deer,deerG,dz:null,dnext:0,ravens,sled,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
   for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
 }
 function updateAlpine(dt){
@@ -4271,6 +4299,10 @@ function updateAlpine(dt){
         ALP.deer.forEach((e,k)=>{e.g.visible=k<n;const x=cx+(Math.random()-.5)*16,zz=z+(Math.random()-.5)*24;e.g.position.set(x,groundAt(x,zz)-.03,zz);e.g.rotation.y=Math.random()*6.28})}}
     if(ALP.deerG.visible)for(const e of ALP.deer){if(!e.g.visible)continue;const d=Math.hypot(e.g.position.x-car.x,e.g.position.z-car.z);e.t-=dt;if(e.t<0){e.graze=!e.graze;e.t=2+Math.random()*5}
       const tg=d<75?-.1:e.graze?1.15:.15;e.a+=(tg-e.a)*Math.min(1,dt*(d<75?4:1.6));e.neck.rotation.x=e.a}}
+  { // a snowmobile out on a meadow's track now and then, back and forth
+    const S=ALP.sled,g=gapAt(car.z),P=g&&alpW(car.z)>.99&&sledNear(car.z,700)?sledPath(g.k):null;
+    S.visible=!!P;if(P){const d=(clock*8.5)%(2*P.L),fw=d<P.L,s=fw?d:2*P.L-d;let i=0;while(i<P.length-2&&s>P.cum[i+1])i++;
+      const [xa,za]=P[i],[xb,zb]=P[i+1],t=clamp((s-P.cum[i])/((P.cum[i+1]-P.cum[i])||1),0,1),x=xa+(xb-xa)*t,z=za+(zb-za)*t,sg=fw?1:-1;S.position.set(x,landY(x,z)+.02,z);S.rotation.set(0,Math.atan2((xb-xa)*sg,(zb-za)*sg),0)}}
   {const show=hi>.4&&alpW(car.z)>.5; // ravens wheeling over the drop near the summit, at road level or a little below
     ALP.ravens.forEach((g,k)=>{g.visible=show;if(!show)return;const u=g.userData;
       if(!u.c||Math.abs(u.c[1]-car.z)>320){const z=car.z+fwd*(60+Math.random()*220);u.c=[roadX(z)-40-Math.random()*60,z];u.y=-14+Math.random()*16;u.r=14+Math.random()*16;u.w=(.25+Math.random()*.2)*(Math.random()<.5?-1:1);u.ph=Math.random()*6}
