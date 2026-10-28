@@ -2112,9 +2112,9 @@ function pickType(town,onPCH){
   for(const [k,t] of Object.entries(VTYPES)){if((r-=wt(t))<=0)return k}
   return'sedan';
 }
-function setType(a,type){const t=VTYPES[type];if(t.lazy&&!vMesh[type])makePlow();a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!(t.bus||t.rw||t.alp);a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
+function setType(a,type){const t=VTYPES[type];if(t.lazy&&!vMesh[type])makePlow();a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!(t.bus||t.rw||t.alp);a.rk=hash(a.k,++RKN,13);a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
 // the snowplows' extras: amber beacons flashing in turn (bright enough to glow) and a fan of snow thrown off the end of the blade
-let PLOW=null;
+let PLOW=null,RKN=0,RACK=null; // RKN: counts spawns, so each car rolls its own roof load (rk) without a random draw
 function makePlow(){
   const b=new Builder();VTYPES.plow.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}m.count=0;scene.add(m);vMesh.plow=m;
@@ -2126,6 +2126,24 @@ function makePlow(){
     fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.93,.95,.98),vA*smoothstep(.5,.15,d));\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'});
   const spray=[0,1,2,3].map(()=>{const p=new THREE.Points(g,mat);p.frustumCulled=false;p.visible=false;scene.add(p);return p});
   PLOW={lamp,spray};
+}
+// the High Sierra's cars: about a third carry a roof box or skis, and some more still have snow on the roof (moving and parked; built on first use)
+const RACKT={sedan:1,sedan2:1,suv:1,wagon:1,van:1};
+function roofOf(type){ // [height, middle along the car, half-width] of a car type's roof, from its shape (worked out again when the modelled cars arrive)
+  const g=vMesh[type].geometry;if(g.userData.roof)return g.userData.roof;const P=g.attributes.position.array;let my=-1e9;for(let i=1;i<P.length;i+=3)if(P[i]>my)my=P[i];
+  let zs=0,n=0,x1=0;for(let i=0;i<P.length;i+=3)if(P[i+1]>my-.15){zs+=P[i+2];n++;x1=Math.max(x1,Math.abs(P[i]))}return g.userData.roof=[my,zs/n,x1]}
+function alpRacks(pr){
+  if(!RACK){const mk=bl=>{const m=new THREE.InstancedMesh(bl.geo(),MAT_PED,120);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.count=0;scene.add(m);return m};
+    const bx=new Builder(),sk=new Builder(),sw=new Builder();for(const bl of[bx,sk])for(const z of[-.5,.5])bl.add(G.box,0x2b2b30,0,.04,z,1.15,.06,.08); // crossbars
+    bx.add(RB(.84,.36,1.95,.14),0x2a2c31,0,.27,0);bx.add(G.box,0x3a3d44,0,.45,0,.6,.02,1.6); // a roof box
+    [[-.33,0xd8344a],[-.13,0x2f6fb3],[.13,0xf2efe6],[.33,0xf2a541]].forEach(([x,c])=>{sk.add(G.box,c,x,.11,-.08,.09,.03,1.6);sk.add(G.box,c,x,.15,.8,.09,.03,.18,0,-.45);sk.add(G.box,0x2b2b30,x,.14,-.5,.11,.04,.12)}); // skis in a rack, tips turned up
+    sw.add(BLOB,0xeef2f6,0,.02,0,.62,.13,.95);sw.add(BLOB,0xe6ebf1,.15,.08,-.3,.35,.1,.45); // last night's snow
+    RACK=[mk(bx),mk(sk),mk(sw)]}
+  const n=[0,0,0],put=(type,x,z,ry,h)=>{const k=h<.17?0:h<.33?1:h<.5?2:-1;if(k<0||!RACKT[type]||n[k]>=120||!alpAt(z))return;const [y,rz,rx]=roofOf(type),s=Math.sin(ry),c=Math.cos(ry),w=clamp(rx/.8,.8,1.15);
+    _d.position.set(x+rz*s,y,z+rz*c);_d.rotation.set(0,ry,0);_d.scale.set(w,1,k===2?w:1);_d.updateMatrix();RACK[k].setMatrixAt(n[k]++,_d.matrix)};
+  for(const a of agents)if(a.on)put(a.type,a.x,a.z,Math.atan2(a.fx,a.fz),a.rk);
+  for(const p of parkedCars){const dx=p.x-car.x,dz=p.z-car.z;if(dx*dx+dz*dz<=pr*pr)put(p.type,p.x,p.z,p.ry,hash(Math.round(p.x),Math.round(p.z),17))}
+  for(let k=0;k<3;k++){RACK[k].count=n[k];RACK[k].instanceMatrix.needsUpdate=true}
 }
 function plowFx(){
   const L=PLOW.lamp,f=Math.floor(clock*3.2)&1;let n=0,q=0;
@@ -2247,6 +2265,7 @@ function updateTraffic(dt){
   // parked cars near you go in after the moving ones
   const pr=settings.hq?140:80;
   for(const p of parkedCars){const dx=p.x-car.x,dz=p.z-car.z;if(dx*dx+dz*dz>pr*pr||used[p.type]>=CAP)continue;const n=used[p.type]++;_d.position.set(p.x,0,p.z);_d.rotation.set(0,p.ry,0);_d.scale.set(1,1,1);_d.updateMatrix();vMesh[p.type].setMatrixAt(n,_d.matrix);vMesh[p.type].setColorAt(n,p.col)}
+  if(ALP)alpRacks(pr);
   if(active<target){const a=agents.find(o=>!o.on);if(a&&spawnAgent(a))a.on=true}
   for(const [k,m] of Object.entries(vMesh)){m.count=used[k];m.instanceMatrix.needsUpdate=true;if(m.instanceColor)m.instanceColor.needsUpdate=true}
 }
