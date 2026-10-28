@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-27
+Last updated: 2026-10-28
 
 ## Active
 
@@ -131,7 +131,8 @@ Last updated: 2026-10-27
 - **No sea stacks or beach things over the lake drop, built 2026-10-28** (they said build). LA's sea stacks, beach scene (surfers, bonfire, volleyball, palms, umbrellas, lifeguard tower) and far palms and stacks stood at fixed heights while a Sierra blend's west side was still dropping to the lake, so the stacks floated as grey pillars. Now LA skips them while there's any lake (`lk`), as the Redwood Coast already did for its stacks, and the ice plant follows the ground. Checks come before the random draws, so LA and the Redwood Coast are unchanged (regress `stacks`: 0 px). Road trips both ways: no errors, nothing floating in the blend. Not checked: the Redwood Coast's other beach props in a Sierra→Redwood blend.
 - **Later (its own batch):** life on the road (a plow truck, a snowmobile track, deer low down, ravens up high, the chain-up area), varied weather (a squall, then sun breaks).
 - **Batch 2 is done** (except the bits dropped with the harbour towns). Next: batches 3 (life and weather), 5 (map and handoff; the buttons are in) and 6 (audio and polish).
-- **Not checked yet:** on the phone: the blend grid fix and the sea stacks (trees, rocks and pillars on the ground through a blend, both ways); the smoother-drive batch (freezes gone in LA and the Sierra? signs still readable? the blend both ways; the camera under the snow shed); the region switch fix ("Start in" both ways, Redwoods to Sierra by "Drive to"); c5586ba (frame rate with the 60 cloud banks; is the static gone?) and the villages batch (frame rate with the ski hill, the gondola and skaters; the signs' words); the Redwood Coast to Sierra road trip since the villages. Before that: the phone again after the feedback build (the static gone? frame rate with the denser forest below and the cloud banks; the shorter sign), the camera rise in motion (how it feels on the bends), the cloud banks in motion, the Redwood Coast → Sierra handover. Checked on the phone 2026-10-27 before that build: smooth.
+- **Confirmed on the phone 2026-10-28:** the blend grid fix and the sea stacks (the user: "transitions seem to work").
+- **Not checked yet:** on the phone: the smoother-drive batch (freezes gone in LA and the Sierra? signs still readable? the blend both ways; the camera under the snow shed); the region switch fix ("Start in" both ways, Redwoods to Sierra by "Drive to"); c5586ba (frame rate with the 60 cloud banks; is the static gone?) and the villages batch (frame rate with the ski hill, the gondola and skaters; the signs' words); the Redwood Coast to Sierra road trip since the villages. Before that: the phone again after the feedback build (the static gone? frame rate with the denser forest below and the cloud banks; the shorter sign), the camera rise in motion (how it feels on the bends), the cloud banks in motion, the Redwood Coast → Sierra handover. Checked on the phone 2026-10-27 before that build: smooth.
 - **Phone preview:** the "winter-phone" preview serves this worktree to the wifi on port 8768 (http://192.168.2.13:8768/#sierra). The launch.json entry is only in this worktree, not committed.
 - **Questions for the user:** the open items (station and host names, voices, top up or down in snow, snowfall pattern, loop order); is the Coffee Cabin OK as the radio stand-in until the Fireside exists; how glossy should the wet road be.
 
