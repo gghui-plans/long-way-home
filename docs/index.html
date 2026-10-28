@@ -2236,7 +2236,7 @@ function updateLife(dt,t){
   // pelicans pass you every so often, one flock at a time
   if(Math.abs(flock.z-car.z)>650){flock.dir=Math.random()<.5?-1:1;flock.z=car.z-flock.dir*520}
   flock.z+=flock.dir*11*dt;
-  flock.birds.forEach((g,k)=>{const z=flock.z-flock.dir*k*5.5;g.visible=!ftAtZ(z)&&groveAt(z)<.5; // pelicans keep to the open coastg.position.set(shoreX(z)-32+k*2.2,SEA+4.5+Math.sin(t*.6+k)*.5,z);g.rotation.y=flock.dir<0?Math.PI:0;
+  flock.birds.forEach((g,k)=>{const z=flock.z-flock.dir*k*5.5;g.visible=!ftAtZ(z)&&groveAt(z)<.5;g.position.set(shoreX(z)-32+k*2.2,SEA+4.5+Math.sin(t*.6+k)*.5,z);g.rotation.y=flock.dir<0?Math.PI:0; // pelicans keep to the open coast
     const cyc=(t*.12+k*.03)%1,f=cyc<.18?Math.sin(t*6.4+k*.5)*.55:.08;g.userData.L.rotation.z=f;g.userData.R.rotation.z=-f});
   // gulls wheel over the beach just ahead
   gulls.forEach((g,k)=>{const u=g.userData;

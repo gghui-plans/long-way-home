@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-27
+Last updated: 2026-10-28
 
 ## Active
 
@@ -43,6 +43,7 @@ These are decided but not built. Details are in FUTURE-WORK.md.
 
 ## Recently finished
 
+- 2026-10-28: LA's pelicans fly again (a mid-line comment had frozen them since 18b0540; found by the winter batch 3 work).
 - 2026-10-27: LESSONS.md started (bugs and traps with fixes), linked from CLAUDE.md and WORKFLOW.md.
 - 2026-10-27: K-JAM set 2 is live: 14 "Postcards from one summer" songs (30 in all), each with a short intro and a two-host story intro. Salt Air Stomp and Heat Shimmer are in FUTURE-WORK.
 - 2026-10-26: CLAUDE.md, WORKFLOW.md and STATE.md set up. The song and plan files that had never been committed are now in git too.
