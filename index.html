@@ -1628,14 +1628,14 @@ function signTex(top,bottom){
 }
 function buildTerrain(j){
   const b=new Builder(),gb=new Builder(),grp=new THREE.Group(),rnd=rng(Math.floor(hash(j,5,9)*4294967296)),z0=j*B,NZ=6,lot=lotRow(j),rows=[];
-  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j)),al=isAlp(regionAtRow(j));RW_STYLE=rw;AL_STYLE=al; // this stretch's own colours, scenery and people's clothes
+  const TC=tcAt(z0+B/2),rw=isRW(regionAtRow(j)),al=isAlp(regionAtRow(j)),alg=regW(z0+B/2,isAlp)>0;RW_STYLE=rw;AL_STYLE=al; // this stretch's own colours, scenery and people's clothes (alg: the Sierra's sample grid, from the first bit of Sierra in a blend, as its land rises from the start)
   for(let s=0;s<=NZ;s++){
     const z=z0+s*B/NZ,rc=roadX(z),o1=(off(z+1)-off(z-1))/2,len=Math.hypot(1,o1),nx=1/len,nz=-o1/len,pts=[];
     const P=(dx,y,col,along)=>pts.push([along?rc+dx*nx:rc+dx,y,along?z+dx*nz:z,col]);
     if(!lot){
-      for(const [dx,y,col] of westProfile(z))P(dx,y,col,!al||dx>-13); // (in the Sierra the slope runs straight west, so its tight bends don't skew the drop away from groundAt)
+      for(const [dx,y,col] of westProfile(z))P(dx,y,col,!alg||dx>-13); // (in the Sierra the slope runs straight west, so its tight bends don't skew the drop away from groundAt)
       P(-8,0,TC.asph,true);P(8,0,TC.asph,true);P(9.5,0,TC.shoulder,true);
-      for(const dx of al?NEAR_AL:NEAR){const x=rc+dx*(al?1:nx),zz=z+dx*(al?0:nz),y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])} // (straight east in the Sierra too, so its steep face isn't skewed on the bends)
+      for(const dx of alg?NEAR_AL:NEAR){const x=rc+dx*(alg?1:nx),zz=z+dx*(alg?0:nz),y=inlandY(x,zz);pts.push([x,y,zz,inlandCol(x,zz,y)])} // (straight east in the Sierra too, so its steep face isn't skewed on the bends)
       for(const x of FAR){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     }else for(const x of FAR.slice(3)){const y=inlandY(x,z);pts.push([x,y,z,inlandCol(x,z,y)])}
     rows.push({z,rc,nx,nz,pts});
