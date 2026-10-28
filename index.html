@@ -1670,8 +1670,8 @@ function buildTerrain(j){
       for(const zo of[5,35]){const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
         if(hillMul(z0+zo+30)>.3)for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
     }
-    if(rw)redwoodScenery(b,gb,grp,j,rnd);else{
-    if(c<.35){
+    if(rw)redwoodScenery(b,gb,grp,j,rnd);else{const lk=lookAt(zm,'lake')>0; // lk: a road trip's blend toward the Sierra, the west side dropping to the lake (no beach, no sea stacks)
+    if(c<.35&&!lk){
       gb.gain=2.6;const wx=roadX(zm)+waterDx(zm); // surfers past the breakers, a bonfire or a volleyball game on the sand
       if(rnd()<.3)for(let k=0;k<1+Math.floor(rnd()*3);k++)surfer(b,wx-14-rnd()*26,z0+rnd()*B,rnd);
       if(rnd()<.16)bonfire(b,gb,grp,roadX(zm)-36,.22,zm,rnd);else if(rnd()<.1)volleyball(b,roadX(zm)-32,.22,zm,rnd);
@@ -1682,8 +1682,8 @@ function buildTerrain(j){
     }
     // ice plant: green carpets with pink flowers along the bluff tops and dunes, between the shoulder and the drop
     for(let k=0;k<(c>.3?7:5);k++){const zc=z0+rnd()*B,xc=roadX(zc)-(c>.3?11.8:13.5+rnd()*3),y=c>.3?.06:.2,col=pick(ICEPLANT,rnd); // a mat: many small overlapping clumps, dotted with flowers
-      for(let q=0;q<10;q++){const x=xc+(rnd()-.5)*(c>.3?2.2:3.2),z=zc+(rnd()-.5)*4.5;b.add(BLOB,rnd()<.7?col:pick(ICEPLANT,rnd),x,y,z,.45+rnd()*.5,.14,.45+rnd()*.5,rnd()*6);if(rnd()<.6)b.add(BLOB,pick(ICEBLOOM,rnd),x+(rnd()-.5)*.5,y+.11,z+(rnd()-.5)*.5,.16,.06,.16)}}
-    if(c>.5&&rnd()<.55)for(let k=0;k<1+rnd()*3;k++){const z=z0+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9);grp.add(foamRing(x,z,s*.75,s*1.8))}
+      for(let q=0;q<10;q++){const x=xc+(rnd()-.5)*(c>.3?2.2:3.2),z=zc+(rnd()-.5)*4.5,yq=lk?groundAt(x,z)+y:y;b.add(BLOB,rnd()<.7?col:pick(ICEPLANT,rnd),x,yq,z,.45+rnd()*.5,.14,.45+rnd()*.5,rnd()*6);if(rnd()<.6)b.add(BLOB,pick(ICEBLOOM,rnd),x+(rnd()-.5)*.5,yq+.11,z+(rnd()-.5)*.5,.16,.06,.16)}} // (yq: on the falling ground in a blend toward the lake)
+    if(c>.5&&!lk&&rnd()<.55)for(let k=0;k<1+rnd()*3;k++){const z=z0+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9);grp.add(foamRing(x,z,s*.75,s*1.8))}
     if(hm>.3){ // golden poppies and agave on the slopes
       for(let k=0;k<3;k++){const zc=z0+rnd()*B,xc=roadX(zc)+18+rnd()*55;for(let q=0;q<9;q++){const x=xc+(rnd()-.5)*7,z=zc+(rnd()-.5)*7;b.add(BLOB,rnd()<.5?0xf08a24:0xf5a13a,x,inlandY(x,z)+.12,z,.35+rnd()*.3,.18,.35+rnd()*.3)}}
       for(let k=0;k<3;k++){const z=z0+rnd()*B,x=roadX(z)+14+rnd()*40;agave(b,x,inlandY(x,z),z,.9+rnd()*.6,rnd)}
@@ -2298,8 +2298,8 @@ function buildFarChunk(c){
   for(let j=c*8;j<c*8+8;j++)steps.push(()=>{
     if(lotRow(j))return;const n0=b.pos.length/3,zm=j*B+B/2,cst=coastType(zm);
     if(rwAt(zm))farForestRow(b,j,rnd);else{
-    if(cst<.35)for(let k=0;k<2;k++)if(rnd()<.6){const z=j*B+10+rnd()*40;farPalm(b,roadX(z)-16,0,z,rnd()<.4?22:14,rnd)}
-    if(cst>.5&&rnd()<.55){const z=j*B+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9)}
+    if(cst<.35&&!lookAt(zm,'lake'))for(let k=0;k<2;k++)if(rnd()<.6){const z=j*B+10+rnd()*40;farPalm(b,roadX(z)-16,0,z,rnd()<.4?22:14,rnd)}
+    if(cst>.5&&!lookAt(zm,'lake')&&rnd()<.55){const z=j*B+rnd()*B,x=roadX(z)-90-rnd()*80,s=6+rnd()*8;b.add(G.ball,rnd()<.5?TC.rockD:TC.rock,x,SEA+s*.6,z,s,s*(1.4+rnd()),s*.9)}
     }
     for(let q=b.pos.length/3-n0;q>0;q--)hid.push(0,j,2);
   });
