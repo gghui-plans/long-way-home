@@ -34,6 +34,9 @@ Bugs and traps that cost real time, came back, or weren't obvious from the code.
   - **Fix:** the loop clamps `dt` to 0–0.05 s.
 - **A `//` comment pasted mid-line comments out the rest of the line.** The code packs several statements per line. A note added after `last=now;` silenced `clock+=dt;frame++;`: the clock froze, the traffic lights stuck, and the car sat at red lights for over a minute (2026-10-27).
   - **Rule:** a comment goes at the end of the line, after its last statement. After an edit, check the whole line.
+- **Switching region leaves the car on one map and the scenery from another** (2026-10-27, winter branch)
+  - **Why:** a flag set again on every region change (`LAKE_ON`) was declared `const`. The assignment threw partway through "Start in" and the road trip's arrival: the road and saved region had switched, the scenery, radio and title hadn't. The pixel checks missed it because they never tap a button.
+  - **Rule:** anything reassigned later is `let`. After a region change, test "Start in" both ways and a road trip with the error log open, not just the start-up shots.
 
 ## Audio pipeline
 
