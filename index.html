@@ -295,7 +295,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
       <span class="mapinfo" id="mapInfo"></span>
       <button class="iconbtn" id="mapClose" aria-label="Close the map"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
-    <div class="regionbar"><span class="rlabel">Drive to</span><div class="seg" id="regionSeg"><button data-r="la">Los Angeles</button><button data-r="redwood">Redwood Coast</button></div>
+    <div class="regionbar"><span class="rlabel">Drive to</span><div class="seg" id="regionSeg"><button data-r="la">Los Angeles</button><button data-r="redwood">Redwood Coast</button><button data-r="sierra">High Sierra</button></div>
       <label class="rtrip"><input type="checkbox" id="roadTrip"> Road trip</label></div>
     <div class="regionnote" id="regionNote"></div>
     <canvas id="mapCanvas"></canvas>
@@ -340,7 +340,7 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <div class="gorow"><button class="go" id="go">Tap to drive</button>
       <button class="pill ghost a2hs" id="a2hs" hidden><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"/><path d="M12 8v7M8.5 11.5h7"/></svg>Add to home screen</button></div>
     <div class="focusrow"><span>Focus drive</span><div class="seg focusseg"><button data-m="0">Off</button><button data-m="20">20 min</button><button data-m="30">30 min</button></div></div>
-    <div class="focusrow"><span>Start in</span><div class="seg" id="startSeg"><button data-r="la">Los Angeles</button><button data-r="redwood">Redwood Coast</button></div></div>
+    <div class="focusrow"><span>Start in</span><div class="seg" id="startSeg"><button data-r="la">Los Angeles</button><button data-r="redwood">Redwood Coast</button><button data-r="sierra">High Sierra</button></div></div>
     <p class="hint lead" id="leadHint">How long can you leave your phone alone? The hands-free timer counts up while you drive. Switch apps or lock your screen and it starts over. Rick and Dana notice.</p>
     <p class="hint" id="hint">Turn the sound on. Steer with ◀ ↑ ▶ or the arrow keys. Tap the radio display to request a song. More in settings.</p>
     <p class="byline">A game by <b>gghui</b></p>
@@ -1577,7 +1577,7 @@ const shoreX=z=>townOfRow(Math.floor(z/B))?XMIN*B-B-19.3:roadX(z)+waterDx(z);
 // the High Sierra climbs on a level road (test): the land to the west falls away to the lake, deepest at the summit halfway
 // between villages (look.lake metres), and the lake (the sea plane) follows the car down and back up. The villages sit on a bench a fifth
 // of the way up (so the lake is always well below you). 0 outside the Sierra
-const LAKE_ON=!!(BASE.look.lake||PLAN&&PLAN.to.look.lake); // (set again whenever the world changes, below)
+let LAKE_ON=!!(BASE.look.lake||PLAN&&PLAN.to.look.lake); // (set again whenever the world changes, below)
 function dropAt(z){const d=lookAt(z,'lake');if(!d)return 0;const g=gapAt(z);return d*(.2+.8*(g?Math.sin(Math.PI*g.u)**2:0))}
 function westProfile(z){ // [dx,y,color] from far offshore to the shoulder
   const c=coastType(z),L=(a,b)=>a+(b-a)*c,cl=c>.5,T=tcAt(z);
@@ -3986,7 +3986,7 @@ function setRegionPlan(to){ // the blend stretches: the next open coast at least
   if(jA-jE<10){j=jE-1;while(inTown(j))j--;jA=j;kg=Math.floor(jA/PER);jE=kg*PER+townLen(kg)+1}
   j=jc+7;while(inTown(j))j++;let jC=j,jF=(Math.floor(jC/PER)+1)*PER-1;
   if(jF-jC<10){j=jF+1;while(inTown(j))j++;jC=j;jF=(Math.floor(jC/PER)+1)*PER-1}
-  PLAN={to,zA:(jA+1)*B,zB:jE*B,zC:jC*B,zD:(jF+1)*B};flushFar();
+  PLAN={to,zA:(jA+1)*B,zB:jE*B,zC:jC*B,zD:(jF+1)*B};LAKE_ON=!!(BASE.look.lake||to.look.lake);flushFar();
 }
 function requestRegion(id,auto){
   const to=REGIONS[id];if(!to)return;
