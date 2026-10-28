@@ -1750,8 +1750,8 @@ function redwoodScenery(b,gb,grp,j,rnd){
   const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
   const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1); // the road's heading at z
-  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(al&&dx>0&&(dx<26&&chainOff(z)>0||dx<50&&fallsNear(z,9)||dx>16&&dx<80&&sledNear(z,105)));
-  const inCC=(x,z)=>{const d=x-roadX(z);return d>0&&(d<26&&chainOff(z)>0||d<50&&fallsNear(z,9)||d>16&&d<80&&sledNear(z,105))}; // the High Sierra's chain-control pull-off and frozen waterfall, kept clear // keep the creek, the meadow and the big tree's foot open
+  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(al&&dx>0&&(dx<26&&chainOff(z)>0||dx<50&&fallsNear(z,9)||dx>16&&dx<80&&sledNear(z,105))); // keep the creek, the meadow and the big tree's foot open
+  const inCC=(x,z)=>{const d=x-roadX(z);return d>0&&(d<26&&chainOff(z)>0||d<50&&fallsNear(z,9)||d>16&&d<80&&sledNear(z,105))}; // the High Sierra's chain-control pull-off, frozen waterfall and snowfield, kept clear
   const down=dx=>dx<0?dx*2.4-30:dx; // the Sierra: the drop side's trees further down the slope, their tops below the road
   const giant=(dx,z,s)=>{if(clear(dx,z))return;if(al)dx=down(dx);const [x,y]=at(dx,z),k=rnd();if(al){if(rnd()>treeAt(z)||clumpAt(x,z)<-.2)return;b.add(PINES()[k<.7?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
   const young=(dx,z)=>{if(clear(dx,z))return;if(al){if(rnd()>treeAt(z))return;dx=down(dx)}const [x,y]=at(dx,z),s=.8+rnd()*.5;if(al&&clumpAt(x,z)<-.2)return;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
@@ -4299,7 +4299,7 @@ function updateAlpine(dt){
         ALP.deer.forEach((e,k)=>{e.g.visible=k<n;const x=cx+(Math.random()-.5)*16,zz=z+(Math.random()-.5)*24;e.g.position.set(x,groundAt(x,zz)-.03,zz);e.g.rotation.y=Math.random()*6.28})}}
     if(ALP.deerG.visible)for(const e of ALP.deer){if(!e.g.visible)continue;const d=Math.hypot(e.g.position.x-car.x,e.g.position.z-car.z);e.t-=dt;if(e.t<0){e.graze=!e.graze;e.t=2+Math.random()*5}
       const tg=d<75?-.1:e.graze?1.15:.15;e.a+=(tg-e.a)*Math.min(1,dt*(d<75?4:1.6));e.neck.rotation.x=e.a}}
-  { // a snowmobile out on a meadow's track now and then, back and forth
+  { // a snowmobile out on the snowfield's track, back and forth
     const S=ALP.sled,g=gapAt(car.z),P=g&&alpW(car.z)>.99&&sledNear(car.z,700)?sledPath(g.k):null;
     S.visible=!!P;if(P){const d=(clock*8.5)%(2*P.L),fw=d<P.L,s=fw?d:2*P.L-d;let i=0;while(i<P.length-2&&s>P.cum[i+1])i++;
       const [xa,za]=P[i],[xb,zb]=P[i+1],t=clamp((s-P.cum[i])/((P.cum[i+1]-P.cum[i])||1),0,1),x=xa+(xb-xa)*t,z=za+(zb-za)*t,sg=fw?1:-1;S.position.set(x,landY(x,z)+.02,z);S.rotation.set(0,Math.atan2((xb-xa)*sg,(zb-za)*sg),0)}}
