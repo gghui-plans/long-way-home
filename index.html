@@ -2068,10 +2068,18 @@ const VTYPES={
     lights(b,.85,1.15,7.33);for(const z of[6.05,3,1.9,-5,-6.1])for(const s of[-1,1])b.add(G.cyl,TI,s*1.05,.52,z,.52,.32,.52,0,0,Math.PI/2)}},
   moto:{hl:1,w:5,pal:[0x2b2b30,0xd8344a,0x2f6fb3,0xf2a541],bike:true,build(b){b.add(G.box,WH,0,.72,0,.22,.4,1.6);b.add(RB(.36,.26,.62,.1),WH,0,1,.25);for(const z of[.72,-.72])b.add(G.cyl,TI,0,.32,z,.32,.12,.32,0,0,Math.PI/2);b.add(G.box,0x2a2a30,0,1.35,-.15,.45,.62,.3,0,.3);b.add(BLOB,WH,0,1.86,.02,.22,.22,.24);for(const s of[-1,1])b.add(G.box,0x2a2a30,s*.2,.9,.1,.14,.14,.7,0,-.4)}},
   bike:{hl:.9,w:5,pal:SHIRT,bike:true,lane:6.6,slow:true,build(b){for(const z of[.55,-.55])b.add(G.cyl,TI,0,.34,z,.34,.05,.34,0,0,Math.PI/2);b.add(G.box,0x9a9aa2,0,.68,0,.06,.06,1.05);b.add(G.box,0x9a9aa2,0,.55,-.15,.05,.45,.05);b.add(G.box,WH,0,1.28,-.08,.45,.62,.3,0,.25);b.add(BLOB,WH,0,1.78,.05,.21,.21,.23);for(const s of[-1,1])b.add(G.box,0x2f3b5a,s*.12,.78,-.05,.14,.55,.16,0,.3)}},
+  // the High Sierra's snowplow, in place of the log truck: a dump truck with an angled blade out front, a sander behind, amber beacons on the cab (lazy: built the first time one is picked)
+  plow:{hl:5.9,w:6,alp:true,lazy:true,pal:[0xf2a541,0xe8702a,0xf0b429],build(b){const CH=0x9a9aa2;
+    b.add(G.box,DK,0,.9,-.3,1.1,.36,10.2);b.add(RB(2.45,1.9,2.2,.2),WH,0,2.2,2.75);b.add(G.box,GL,0,2.62,3.86,2.1,.78,.06);b.add(G.box,GL,0,2.62,2.85,2.48,.62,1.5);b.add(RB(2.3,.95,1.45,.15),WH,0,1.42,4.45);
+    b.add(G.box,DK,0,1.05,5.2,.9,.42,.6);for(const s of[-1,1])b.add(G.box,CH,s*.55,1.1,5.25,.12,.5,.9);b.add(G.box,WH,0,.82,5.75,3.9,1.05,.16,-.34);b.add(G.box,0x2b2b30,0,.24,5.75,3.9,.14,.2,-.34);b.add(G.box,0xf2efe6,0,1.4,5.72,3.7,.1,.18,-.34); // the blade and its cutting edge
+    for(const s of[-1,1])b.add(G.box,0xf2efe6,s*1.7,1.75,5.85,.05,1.6,.05); // blade markers, so the plow driver sees its corners
+    b.add(G.box,DK,0,3.24,2.75,2,.12,.3);for(const s of[-1,1])b.add(G.box,0xd88a1e,s*.78,3.4,2.75,.3,.24,.3); // the light bar and its amber lenses
+    b.add(G.box,WH,0,2.05,-1.75,2.45,1.55,5.1);b.add(G.box,0x6e6458,0,2.86,-1.75,2.25,.06,4.9);b.add(G.box,DK,0,1.05,-4.6,1.5,.75,.7);b.add(G.cyl,DK,0,.62,-4.95,.35,.12,.35); // the sander and its spinner
+    lights(b,.85,1.5,5.18);for(const z of[3.65,-2.4,-3.7])for(const s of[-1,1])b.add(G.cyl,TI,s*1.02,.56,z,.56,.36,.56,0,0,Math.PI/2)}},
 };
 const POOL=36,CAP=110,agents=[],vMesh={}; // CAP: each car type also has room for parked cars
 const paintFromWhite=g=>{const c=g.attributes.color.array,p=new Float32Array(c.length/3);for(let i=0;i<p.length;i++)p[i]=c[i*3]>.99&&c[i*3+1]>.99&&c[i*3+2]>.99?1:0;g.setAttribute('paint',new THREE.BufferAttribute(p,1));return g}; // generated cars: white parts take the paint
-for(const [k,t] of Object.entries(VTYPES)){const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,CAP);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<CAP;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
+for(const [k,t] of Object.entries(VTYPES)){if(t.lazy)continue;const b=new Builder();t.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,CAP);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);for(let i=0;i<CAP;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}scene.add(m);vMesh[k]=m}
 for(let k=0;k<POOL;k++)agents.push({k,on:false,type:'sedan',x:0,z:0,fx:0,fz:1,v:0,hl:2.3});
 // modelled traffic cars (Quaternius, CC0), baked by production/bake-traffic.js; until they arrive the generated shapes stand in
 fetch('models/traffic.bin').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBuffer()}).then(buf=>{
@@ -2099,12 +2107,34 @@ function npcSignal(a){
   [a.hl-.05,-(a.hl-.05)].forEach((f,n)=>{_d.position.set(a.x+a.fx*f+rx*hw*sg,y,a.z+a.fz*f+rz*hw*sg);_d.rotation.set(0,0,0);_d.scale.set(1,1,1);_d.updateMatrix();npcBlink.setMatrixAt(a.k*2+n,_d.matrix)});
 }
 function pickType(town,onPCH){
-  const wt=t=>t.rw?(isRW(RG)&&!town?t.w:0):t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w;
+  const wt=t=>t.rw?(isRW(RG)&&!isAlp(RG)&&!town?t.w:0):t.alp?(isAlp(RG)&&!town?t.w:0):t.bus&&!(town&&onPCH)?0:t.slow&&!town?0:t.w;
   const tot=Object.values(VTYPES).reduce((s,t)=>s+wt(t),0);let r=Math.random()*tot;
   for(const [k,t] of Object.entries(VTYPES)){if((r-=wt(t))<=0)return k}
   return'sedan';
 }
-function setType(a,type){const t=VTYPES[type];a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!(t.bus||t.rw);a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
+function setType(a,type){const t=VTYPES[type];if(t.lazy&&!vMesh[type])makePlow();a.type=type;a.hl=t.hl;a.lane=t.lane||LANE;a.bike=!!t.bike;a.bus=!!(t.bus||t.rw||t.alp);a.slow=!!t.slow;(a.col||(a.col=new THREE.Color())).set(pick(t.pal))}
+// the snowplows' extras: amber beacons flashing in turn (bright enough to glow) and a fan of snow thrown off the end of the blade
+let PLOW=null;
+function makePlow(){
+  const b=new Builder();VTYPES.plow.build(b);const m=new THREE.InstancedMesh(paintFromWhite(b.geo()),MAT_CAR,POOL);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  for(let i=0;i<POOL;i++){m.setMatrixAt(i,_zero);m.setColorAt(i,_c.set(0xffffff))}m.count=0;scene.add(m);vMesh.plow=m;
+  const lamp=new THREE.InstancedMesh(new THREE.BoxGeometry(.34,.28,.34),new THREE.MeshBasicMaterial({color:new THREE.Color(0xffa020).multiplyScalar(2.6)}),16);lamp.frustumCulled=false;lamp.instanceMatrix.setUsage(THREE.DynamicDrawUsage);lamp.count=0;scene.add(lamp);
+  const n=40,sd=new Float32Array(n),sp=new Float32Array(n*3);for(let i=0;i<n;i++){sd[i]=i/n;sp[i*3]=-1.95;sp[i*3+1]=.7;sp[i*3+2]=5.1}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(sp,3));g.setAttribute('seed',new THREE.BufferAttribute(sd,1));
+  const mat=new THREE.ShaderMaterial({uniforms:smokeU,transparent:true,depthWrite:false, // thrown out to the right (-x) and back, rising and falling
+    vertexShader:'attribute float seed;uniform float uTime,uPx;varying float vA;\nvoid main(){float t=fract(uTime*1.7+seed*3.7);vec3 p=position+vec3(-(.6+3.8*t)*(1.0+.35*sin(seed*31.0)),2.1*t-2.4*t*t+.3*sin(seed*13.0),-2.2*t+.5*sin(seed*17.0));\nvec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=(.3+t*1.1)*uPx/-mv.z;vA=(1.0-t)*smoothstep(0.0,.08,t)*.75;}',
+    fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.93,.95,.98),vA*smoothstep(.5,.15,d));\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'});
+  const spray=[0,1,2,3].map(()=>{const p=new THREE.Points(g,mat);p.frustumCulled=false;p.visible=false;scene.add(p);return p});
+  PLOW={lamp,spray};
+}
+function plowFx(){
+  const L=PLOW.lamp,f=Math.floor(clock*3.2)&1;let n=0,q=0;
+  for(const a of agents){if(!a.on||a.type!=='plow')continue;const c=a.fz,s=a.fx;
+    {const lx=f?.78:-.78;_d.position.set(a.x+lx*c+2.75*s,3.4,a.z-lx*s+2.75*c);_d.rotation.set(0,Math.atan2(s,c),0);_d.scale.set(1,1,1);_d.updateMatrix();L.setMatrixAt(n++,_d.matrix)} // one beacon on at a time, side to side
+    if(q<PLOW.spray.length){const p=PLOW.spray[q++];p.visible=a.v>3;p.position.set(a.x,0,a.z);p.rotation.set(0,Math.atan2(s,c),0)}
+    if(n>=16)break}
+  L.count=n;L.instanceMatrix.needsUpdate=true;for(;q<PLOW.spray.length;q++)PLOW.spray[q].visible=false;
+}
 function aStartLeg(a){
   const D=DIRS[a.d],Rt=DIRS[(a.d+1)%4],ht=hwyTarget(a.i,a.j,a.d);a.commit=false;
   if(ht!=null){a.piece='hwy';a.bi=a.i;a.bj=ht;a.hz=a.j*B+D[1]*R;a.ze=ht*B-D[1]*R}
@@ -2213,7 +2243,7 @@ function updateTraffic(dt){
     _d.position.set(a.x,0,a.z);_d.rotation.set(0,Math.atan2(a.fx,a.fz),0);_d.scale.set(1,1,1);_d.updateMatrix();const n=used[a.type]++;vMesh[a.type].setMatrixAt(n,_d.matrix);vMesh[a.type].setColorAt(n,a.col);
     npcSignal(a);
   }
-  npcBlink.instanceMatrix.needsUpdate=true;
+  npcBlink.instanceMatrix.needsUpdate=true;if(PLOW)plowFx();
   // parked cars near you go in after the moving ones
   const pr=settings.hq?140:80;
   for(const p of parkedCars){const dx=p.x-car.x,dz=p.z-car.z;if(dx*dx+dz*dz>pr*pr||used[p.type]>=CAP)continue;const n=used[p.type]++;_d.position.set(p.x,0,p.z);_d.rotation.set(0,p.ry,0);_d.scale.set(1,1,1);_d.updateMatrix();vMesh[p.type].setMatrixAt(n,_d.matrix);vMesh[p.type].setColorAt(n,p.col)}
