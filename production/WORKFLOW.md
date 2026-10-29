@@ -23,7 +23,7 @@ Each region has its own station, and each station has a song file, a voice scrip
 |---|---|---|---|---|---|
 | LA | K-JAM 101.1, classic rock | Rick and Dana | LYRICS.md | PRODUCTION-PACK.md | `docs/audio/music/`, `docs/audio/voice/` |
 | Redwood Coast | 89.3 The Coffee Cabin, acoustic folk | Marj and Walt | REGION-SONGS.md | COFFEE-CABIN-SCRIPT.md | `.../coffee-cabin/` |
-| High Sierra | 96.1 The Fireside (name not final), fireside jazz | not chosen | REGION-SONGS.md | not written | `.../fireside/` |
+| High Sierra | 96.1 The Fireside, fireside jazz | Vera and Moose | REGION-SONGS.md | FIRESIDE-SCRIPT.md | `.../fireside/` |
 
 ## The steps
 

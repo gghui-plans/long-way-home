@@ -55,6 +55,10 @@ Details and history are in AUDIO-WORKFLOW.md.
 - **Whisper drifts a few seconds early** in bridges and last choruses.
   - **Fix:** spot-check the timings and re-time by hand (`b581f14`, `266d67f`).
 
+- **ElevenLabs API key permissions** (2026-10-28, cost an hour): the key made on 2026-10-03 could only generate speech, so the voice library search answered 401 "missing the permission voices_read". Keys can't be edited, so a new one is needed, and the dashboard afterwards shows the key's **ID**, not the key (the API says "API key ID used as API key"). The secret starts with `sk_` and is only shown at creation.
+  - **Rule:** make one key with Text to Speech, Voices (read and write) and User (read), copy the `sk_` value at creation, and save it over `production/elevenlabs-key.txt`. The library search, adding voices, the dialogue calls and the credit balance all need it.
+  - Searching the library (`/v1/shared-voices`) and adding a voice are free; only generation spends credits. Multi-word `search` terms return almost nothing; use `descriptives`, `use_cases` and single words, sorted by `cloned_by_count`.
+
 ## Tooling
 
 - **A worktree preview shows main's code** (2026-10-27)

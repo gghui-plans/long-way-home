@@ -35,13 +35,13 @@ Last updated: 2026-10-28
   - no harbour towns, so no dock, marina or paddle-wheeler (every village sits on a bench above the lake);
   - keep the summit camera rise.
 - **Next, in this order (agreed 2026-10-28):**
-  1. **Confirm the station and host names.** Proposed: 96.1 The Fireside, with Lionel (a slow, velvet-voiced jazz DJ) and Skye (an excitable ski patroller); details in WINTER-PLAN section 7. The station name is already in the songs: the instrumentals are credited to "The Fireside House Trio" and the files go in a `fireside` folder.
-  2. **The songs.** The 16 Fireside lyrics are written but none are generated. The user reviews them by Nov 2 and makes them in Suno on Nov 3. They come before Coffee Cabin set 2 because of the Dec 1 deadline.
-  3. **Meanwhile Claude writes** the handoff lines (about 20), then the radio script (about 150 clips).
+  1. **Station, hosts and voices: done 2026-10-28.** 96.1 The Fireside, "Jazz by the fire, skis by the door", LCD line WARM JAZZ & FRESH POWDER. Hosts Vera (smooth; library voice Sadie) and Moose (stoked; library voice Tim), IDs in voices.json. Lionel and Skye were dropped as too close to Rick and Dana. Details and the recording rule for Vera's pace in WINTER-PLAN section 7. About 4,000 ElevenLabs characters went on test bits.
+  2. **The songs.** The 16 Fireside lyrics are written. Three are generated on Suno as of 2026-10-28 (First Snow, Fogged-Up Windows, Cocoa for Two), not downloaded yet; the Progress table in REGION-SONGS.md tracks each one. The rest: the user reviews by Nov 2 and makes them in Suno on Nov 3. They come before Coffee Cabin set 2 because of the Dec 1 deadline.
+  3. **Meanwhile Claude writes** the radio script. The 20 handoff lines are drafted in FIRESIDE-SCRIPT.md (2026-10-28, batch 1); the rest of batch 1 (IDs, clock, after, red) is next, then the song intros. The user reviews each batch.
   4. **Batch 5 on "build":** goodbyes and welcomes tagged by where you're going or coming from; a Fireside station of its own, borrowing the Coffee Cabin's songs until its own exist; device voices reading the new lines until they're recorded. Today a Redwoods-to-Sierra trip plays no handoff (both use the Coffee Cabin), and K-JAM's welcome-backs mention trees and elk even when you come from the snow. The map buttons and the road trip loop are already in.
   5. Batch 6 (audio and polish), then batch 7 (phone test and ship).
-- **Behind schedule:** the writing (WINTER-PLAN batch 4) hasn't started. The plan had the station and hosts confirmed in the week of Oct 19–25.
-- **Open:** host voices; top up or down in the snow; the snowfall pattern (built as cycles, about 3 min clear then 2 min snowing); the loop order (built as LA → Redwood Coast → High Sierra → LA); how glossy the wet road is; whether the Coffee Cabin is OK as the stand-in station.
+- **Behind schedule:** the writing (WINTER-PLAN batch 4) started 2026-10-28 with the handoffs. The plan had the station and hosts confirmed in the week of Oct 19–25.
+- **Open:** top up or down in the snow; the snowfall pattern (built as cycles, about 3 min clear then 2 min snowing); the loop order (built as LA → Redwood Coast → High Sierra → LA); how glossy the wet road is; whether the Coffee Cabin is OK as the stand-in station.
 - **Known weak spots** (batch 3): the frozen waterfall is a thin pillar from the chase cam, the snowmobile tracks fade over brown rock, a few flakes show under the snow shed's ends, the deer are small, and the road goes dark navy in snow.
 - **Phone preview:** from the worktree, `node production/serve.js . 8768 0.0.0.0` serves it to the wifi at http://192.168.2.13:8768/#sierra (add `?wx=40` to start snowing). Its launch.json entry ("winter-phone") is only in the worktree.
 

@@ -1759,7 +1759,7 @@ It's your turn now
 
 ---
 
-## High Sierra (96.1 The Fireside, name not final)
+## High Sierra (96.1 The Fireside)
 
 Sound: fireside jazz. Piano trio, upright bass, brushed drums, muted trumpet, saxophone, clarinet, vibraphone, nylon guitar on the bossa songs, one big-band number. Warm vintage production, original songs (no standards). Themes: winter romance and cozy mountain life. **No Christmas:** no Santa, sleighs, bells, mistletoe or holidays, so the station works all year. Plan in WINTER-PLAN.md.
 
@@ -1780,10 +1780,10 @@ Suno won't accept artist names, so each Style of Music describes the sound inste
 
 | # | Song | Band | Vocal | Status |
 |---|---|---|---|---|
-| 1 | First Snow | June Laurent | F | written, not generated |
+| 1 | First Snow | June Laurent | F | generated 2026-10-28, still on Suno (not downloaded) |
 | 2 | Chains On | Benny Frost & the Tire Irons | M | written, not generated |
-| 3 | Fogged-Up Windows | Della Moreau | F | written, not generated |
-| 4 | Cocoa for Two | Nina & Leo | Duet | written, not generated |
+| 3 | Fogged-Up Windows | Della Moreau | F | generated 2026-10-28, still on Suno (not downloaded) |
+| 4 | Cocoa for Two | Nina & Leo | Duet | generated 2026-10-28, still on Suno (not downloaded) |
 | 5 | Snowed In | Charlie Ashford | M | written, not generated |
 | 6 | Chairlift | Sonny Alvarez | M | written, not generated |
 | 7 | Figure Eights | Clara Winters | F | written, not generated |

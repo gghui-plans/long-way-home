@@ -108,24 +108,27 @@ Like the other stations: 7 male, 5 female, 2 duets, 2 instrumentals. Everything 
 
 Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18), so these 16 songs and the 32 new K-JAM and Coffee Cabin songs don't compete for downloads. The lyrics still need to be final by Nov 2.
 
-## 7. Radio: The Fireside (proposed, not decided)
+## 7. Radio: 96.1 The Fireside (station and hosts decided 2026-10-28)
 
-**Next step (2026-10-28):** confirm or change the station and host names below. The handoff lines, the radio script and the song credits ("The Fireside House Trio") all wait on them.
+**Next step (2026-10-28):** Claude writes the handoff lines, then the radio script. Station, hosts and voices are all decided. The station name is final, so the song credits ("The Fireside House Trio") and the `fireside` folder stand.
 
-**Station:** "96.1, The Fireside. Jazz by the fire, chains on the tires."
+**Station (decided 2026-10-28):** "96.1, The Fireside. Jazz by the fire, skis by the door." LCD tagline: WARM JAZZ & FRESH POWDER (same shape as CLASSIC ROCK & GRIDLOCK and COZY SWEATER & HOT COFFEE). The spoken line is indoors (Vera's); the LCD is outdoors (Moose's). Earlier proposal: "chains on the tires".
 
 **Tone:** smooth versus stoked. One host wants everything classy and slow; the other bursts in with powder reports. Same comedy rules as the others: escalation, twist endings, callbacks to station lore.
 
-**Hosts (proposed):**
-- **Lionel:** a velvet-voiced late-night jazz DJ in his 60s. Talks slowly, describes songs like fine wine, and takes the lodge's ancient hot tub very seriously.
-- **Skye:** a ski patroller who does the morning chain-control and powder reports. Relentlessly stoked, and interrupts Lionel's sentences.
+**Hosts (decided 2026-10-28): Vera and Moose.** A third shape next to the other pairs: Rick panics and Dana is sunny; Marj is sharp and Walt is dry; here she's the cool one and he's the big happy one. Rejected: Lionel and Skye (a calm man and a sunny woman, too close to Rick and Dana, and Lionel's low, slow voice crowded Walt's).
+- **VERA:** the smooth one. A former lounge singer in her 40s who runs the board. Low, cool and dry, unimpressed by everything, sips something on air. Describes songs like fine wine, takes the lodge's ancient hot tub very seriously, and half-sings the station ID. Says "jazz by the fire".
+- **MOOSE:** the stoked one. A ski patroller the size of a door, in his 50s, who does the morning chain-control and powder reports. Big, booming and delighted; every day is "the best day". Interrupts Vera's sentences and never notices. Says "fresh powder".
+- **Script keys:** V and M (R, D, J and W are taken by the other stations).
+- **Voices (chosen 2026-10-28, IDs in voices.json as VERA and MOOSE):** Vera is the library voice "Sadie - Calm, Gritty & Expressive" (deep, lived-in, dry); Moose is "Tim - Solid and Enthusiastic" (warm, big, upbeat). Both sit in the ElevenLabs library renamed VERA and MOOSE. Chosen from a shortlist of 7 each with test bits (a station ID, chain control, a First Snow intro, Gerald the bear, the summit); Zoey was the runner-up for Vera and is still in the library as "Fireside test Zoey".
+  - **Recording rule for Vera:** her tags describe attitude, never speed ("deadpan", "dry", "matter-of-fact", "quick"). "[slow]", "[savouring]" and stray "[pause]" tags made her drag in the tests; use "slow" at most a couple of times in the whole script, for ballad intros.
 
 **Lore to call back to:**
 - the studio above the bar of an old ski lodge;
 - Bertha, the lodge's ancient snowcat;
 - Gerald, the bear who raids the dumpster;
 - Hank, the plow driver who calls in;
-- Velvet, Lionel's cat;
+- Velvet, the station cat, who sleeps on the mixing board (the name may change so it doesn't rhyme with Vera's);
 - a friendly rivalry with the Coffee Cabin (Walt says sitting by a fire isn't radio);
 - Rick and Dana calling from LA, horrified by snow.
 
@@ -136,7 +139,7 @@ Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18)
 | Song intros (intro + introb) | Same | 32 |
 | Traffic report | Chain control and road report | 6 |
 | Sig Alert | Plow Alert / Whiteout Watch | 4 |
-| Dana's shortcut | Skye's "secret stash" (a powder spot she won't name) | 4 |
+| Dana's shortcut | Moose's "secret stash" (a powder spot he won't name) | 4 |
 | Ads | Lodge bulletin board (ski swap, lost glove, hot tub rules, fondue night) | 4 |
 | Fast Lane Facts | Snow Notes (real snow and Sierra facts) | 16 |
 | Callers | Locals: Hank the plow driver, a lift operator, an LA tourist with no chains, a snowman-contest judge, a man who's been in the hot tub since Tuesday, and others | 13 |
@@ -212,7 +215,7 @@ Revised 2026-10-28. The first version had the code a week later and the station 
 
 ## Open
 
-- Station name and frequency, and host names and voices.
+- (Station, slogan, LCD tagline, host names and voices were all decided 2026-10-28.)
 - Convertible top up or down in the snow (the top stays down everywhere else; the hosts could joke about it).
 - Snowfall: weather cycles or always snowing. Built as cycles (about 3 min clear, then 2 min snowing); confirm.
 - The road trip loop order. Built as LA → Redwood Coast → High Sierra → LA; confirm.
