@@ -120,7 +120,7 @@ These play instead of leave-01 to 03 when the destination is the High Sierra.
 - MOOSE: [bursting in] Except me!
 - VERA: [deadpan] Except Moose. Welcome to The Fireside.
 
-**arrive-south-03 · Top's down** (assumes the top stays down in the snow; rewrite if it goes up)
+**arrive-south-03 · Top's down** (the top stays down in the snow: decided 2026-10-29)
 - MOOSE: [delighted] Top's down! Vera, they've got the top down! In the snow!
 - VERA: [unbothered] Good for them.
 - MOOSE: [awed] That is the most stoked thing I have ever seen.

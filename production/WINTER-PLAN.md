@@ -128,7 +128,7 @@ Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18)
 - Bertha, the lodge's ancient snowcat;
 - Gerald, the bear who raids the dumpster;
 - Hank, the plow driver who calls in;
-- Velvet, the station cat, who sleeps on the mixing board (the name may change so it doesn't rhyme with Vera's);
+- Velvet, the station cat, who sleeps on the mixing board (name kept 2026-10-29: it shares "Ve" with Vera, but the cat never speaks, so it's fine);
 - a friendly rivalry with the Coffee Cabin (Walt says sitting by a fire isn't radio);
 - Rick and Dana calling from LA, horrified by snow.
 
@@ -189,7 +189,7 @@ All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.clau
    - station and host names;
    - final song lyrics (drafted) **by November 2**, so you can generate them in Suno on November 3;
    - the radio script (about 150 clips) by mid-November, then you record them.
-5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station (borrowing the Coffee Cabin's songs until its own exist).
+5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station (borrowing the Coffee Cabin's songs until its own exist). Also: the driver wears a Santa hat in the High Sierra, all year: it goes on as the car enters and comes off as it leaves (decided 2026-10-29; the walkers already swap sun hats for beanies by region, so it follows that code).
 6. **Audio and polish:**
    - songs and clips dropped in (music and voice scripts, whisper for the lyrics);
    - ambient sound;
@@ -216,6 +216,6 @@ Revised 2026-10-28. The first version had the code a week later and the station 
 ## Open
 
 - (Station, slogan, LCD tagline, host names and voices were all decided 2026-10-28.)
-- Convertible top up or down in the snow (the top stays down everywhere else; the hosts could joke about it).
+- (The top stays down in the snow, and the driver wears a Santa hat in the Sierra all year: both decided 2026-10-29.)
 - Snowfall: weather cycles or always snowing. Built as cycles (about 3 min clear, then 2 min snowing); confirm.
 - The road trip loop order. Built as LA → Redwood Coast → High Sierra → LA; confirm.
