@@ -260,9 +260,10 @@ New slot: today the Cabin has no welcome-back, because you only ever arrived fro
 - MOOSE: [defensive] It said 18 inches!
 
 **after-03**
-- VERA: [cool] Moose. Were you dancing?
-- MOOSE: [out of breath] No.
-- VERA: [deadpan] He was dancing. In ski boots. Downstairs just called.
+- MOOSE: [whispering] Vera. Velvet's purring.
+- VERA: [cool] She only purrs for the good ones.
+- MOOSE: [whispering] And sandwiches.
+- VERA: [deadpan] And sandwiches.
 
 ### Stopped (in place of "stopped at a light")
 
@@ -296,7 +297,7 @@ Same shape as the Cabin's. Each song gets two:
 The ids follow each song's "Save as" name in REGION-SONGS.md. Short intros with more than one line get stored like the Cabin's (see its code note).
 
 **Facts the stories share** (kept consistent across the whole script):
-- Vera sang in hotel lounges for 20 years, the last of them in Reno. 11 winters ago she came up to sing in the lodge bar for one weekend. The pass closed for 3 days, and she never left. She left Leon, a trumpet player, in Reno; the Blue Room, the lounge where they played, is a parking garage now.
+- Vera sang in hotel lounges for 12 years, the last of them in Reno. 11 winters ago she came up to sing in the lodge bar for one weekend. The pass closed for 3 days, and she never left. She left Leon, a trumpet player, in Reno; the Blue Room, the lounge where they played, is a parking garage now.
 - Moose was born on the mountain. His dad, Big Moose, drove Bertha for 40 years. Moose's real name is Eugene; only his dad uses it. He's been on ski patrol for 30 years and does the last sweep of the mountain every night.
 - Darlene runs Chair 4. Moose has been working up to asking her for cocoa for 3 winters.
 - The Fireside House Trio plays the bar downstairs every night. Velvet sits on the piano.
@@ -1180,9 +1181,9 @@ New `place` keys for the Sierra's scenery: `pines`, `lake`, `snowshed`, and in t
 - VERA: [cool] Mountains are good at that.
 
 **back-03**
-- VERA: [cool] Phone, huh.
-- MOOSE: [cheerful] Vera doesn't have a cell phone!
-- VERA: [smooth] I have one. It's in a drawer. In Reno.
+- MOOSE: [concerned] Uh oh. Phone.
+- VERA: [smooth] It's fine. I keep mine in a drawer. In Reno.
+- MOOSE: [impressed] That's the farthest anybody's ever put a phone!
 
 ### Song requests
 
@@ -1196,17 +1197,18 @@ New `place` keys for the Sierra's scenery: `pines`, `lake`, `snowshed`, and in t
 - VERA: [smooth, dedicating] This one goes out to somebody driving over the pass. You know who you are.
 
 **request-04**
-- MOOSE: [delighted] Request from a red convertible! Top down! In the snow!
-- VERA: [dry] Brave. Or cold.
+- MOOSE: [delighted] Request from somebody at chain control! On their knees in the slush!
+- VERA: [dry] Holding the phone in their teeth, I assume.
+- MOOSE: [cheerful] Coming right up!
 
 **request-05**
 - MOOSE: [cheerful] Request line! It's Carl, from the hot tub. He wants something upbeat.
 - VERA: [flat] It's been a week, Carl.
 
 **request-06**
-- MOOSE: [cheerful] We were going to play something else! Vera overruled me!
-- VERA: [smooth] I run the board, Moose.
-- MOOSE: [proud] She runs the board!
+- VERA: [cool] Request from Gerald.
+- MOOSE: [delighted] Gerald!
+- VERA: [deadpan] It came in through the dumpster. We're honoring it.
 
 **plug-01** (until the player has tried requests)
 - VERA: [cool] Want to hear something else? Tap the radio. We take requests.
@@ -1222,9 +1224,9 @@ New `place` keys for the Sierra's scenery: `pines`, `lake`, `snowshed`, and in t
 
 **focus-30**
 - MOOSE: [booming] 30-minute focus drive! Starting now!
-- VERA: [cool] Moose is going to whisper.
-- MOOSE: [loud whisper] I'm whispering!
-- VERA: [deadpan] Downstairs heard that.
+- VERA: [cool] Moose is going outside to shovel, so it'll be quiet in here.
+- MOOSE: [far off, cheerful] Good luck!
+- VERA: [dry] 30 minutes. Then I let him back in.
 
 **focus-end**
 - MOOSE: [cheerful] That's your focus drive! Pull over, stretch, throw a snowball!
