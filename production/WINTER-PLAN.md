@@ -110,7 +110,7 @@ Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18)
 
 ## 7. Radio: 96.1 The Fireside (station and hosts decided 2026-10-28)
 
-**Next step (2026-10-28):** Claude writes the handoff lines, then the radio script. Station, hosts and voices are all decided. The station name is final, so the song credits ("The Fireside House Trio") and the `fireside` folder stand.
+**Script (2026-10-29):** all 173 clips are drafted in FIRESIDE-SCRIPT.md, waiting for the user's review before recording. Station, hosts and voices are all decided. The station name is final, so the song credits ("The Fireside House Trio") and the `fireside` folder stand.
 
 **Station (decided 2026-10-28):** "96.1, The Fireside. Jazz by the fire, skis by the door." LCD tagline: WARM JAZZ & FRESH POWDER (same shape as CLASSIC ROCK & GRIDLOCK and COZY SWEATER & HOT COFFEE). The spoken line is indoors (Vera's); the LCD is outdoors (Moose's). Earlier proposal: "chains on the tires".
 

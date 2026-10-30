@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-28
+Last updated: 2026-10-29
 
 ## Active
 
@@ -37,7 +37,7 @@ Last updated: 2026-10-28
 - **Next, in this order (agreed 2026-10-28):**
   1. **Station, hosts and voices: done 2026-10-28.** 96.1 The Fireside, "Jazz by the fire, skis by the door", LCD line WARM JAZZ & FRESH POWDER. Hosts Vera (smooth; library voice Sadie) and Moose (stoked; library voice Tim), IDs in voices.json. Lionel and Skye were dropped as too close to Rick and Dana. Details and the recording rule for Vera's pace in WINTER-PLAN section 7. About 4,000 ElevenLabs characters went on test bits.
   2. **The songs.** The 16 Fireside lyrics are written. Three are generated on Suno as of 2026-10-28 (First Snow, Fogged-Up Windows, Cocoa for Two), not downloaded yet; the Progress table in REGION-SONGS.md tracks each one. The rest: the user reviews by Nov 2 and makes them in Suno on Nov 3. They come before Coffee Cabin set 2 because of the Dec 1 deadline.
-  3. **Meanwhile Claude writes** the radio script. The 20 handoff lines are drafted in FIRESIDE-SCRIPT.md (2026-10-28, batch 1); the rest of batch 1 (IDs, clock, after, red) is next, then the song intros. The user reviews each batch.
+  3. **Meanwhile Claude writes** the radio script. All of batch 1 is drafted in FIRESIDE-SCRIPT.md (33 clips: 20 handoffs on 2026-10-28; IDs, clock, after and red on 2026-10-29). Batch 2 (32 song intros, with shared story facts: how Vera got here, Moose's dad and Bertha, Darlene at Chair 4) is drafted too, 2026-10-29. Batch 3 (18 segments: chain control, Plow Alert with Hank and his plow Linda, secret stash, bulletin board) is drafted too, 2026-10-29. Batch 4 (16 Snow Notes, facts checked online 2026-10-29) is drafted too. Batch 5 (13 callers) is drafted too. Batch 6 (57 reactions and short bits) is drafted too. Batch 7 (4 December bits) too, so the whole script is drafted: 173 clips, 2026-10-28 and 29. Next the user reviews it; nothing gets recorded until it is approved. (Script batches 1–7 are separate from the build batches in WINTER-PLAN.) The user reviews each batch.
   4. **Batch 5 on "build":** goodbyes and welcomes tagged by where you're going or coming from; a Fireside station of its own, borrowing the Coffee Cabin's songs until its own exist; device voices reading the new lines until they're recorded. Today a Redwoods-to-Sierra trip plays no handoff (both use the Coffee Cabin), and K-JAM's welcome-backs mention trees and elk even when you come from the snow. The map buttons and the road trip loop are already in.
   5. Batch 6 (audio and polish), then batch 7 (phone test and ship).
 - **Behind schedule:** the writing (WINTER-PLAN batch 4) started 2026-10-28 with the handoffs. The plan had the station and hosts confirmed in the week of Oct 19–25.
