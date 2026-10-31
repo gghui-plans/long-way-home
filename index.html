@@ -272,6 +272,8 @@ a.pill{text-decoration:none;display:inline-block;text-align:center}
     <p class="note">Fades the signs and buttons after 10 seconds without touching anything. The hands-free timer stays. Tap anywhere to bring everything back.</p>
     <div class="row"><span class="lbl">Focus drive</span><div class="seg focusseg"><button data-m="0">Off</button><button data-m="20">20 min</button><button data-m="30">30 min</button></div></div>
     <p class="note">A focus timer while you work. When it's up, the car pulls over for a 5-minute break by the ocean, then the next session starts.</p>
+    <div class="row"><span class="lbl">Holiday decorations</span><div class="seg" id="decoSeg"><button data-d="auto">Auto</button><button data-d="on">On</button><button data-d="off">Off</button></div></div>
+    <p class="note">Lights, wreaths and a big tree in the High Sierra. Auto puts them up December 1 to January 1.</p>
     <div class="row"><label class="lbl" for="hq">High-quality graphics</label><input type="checkbox" id="hq" checked></div>
     <p class="note">Soft glow and sharper shadows. Turn off to save battery on long drives.</p>
     <p class="note credits">Your car: <a href="https://sketchfab.com/3d-models/1962-corvette-c1-f52ad070ec12455981d4ba63f21bcf0e" target="_blank" rel="noopener">"1962 Corvette c1"</a> by <a href="https://sketchfab.com/platemodels" target="_blank" rel="noopener">Plate Models</a>, <a href="http://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener">CC-BY 4.0</a> (top down and repainted). Traffic cars by Quaternius (CC0).</p>
@@ -1010,6 +1012,20 @@ function sledPath(k){if(sledCache.has(k))return sledCache.get(k);let P=null;
   if(hash(k,3,91)<.75){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,c=(a+L*.075)*B,ph=hash(k,4,93)*6;P=[];for(let i=0;i<=40;i++){const s=i/40,z=c+(s-.5)*170+12*Math.sin(s*4.5+ph*1.3);P.push([roadX(z)+24+34*s+9*Math.sin(s*7+ph),z])}
     P.c=c;P.cum=[0];for(let i=1;i<P.length;i++)P.cum.push(P.cum[i-1]+Math.hypot(P[i][0]-P[i-1][0],P[i][1]-P[i-1][1]));P.L=P.cum[P.length-1]}
   if(sledCache.size>16)sledCache.clear();sledCache.set(k,P);return P}
+// the chairlift over the road: once per pass, on the way down into the next village (none where a creek crosses close by). Its line runs
+// straight across the road, from a hut down on the slope below the guardrail up the mountainside to the east: towers 9 m tall, raised where
+// the slope between them comes close to the chairs, and the cable 13 m up over the road (the lowest skis about 10 m over it)
+function liftZ(k){const a=k*PER+townLen(k)+1,L=PER-townLen(k)-2,z=(Math.floor(a+L*.94)+.5)*B,c=creekZ(k);return c!=null&&Math.abs(c-z)<150?null:z}
+const liftCache=new Map();
+function liftLayout(k){if(liftCache.has(k))return liftCache.get(k);const z=liftZ(k);let L=null;
+  if(z!=null){const rc=roadX(z),DX=[-175,-120,-62,-17,17,70,130,195,250],n=DX.length,gr=x=>{const dx=x-rc,g=groundAt(x,z);return dx>9.5?Math.min(g,landY(x,z)):g};
+    const base=DX.map(dx=>gr(rc+dx)),y=base.map((g,q)=>q===0||q===n-1?g+4.5:Math.abs(DX[q])<20?Math.max(13,g+9):g+9);
+    for(let it=0;it<3;it++)for(let q=0;q+1<n;q++)for(let s=1;s<8;s++){const t=s/8,need=gr(rc+DX[q]+(DX[q+1]-DX[q])*t)+7.5,have=y[q]+(y[q+1]-y[q])*t;if(have<need){y[q]+=need-have;y[q+1]+=need-have}}
+    L={z,base,pts:DX.map((dx,q)=>[rc+dx,y[q],z])}}
+  if(liftCache.size>8)liftCache.clear();liftCache.set(k,L);return L}
+function liftNear(){ // 0..1: how close the car is to a chairlift (the one over the road, or the gondola's station in a village), for its hum
+  let d=1e9;const k0=Math.floor(car.z/B/PER);for(const k of[k0,k0-1]){const L=isAlp(regionOf(k))&&liftLayout(k);if(L)d=Math.min(d,Math.hypot(car.x-roadX(L.z),car.z-L.z))}
+  const t=townOfRow(Math.floor(car.z/B));if(t&&isAlp(regionOf(t.k))){const S=skiLayout(t.k);d=Math.min(d,Math.hypot(car.x-S.gond[0][0],car.z-S.zg))}return ss(240,40,d)}
 const sledNear=(z,d)=>{const g=gapAt(z);if(!g||alpW(z)<.999)return false;const P=sledPath(g.k);return!!P&&Math.abs(z-P.c)<d}; // (its snowfield, kept clear of trees)
 function landY(x,z){ // the land as drawn east of the Sierra's open road: the near strips' rows every 10 m, their points NEAR_AL out from the road
   const r=zr=>{const rc=roadX(zr),dx=x-rc,xs=NEAR_AL;let k=0;while(k<xs.length-2&&dx>xs[k+1])k++;const u=clamp((dx-xs[k])/(xs[k+1]-xs[k]),0,1),a=gyAt(rc+xs[k],zr);return a+u*(gyAt(rc+xs[k+1],zr)-a)};
@@ -1095,6 +1111,17 @@ function snowman(b,x,y,z,ry,r){ // three balls, a carrot, a top hat, a scarf, st
   b.add(G.cyl,0x2b2b30,x,y+2.05,z,.18,.32,.18);b.add(G.cyl,0x2b2b30,x,y+1.9,z,.3,.03,.3);b.add(G.cyl,pick([0xa8322d,0x2f5d4a,0x3a5a7a,0xe0a526],r),x,y+1.45,z,.36,.1,.36);
   for(const s of[-1,1])b.add(G.box,0x5a3a28,x+sx*s*.65,y+1.32,z+sz*s*.65,.04,.04,.75,ry+Math.PI/2,0,s*.5);
 }
+// the holiday decorations (built in their own layer, see decoGroup): bulbs in these colours, Santa hats, a big lit tree
+const HOLC=[0xff4a3a,0x4adf6a,0xffd27a,0x5aa8ff,0xff8ad8];
+function santa(b,x,y,z){b.add(G.scone,0xc41e2f,x,y+2.14,z,.2,.5,.2);b.add(G.donut,0xf4f0e8,x,y+1.92,z,.16,.16,.16,0,Math.PI/2);b.add(G.sph,0xf4f0e8,x,y+2.4,z,.07,.07,.07)} // over the beanie of someone standing at y
+function snowHat(b,x,y,z){b.add(G.scone,0xc41e2f,x,y+2.26,z,.34,.8,.34);b.add(G.donut,0xf4f0e8,x,y+1.92,z,.26,.26,.26,0,Math.PI/2);b.add(G.sph,0xf4f0e8,x,y+2.68,z,.1,.1,.1)} // over a snowman's top hat
+function xmasTree(b,gb,x,y,z,h){ // tiers of fir, lights wound round it, a star on top
+  b.add(G.cyl,0x4a3426,x,y+h*.05,z,h*.04,h*.1,h*.04);
+  for(let k=0;k<4;k++){const hh=h*(.42-.05*k);b.add(G.scone,[0x1f4a2e,0x234f31,0x1d452b,0x26553a][k],x,y+h*(.08+.19*k)+hh/2,z,h*(.3-.06*k),hh,h*(.3-.06*k),k)}
+  const n=Math.round(h*7),bs=.1+h*.012;for(let q=0;q<n;q++){const t=q/n,a=t*h*2.3,R=h*.31*(1-t)+.12;gb.add(G.box,HOLC[q%HOLC.length],x+Math.cos(a)*R,y+h*(.1+.82*t),z+Math.sin(a)*R,bs,bs,bs)}
+  gb.add(G.ball,0xffe08a,x,y+h*.97,z,h*.05,h*.05,h*.025);
+}
+function decoGroup(db,dgb){const g=new THREE.Group();g.userData.deco=1;g.visible=decoOn();if(!db.empty)g.add(db.mesh());if(!dgb.empty)g.add(dgb.mesh(MAT_GLOW,false));return g}
 function skiCarrier(b,x,y,z,ry,r){stander(b,x,y,z,ry,r,false); // someone with their skis over a shoulder
   const c=pick(SKIC,r),sx=Math.cos(ry),sz=-Math.sin(ry);for(const o of[.17,.27])b.add(G.box,c,x+sx*o,y+1.62,z+sz*o,.07,.03,1.75,ry,-.55)}
 const VICTC=[0xc4655a,0x5f8fa3,0xd9b45c,0x7a9a6a,0xefe6d4,0x8a6aa0,0x3f6f7a,0xe8a87c],HYDRANGEA=[0x6a8fd6,0x8a7ad8,0xd88ab8,0xe0a0c8];
@@ -1173,11 +1200,17 @@ function buildBlock(i,j,d){
     put(G.trunk,0x7a5a40,u,1.7*s,v,.25*s,2.8*s,.25*s);put(BLOB,rnd()<.22?pick(JACARANDA,rnd):pick([0x5f8f3e,0x6e9a45,0x4f7f3a],rnd),u,3.9*s,v,2.2*s,1.9*s,2.2*s,rnd()*6)}; // some are purple jacarandas
   const parkedL=[],gb=new Builder();gb.gain=2.6; // parked model cars (drawn by the traffic system) and glowing parts
   const gput=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);gb.add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)};
+  // the holiday decorations (the Sierra): their own layer with its own random numbers, so the village is the same with them up or down
+  const dk=al?[new Builder(),new Builder()]:null,drnd=al?rng(Math.floor(hash(i,j,19)*4294967296)):null;if(dk)dk[1].gain=2.6;
+  const dput=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);dk[0].add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)},dgput=(col,u,y,v,s=.17)=>{const p=P(u,v);dk[1].add(G.box,col,p[0],y,p[1],s,s,s)};
+  const slope=(u,y0,v,hw,rise,n)=>{for(const s2 of[-1,1])for(let q=0;q<=n;q++){const t=q/n;dgput(HOLC[(q+(s2>0?2:0))%5],u+s2*hw*(1-t),y0+rise*t,v)}}; // bulbs up both edges of a gable end
+  const wreath=(u,y,v,s=1)=>{dput(G.donut,0x2f6b3a,u,y,v,.3*s,.3*s,.3*s);dput(G.box,0xc8322d,u,y+.3*s,v,.26*s,.16*s,.08)}; // facing along v, with a red bow
   const park=(x,z,ry)=>parkedL.push({type:pick(PARKT,rnd),x,z,ry,col:new THREE.Color(pick(CARCOL,rnd))});
   const parked=(u,v,ry)=>{const p=P(u,v);park(p[0],p[1],ry+rot*Math.PI/2)};
   // street lamps on the lot corners, and cars parked along the curbs
   if(d!=='edge'&&d!=='beach'&&d!=='forestedge'){
-    const lamp=(x,z,ax,az)=>{b.add(G.box,0x8f8f96,x,3.6,z,.18,7.2,.18);b.add(G.box,0x8f8f96,x+ax*.8,7.15,z+az*.8,ax?1.7:.12,.12,az?1.7:.12);gb.add(G.box,0xffc77a,x+ax*1.55,6.95,z+az*1.55,.55,.18,.55)};
+    const lamp=(x,z,ax,az)=>{b.add(G.box,0x8f8f96,x,3.6,z,.18,7.2,.18);b.add(G.box,0x8f8f96,x+ax*.8,7.15,z+az*.8,ax?1.7:.12,.12,az?1.7:.12);gb.add(G.box,0xffc77a,x+ax*1.55,6.95,z+az*1.55,.55,.18,.55);
+      if(dk){dk[0].add(G.donut,0x2f6b3a,x+ax*.15,4.2,z+az*.15,.34,.34,.34,ax?Math.PI/2:0);dk[0].add(G.box,0xc8322d,x+ax*.2,4.52,z+az*.2,ax?.08:.3,.18,ax?.3:.08)}}; // (a wreath on each post)
     lamp(ix+9.3,jz+(i===XMIN?48:30),-1,0);lamp(ix+B/2,jz+9.3,0,-1);
     if(d!=='freeway'){
       const pk=d==='main'?.85:.5; // main street's curbs are lined with cars
@@ -1286,9 +1319,10 @@ function buildBlock(i,j,d){
       for(const s2 of[-1,1])put(G.box,0x7a5a3a,S/2+s2*10,.75,S-6.5,3,.12,.6);
       for(let q=0,m=1+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(S/2-13+rnd()*26,S-7.5);stander(b,px,.33,pz,rot*Math.PI/2+Math.PI+(rnd()-.5),rnd,false)} // watching from the side
       const [rx0,rz0]=P(S/2,S/2-2);
-      for(const [R0,n,v0] of[[9.5,7,.3],[5,3,-.42]]){const sb=new Builder(),sg=new THREE.Group(); // two rings of skaters, the inner one the other way round
-        for(let q=0;q<n;q++){const a=q/n*6.28+rnd()*.5,x=R0*Math.cos(a),z=R0*Math.sin(a);person(sb,x,.45,z,v0>0?Math.atan2(z,-x):Math.atan2(-z,x),rnd,'stand')}
-        sg.add(sb.mesh());sg.position.set(rx0,0,rz0);sg.userData.v=v0;grp.add(sg);turners.add(sg)}
+      for(const [R0,n,v0] of[[9.5,7,.3],[5,3,-.42]]){const sb=new Builder(),sg=new THREE.Group(),hb=new Builder(); // two rings of skaters, the inner one the other way round (in Santa hats for the holidays)
+        for(let q=0;q<n;q++){const a=q/n*6.28+rnd()*.5,x=R0*Math.cos(a),z=R0*Math.sin(a);person(sb,x,.45,z,v0>0?Math.atan2(z,-x):Math.atan2(-z,x),rnd,'stand');santa(hb,x,.45,z)}
+        sg.add(sb.mesh());const hm=hb.mesh();hm.userData.deco=1;hm.visible=decoOn();sg.add(hm);sg.position.set(rx0,0,rz0);sg.userData.v=v0;grp.add(sg);turners.add(sg)}
+      xmasTree(dk[0],dk[1],rx0,.45,rz0,10); // the village tree, in the middle of the ice
     }else if(spot==='sled'){ // the sledding hill on the edge of town: sleds coming down, someone towing one back up, a fence at the bottom
       const hx=S/2+7,hz=S/2,HX=19,HY=7.5,HZ=17,hy=(u,v)=>{const q=1-((u-hx)/HX)**2-((v-hz)/HZ)**2;return q>0?.3+HY*Math.sqrt(q):.3};
       put(G.sph,0xeef2f6,hx,.3,hz,HX,HY,HZ);
@@ -1297,12 +1331,21 @@ function buildBlock(i,j,d){
       for(let q=0;q<2;q++){const u=hx-2+rnd()*4,v=hz+(rnd()-.5)*6,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rnd()*6.28,rnd,false)} // at the top
       {const u=hx-9,v=hz+9,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rot*Math.PI/2+Math.PI/2,rnd,false);put(G.box,0xe8505b,u-1.4,hy(u-1.4,v)+.12,v,1.2,.14,.6)} // towing a sled back up
       put(G.box,0xc8322d,3,.75,S/2,.12,.45,S-10);for(let v=6;v<S-4;v+=4)put(G.box,0x7a5a3a,3,.6,v,.14,1.2,.14); // the fence at the bottom
+      for(let v=6,q=0;v<=S-5;v+=1.2,q++)dgput(HOLC[q%5],3,1.2+.1*Math.sin(v*.9),v,.15); // (the holidays: lights along it, and a lit sleigh piled with presents)
+      dput(G.box,0xa8322d,8,1,S-8,1.7,.9,2.6);dput(G.box,0xa8322d,8,1.55,S-6.8,1.7,1,.35,0,.35);dput(G.box,0x7a2420,8,1.3,S-9.2,1.7,.5,.25);for(const s2 of[-.75,.75]){dput(G.box,0xd9b45c,8+s2,.42,S-8,.09,.09,3.4);for(let q=0;q<7;q++)dgput(HOLC[(q+(s2>0?2:0))%5],8+s2*1.1,1.5,S-9.3+q*.42,.13)}
+      for(const [du,dv,c] of[[-.35,-.4,0x2fb3a8],[.35,-.2,0xf2c230],[0,.4,0xe8505b]])dput(G.box,c,8+du,1.7,S-8+dv,.55,.45,.55,du);
       for(const [u,v] of[[S-3,4],[S-4,S-5],[S-2,S/2]])put(PINES()[1+Math.floor(rnd()*2)],null,u,.3,v,1,1,1,rnd()*6.28);
     }else if(d==='mill'&&al){ // the ski area's lot (where the mill would be): parked cars, a shuttle bus, ski racks, people heading for the hill
       for(const v of[12,30]){for(let u=6;u<S-8;u+=3.2)put(G.box,0xe8e4da,u,.34,v,.15,.02,5);for(let k=0;k<9;k++)if(rnd()<.55)parked(7.6+k*3.2,v,0)}
       put(G.box,0x2f5d8a,S-5,1.9,21,2.6,2.7,11);put(G.box,0x1f2a36,S-5,2.5,21,2.66,.9,10.2);put(G.box,0xf2efe6,S-5,3.3,21,2.5,.14,10.8);put(G.box,0xf2c230,S-5,1.3,21,2.64,.2,11.02); // the shuttle bus
       put(G.box,0x2b2b30,3.5,1.1,40,.14,1.4,9);for(let q=0;q<11;q++)put(G.box,pick(SKIC,rnd),3.65,1.05,36+q*.8,.04,1.85,.09,0,0,.14); // a ski rack
       for(let q=0,m=2+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(8+rnd()*(S-18),21+(rnd()-.5)*4);skiCarrier(b,px,.33,pz,rot*Math.PI/2+Math.PI/2+(rnd()-.5),rnd)}
+      if(townOfRow(j)&&j===townOfRow(j).a+2){ // the holidays: a tree lot out back, rows of cut firs, a rail, lights strung overhead, a little booth
+        for(let r2=0;r2<3;r2++)for(let c=0;c<7;c++){const h=1.8+drnd()*.8;dput(G.scone,pick([0x1f4a2e,0x26553a,0x2f5d3a],drnd),10+c*3.3+(drnd()-.5)*.6,.35+h/2,37.4+r2*2.4,.55+drnd()*.15,h,.55+drnd()*.15,drnd()*6);dput(G.box,0x7a5a3a,10+c*3.3,.4,37.4+r2*2.4,.5,.12,.5)}
+        dput(G.box,0x7a5a3a,21,.9,35.6,26,.1,.1);dput(G.box,0x7a5a3a,21,.5,35.6,26,.1,.1);for(let u=8.5;u<=34;u+=3.2)dput(G.box,0x6b4f38,u,.6,35.6,.14,1.2,.14);
+        for(const u of[8.5,33.5])dput(G.box,0x2b2b30,u,1.9,35.6,.12,3.8,.12);for(let q=0;q<=24;q++){const t=q/24;dgput(HOLC[q%5],8.5+25*t,3.7-.7*Math.sin(Math.PI*t),35.6,.15)}
+        dput(G.box,0xa8322d,34,1.4,41.5,2.4,2.4,2.2);dput(G.gable,0x3a3f46,34,2.6,41.5,2.9,.9,2.6);{const [wx,wz]=P(32.76,41.5);dk[1].add(G.box,0xffc070,wx,1.6,wz,.06,.8,1.2)} // its lit window
+        const [px,pz]=P(30.5,40.5);stander(dk[0],px,.33,pz,rot*Math.PI/2-Math.PI/2,drnd,false)}
     }else
     if(d==='harbor'){ // the harbour front: weathered sheds and a cannery, chowder and bait shacks, crab pots, buoys, a bench
       rot=Math.floor(rnd()*4);
@@ -1332,6 +1375,7 @@ function buildBlock(i,j,d){
           const h=Math.min(11,w*1.15);put(G.gable,roof,u,.3,vm,w+1,h,depth+.6);put(G.gable,wood,u,.3,front+.32,w*.84,h*.84,.12);
           gput(G.gable,0xffc070,u,.7,front+.4,w*.5,h*.55,.1);put(G.box,0x3a2e26,u,.7+h*.2,front+.47,w*.36,.12,.06);put(G.box,0x3a2e26,u,.7+h*.27,front+.47,.12,h*.54,.06); // the glass and its frame
           put(G.box,0x7a5e44,u,.55,front+1.6,w*.9,.25,2.6); // the deck
+          if(dk)slope(u,.3,front+.5,(w+1)/2,h,12);
         }else{
           const h=4.8+rnd()*1.4,rh=w*.48,plaster=rnd()<.5;
           put(G.box,plaster?0xe8dfcc:wood,u,h*.25+.3,vm,w,h*.5,depth);put(G.box,wood,u,h*.75+.3,vm,w+.12,h*.5,depth+.12); // stone-white or wood below, timber above
@@ -1349,6 +1393,7 @@ function buildBlock(i,j,d){
           else if(shop===3){hang(0xa8322d);put(G.hsph,0x2b2b30,bx,3.25,front+1,.06,.24,.24,0,Math.PI);for(const s2 of[-1,1])gput(G.box,0xffd9a0,u+s2*w*.47,2.3,front+.35,.25,.35,.25)} // the fondue place: a pot on the sign, lanterns by the door
           else{hang(0xf1ece2);put(G.cyl,0x8a3a2e,bx,3.05,front+1,.06,.3,.2)} // the cocoa shop: a mug
           if(rnd()<.45){put(G.box,0x7a5a3a,u,.95,front+2.2,2,.12,.5);put(G.box,0x7a5a3a,u,1.35,front+2.45,2,.6,.1)} // a bench
+          if(dk){slope(u,h+.3,front+1.12,(w+1.8)/2,rh,9);for(let q=0;q<=10;q++)dgput(HOLC[q%5],u-w*.43+q*w*.086,h*.5+1.58,front+1.8,.15);wreath(u+w*.3,2.05,front+.2,.9)} // (the holidays)
         }
       }
       put(G.box,0x8a6e52,S/2,.36,front+1.9,S-5,.12,3.6); // the sidewalk, trodden snow over boards
@@ -1356,6 +1401,9 @@ function buildBlock(i,j,d){
       for(const u of[2,S-2]){put(G.box,0x2b2b30,u,2.1,front+3.4,.14,4.2,.14);gput(G.box,0xffd9a0,u,4.3,front+3.4,.4,.5,.4)} // two lanterns
       for(let q=0;q<3;q++)put(G.ball,0xe8edf3,6+rnd()*(S-12),.45,S-.6,1.4+rnd()*1.2,.7,.9,rnd()*6); // snow piled at the curb
       for(let q=0,m=1+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(5+rnd()*(S-10),front+2.6),ry=rot*Math.PI/2+(rnd()-.5)*2;rnd()<.4?skiCarrier(b,px,.42,pz,ry,rnd):stander(b,px,.42,pz,ry,rnd,false)} // people out for cocoa, someone off to the hill
+      if(dk&&drnd()<.5){const u0=7+drnd()*(S-14); // carolers on the sidewalk for the holidays: four in a little arc with their songbooks, a lantern on a pole
+        for(let q=0;q<4;q++){const o=q-1.5,v=front+2.3+Math.abs(o)*.3,[px,pz]=P(u0+o*.75,v);stander(dk[0],px,.42,pz,rot*Math.PI/2-o*.25,drnd,false);dput(G.box,0x8a2a2a,u0+o*.75,1.55,v+.32,.24,.3,.04,0,-.5)}
+        const [lx,lz]=P(u0+1.9,front+2.4);dk[0].add(G.box,0x2b2b30,lx,1.6,lz,.05,2.4,.05);dk[1].add(G.box,0xffd9a0,lx,2.85,lz,.24,.32,.24)}
       for(let u=7;u<S-6;u+=3.2)put(G.box,0xe8e4da,u,.34,front-depth-8,.15,.02,5); // the lot out back
       const n2=1+Math.floor(rnd()*3);for(let k=0;k<n2;k++)parked(8+Math.floor(rnd()*9)*3.2+1.6,front-depth-8,0);
       for(const u of[1.8,S-1.8])tree(u,S-2,.85);
@@ -1442,7 +1490,8 @@ function buildBlock(i,j,d){
           put(G.gable,pick(CHALETW,rnd),u,.3,fz+fr*.05,w*.84,h*.84,.12);gput(G.gable,0xffc070,u,.75,fz+fr*.12,w*.44,h*.5,.1);
           put(G.box,0x7a5e44,u,.5,fz+fr*1.3,w*1.05,.2,2.4);put(G.cyl,0x2b2b30,u+w*.2,h*.62+1.2,v,.18,2.2,.18);
           if(rnd()<.7){const [sx,sz]=P(u+w*.2,v);grp.add(smokeAt(sx,h*.62+2.4,sz))}
-          if(rnd()<.4){const [sx,sz]=P(u+(u<S/2?-1:1)*(w/2+2),v+fr*(dd/2+3));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd)}
+          if(rnd()<.4){const [sx,sz]=P(u+(u<S/2?-1:1)*(w/2+2),v+fr*(dd/2+3));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd);if(dk)snowHat(dk[0],sx,.3,sz)}
+          if(dk)slope(u,.3,fz+fr*.22,w/2,h,9);
           continue}
         const w=7+rnd()*2,dd=6.5+rnd()*1.5,h=3.4+rnd()*.6,fr=v<S/2?-1:1,fz=v+fr*dd/2,lg=pick([0x7a5236,0x6b4630,0x8a6040],rnd);
         put(G.box,lg,u,h/2+.3,v,w,h,dd);
@@ -1453,10 +1502,11 @@ function buildBlock(i,j,d){
         for(const s of[-1,1])gput(G.box,0xffc77a,u+s*w*.28,1.9,fz+fr*.07,.9,.75,.06); // warm windows
         put(G.box,0x8a6e52,u,.45,fz+fr*1.2,w*.9,.2,2.2);for(const s of[-1,1])put(G.box,0x6b4f38,u+s*w*.42,1.6,fz+fr*2.2,.18,2.4,.18);put(G.box,darker(lg,.8),u,2.85,fz+fr*1.2,w*.95,.14,2.5); // the porch
         gput(G.box,0xffd9a0,u+w*.3,2.45,fz+fr*.15,.25,.25,.25); // the porch light
+        if(dk){slope(u,h+.3,fz+fr*.5,(w+.9)/2,3.4,7);wreath(u,1.95,fz+fr*.17,.85)} // (the holidays: lights up the gable, a wreath on the door)
         const chx=u+(rnd()<.5?-1:1)*w*.3,chz=v-fr*dd*.15;put(G.box,0x7c7872,chx,h+1.3,chz,.9,3.2,.9); // a stone chimney
         if(rnd()<(al?.7:.35)){const [sx,sz]=P(chx,chz);grp.add(smokeAt(sx,h+2.9,sz))} // a fire going (in most, up in the Sierra)
         if(rnd()<.6){const wx=u+(u<S/2?-1:1)*(w/2+1.2);for(let q=0;q<3;q++)put(G.box,0x7a5238,wx,.6+q*.42,v,1,.38,2.6)} // the woodpile
-        if(al&&rnd()<.35){const [sx,sz]=P(u+(rnd()-.5)*w,v+fr*(dd/2+3.5));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd)} // a snowman in the yard
+        if(al&&rnd()<.35){const [sx,sz]=P(u+(rnd()-.5)*w,v+fr*(dd/2+3.5));snowman(b,sx,.3,sz,fr>0?0:Math.PI,rnd);if(dk)snowHat(dk[0],sx,.3,sz)} // a snowman in the yard
       }
     }else if(d==='lodge'){ // the roadside stop: a motor lodge with a VACANCY sign, or the general store and the gas station, or the chainsaw-carving yard
       rot=j%2?2:0;const kind=hash(i,j,61),bear=(u,v,s)=>{put(G.cyl,0x8a6040,u,.45,v,.5*s,.3,.5*s);put(G.sph,0x6b4428,u,.6+.85*s,v,.5*s,.85*s,.42*s);put(G.sph,0x6b4428,u,.6+1.85*s,v,.34*s,.34*s,.32*s);for(const e of[-1,1])put(G.sph,0x6b4428,u+e*.22*s,.6+2.13*s,v,.1*s,.1*s,.08*s)};
@@ -1586,6 +1636,7 @@ function buildBlock(i,j,d){
   }
   const mesh=b.mesh();grp.add(mesh);
   if(!gb.empty)grp.add(gb.mesh(MAT_GLOW,false));
+  if(dk&&!(dk[0].empty&&dk[1].empty))grp.add(decoGroup(dk[0],dk[1]));
   grp.userData={mesh,ij:[i,j],parked:parkedL};
   return grp;
 }
@@ -1807,7 +1858,8 @@ function redwoodScenery(b,gb,grp,j,rnd){
       m.position.set(sx,sy+3.6,pz+38);m.rotation.y=Math.PI/2;grp.add(m);for(const s2 of[-1,1])b.add(G.box,0x8f8f96,sx-.1,sy+1.7,pz+38+s2*2.6,.2,4.6,.2);
       const pk=grp.userData.parked=[];for(let q=0;q<3;q++)if(rnd()<.8){const [x]=at(-20-rnd()*4,pz-18+q*9);pk.push({type:pick(PARKT,rnd),x,z:pz-18+q*9,ry:Math.PI/2,col:new THREE.Color(pick(CARCOL,rnd))})}
       for(let q=0;q<5;q++){const z=pz-20+rnd()*40,[x]=at(-36.5-rnd()*1.5,z);stander(b,x,0,z,Math.PI/2+(rnd()-.5)*.8,rnd,false)}
-      for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))}} // tyre tracks in the gravel
+      for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))} // tyre tracks in the gravel
+      {const db=new Builder(),dgb=new Builder(),[tx,ty]=at(-29,pz+30);dgb.gain=2.6;xmasTree(db,dgb,tx,ty,pz+30,6.5);grp.add(decoGroup(db,dgb))}} // (the holidays: a lit tree by the sign)
   }
   if(al&&fallsNear(zm,1)){const fz=zm,rc=roadX(fz),y0=inlandY(rc+15,fz),H=12+5*rnd(),g0=gb.gain;gb.gain=1; // the frozen waterfall: a band of dark granite stepping out of the slope, a curtain of ice
     // down its face (a faint glow in the thickest columns), icicles along the lip, the ice built up into a cone at its foot
@@ -1837,6 +1889,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
         for(const s of[-1,1]){b.add(G.box,0x2b2b30,x+s*2.25,y+5.2,z,.62,.62,.2);b.add(G.cyl,0x8a5a1e,x+s*2.25,y+5.2,z+.12,.22,.08,.22,0,Math.PI/2); // the lamp housings, unlit
           const l=new THREE.Mesh(CCL.geo,CCL.mat);l.position.set(x+s*2.25,y+5.2,z+.14);l.scale.set(1,1,.45);l.userData.ph=s>0?1:0;l.visible=false;grp.add(l);CC_FL.add(l)}}};
     sign((Math.floor((cz+170)/B)+.2)*B,13.2,'CHAINS REQUIRED','NEXT 9 MILES','#f2efe6',true);sign(cz+58,23,'CHAIN CONTROL','PULL OFF HERE','#f2c230',false);
+    if(inS(cz-36)){const db=new Builder(),dgb=new Builder(),[tx,ty]=at(19.5,cz-36);dgb.gain=2.6;xmasTree(db,dgb,tx,ty,cz-36,5.5);grp.add(decoGroup(db,dgb))} // (the holidays: a lit tree on the pull-off)
   }
   if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
     for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=4+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.6,z);if(hillMul(z)>.05&&!(side<0&&pulloutAt(z)>.2)&&!(side>0&&chainOff(z)>.2)){ // a plow berm: lumps of varied size, a dirty chunk toward the road now and then
@@ -2177,7 +2230,9 @@ function makePlow(){
     vertexShader:'attribute float seed;uniform float uTime,uPx;varying float vA;\nvoid main(){float t=fract(uTime*1.7+seed*3.7);vec3 p=position+vec3(-(.6+3.8*t)*(1.0+.35*sin(seed*31.0)),2.1*t-2.4*t*t+.3*sin(seed*13.0),-2.2*t+.5*sin(seed*17.0));\nvec4 mv=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;gl_PointSize=(.3+t*1.1)*uPx/-mv.z;vA=(1.0-t)*smoothstep(0.0,.08,t)*.75;}',
     fragmentShader:'varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.93,.95,.98),vA*smoothstep(.5,.15,d));\n#include <tonemapping_fragment>\n#include <colorspace_fragment>\n}'});
   const spray=[0,1,2,3].map(()=>{const p=new THREE.Points(g,mat);p.frustumCulled=false;p.visible=false;scene.add(p);return p});
-  PLOW={lamp,spray};
+  const wb=new Builder();wb.add(G.donut,0x2f6b3a,0,1.55,5.24,.36,.36,.36);wb.add(G.box,0xc8322d,0,1.93,5.28,.34,.2,.1); // for the holidays: a wreath on the grille
+  const wreath=new THREE.InstancedMesh(wb.geo(),new THREE.MeshLambertMaterial({vertexColors:true}),16);wreath.frustumCulled=false;wreath.instanceMatrix.setUsage(THREE.DynamicDrawUsage);wreath.count=0;scene.add(wreath);
+  PLOW={lamp,spray,wreath};
 }
 // the High Sierra's cars: about a third carry a roof box or skis, and some more still have snow on the roof (moving and parked; built on first use)
 const RACKT={sedan:1,sedan2:1,suv:1,wagon:1,van:1};
@@ -2198,12 +2253,13 @@ function alpRacks(pr){
   for(let k=0;k<3;k++){RACK[k].count=n[k];RACK[k].visible=n[k]>0;RACK[k].instanceMatrix.needsUpdate=true}
 }
 function plowFx(){
-  const L=PLOW.lamp,f=Math.floor(clock*3.2)&1;let n=0,q=0;
+  const L=PLOW.lamp,W=PLOW.wreath,f=Math.floor(clock*3.2)&1;let n=0,q=0,w=0;
   for(const a of agents){if(!a.on||a.type!=='plow')continue;const c=a.fz,s=a.fx;
     {const lx=f?.78:-.78;_d.position.set(a.x+lx*c+2.75*s,3.4,a.z-lx*s+2.75*c);_d.rotation.set(0,Math.atan2(s,c),0);_d.scale.set(1,1,1);_d.updateMatrix();L.setMatrixAt(n++,_d.matrix)} // one beacon on at a time, side to side
     if(q<PLOW.spray.length){const p=PLOW.spray[q++];p.visible=a.v>3;p.position.set(a.x,0,a.z);p.rotation.set(0,Math.atan2(s,c),0)}
+    if(DECO){_d.position.set(a.x,0,a.z);_d.updateMatrix();W.setMatrixAt(w++,_d.matrix)}
     if(n>=16)break}
-  L.count=n;L.visible=n>0;L.instanceMatrix.needsUpdate=true;for(;q<PLOW.spray.length;q++)PLOW.spray[q].visible=false;
+  L.count=n;L.visible=n>0;L.instanceMatrix.needsUpdate=true;W.count=w;W.visible=w>0;W.instanceMatrix.needsUpdate=true;for(;q<PLOW.spray.length;q++)PLOW.spray[q].visible=false;
 }
 function aStartLeg(a){
   const D=DIRS[a.d],Rt=DIRS[(a.d+1)%4],ht=hwyTarget(a.i,a.j,a.d);a.commit=false;
@@ -2502,6 +2558,13 @@ function skiHill(b,gb,k){const L=skiLayout(k),r=rng(9100+k),{zg,cz,runs}=L,GR=0x
     for(const o of[-2.1,2.1])for(let q=0;q+1<L.chair.length;q++){const p=L.chair[q],n=L.chair[q+1];cableBeam(b,[p[0],p[1],cz+o],[n[0],n[1],cz+o],0x2a2628,.12)}}
   });return S;
 }
+function buildLift(L){const b=new Builder(),GR=0x8a8f96,P=L.pts,n=P.length,z=L.z; // the chairlift over the road: towers with their crossarms and sheaves, a hut and bullwheel at each end, two cables
+  for(let q=1;q<n-1;q++){const [x,y]=P[q],yb=L.base[q]-1;b.add(G.box,GR,x,(yb+y)/2,z,.8,y-yb,.8);b.add(G.box,GR,x,y+.15,z,.5,.45,5.8);b.add(G.box,GR,x,y-1.1,z,.3,2.2,.3,0,0,.6);
+    for(const s of[-1,1])b.add(G.box,0x3a3a3e,x,y-.12,z+s*2.1,1.5,.28,.3)}
+  for(const q of[0,n-1]){const [x,y]=P[q],yb=L.base[q]-1,dx=q?3.5:-3.5;b.add(G.box,0x6b4630,x+dx,(yb+y)/2,z,7,y-yb,9);b.add(G.gable,0x3a3f46,x+dx,y,z,10.4,2.2,8.2,Math.PI/2);
+    b.add(G.cyl,GR,x,y+.1,z,2.4,.4,2.4);b.add(G.box,0x2b2b30,x+dx*.2,y-.6,z,2,1,5)}
+  for(const o of[-2.1,2.1])for(let q=0;q+1<n;q++)cableBeam(b,[P[q][0],P[q][1],z+o],[P[q+1][0],P[q+1][1],z+o],0x2a2628,.12);
+  const g=new THREE.Group();g.add(b.mesh());return g}
 function buildFarTown(k){
   const a=k*PER,TL=townLen(k),b=new Builder(),hid=[];
   const row=j=>{for(let i=XMIN-1;i<=XMAX;i++){
@@ -2518,7 +2581,7 @@ function buildFarTown(k){
 const farChunks=new Map(),farTowns=new Map(),farLater=[]; // farLater: the rest of a High Sierra far piece, built a step at a time over the next frames (so no one frame stalls)
 function farSteps(grp,steps){if(regW(grp.userData.z,isAlp)>0)farLater.push(...steps.map(f=>()=>{if(grp.parent)f()}));else for(const f of steps)f()} // elsewhere all at once, as before
 function flushFar(){ // a road trip changed what lies ahead: rebuild the far scenery (it comes back a piece per frame)
-  skiCache.clear();gyMemo.clear();farLater.length=0;
+  skiCache.clear();gyMemo.clear();liftCache.clear();farLater.length=0;
   for(const m of[farChunks,farTowns]){for(const g of m.values()){scene.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose()})}m.clear()}
 }
 function updateFar(cx,cz){
@@ -2904,7 +2967,7 @@ function placeKey(){
   return d==='shore'?'beach':d;
 }
 // ---------- settings (per-device convenience only)
-const settings={mode:'arrows',vol:.8,musicMode:false,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false,offTips:0,triedOff:false,roadTrip:true,signalSound:false,region:'la'};
+const settings={mode:'arrows',vol:.8,musicMode:false,cruise:100,muted:false,calm:true,requested:false,reqTips:0,hq:true,focus:0,lyrics:false,offTips:0,triedOff:false,roadTrip:true,signalSound:false,region:'la',deco:'auto'};
 try{Object.assign(settings,JSON.parse(localStorage.getItem('la-drive')||'{}'))}catch(e){}
 delete settings.voices; // the old host-voices switch, replaced by music mode
 if(!settings.sigOffV){settings.signalSound=false;settings.sigOffV=1} // the tick sound now starts off, for returning players too
@@ -3062,6 +3125,20 @@ function birdsong(t,vol){ // a quick run of chirps
     o.connect(g);panTo(g,pan);o.start(tt);o.stop(tt+d+.02);tt+=d+.03+Math.random()*.12;
   }
 }
+// the High Sierra with the radio off: tyres crunching on packed snow, wood fires crackling in the villages, the hum and clunk of a chairlift
+// (made here, the first time you're up there; the wind, pines, creeks, ravens, jays and woodpeckers are the Redwood Coast's recordings)
+function grainBuf(sec,rate,dec){ // noise made of short grains, rate a second, each dying away over about dec seconds
+  const n=Math.floor(AC.sampleRate*sec),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
+  for(let g=0,m=Math.floor(sec*rate);g<m;g++){const i0=Math.floor(Math.random()*n),a=Math.random()**2,L=Math.floor(AC.sampleRate*dec*(.5+Math.random()));for(let i=0;i<L;i++)d[(i0+i)%n]+=(Math.random()*2-1)*a*Math.exp(-5*i/L)}
+  return buf}
+function initAlpAmb(){const A=Amb.alp={nextClunk:0};
+  const loopBuf=(buf,f1,f2)=>{const s=AC.createBufferSource(),h=AC.createBiquadFilter(),l=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;s.loop=true;h.type='highpass';h.frequency.value=f1;l.type='lowpass';l.frequency.value=f2;g.gain.value=0;s.connect(h);h.connect(l);l.connect(g);g.connect(Amb.bus);s.start();return{s,g}};
+  A.crunch=loopBuf(grainBuf(3,260,.012),900,5200);A.fire=loopBuf(grainBuf(4,14,.004),600,7000); // packed snow under the tyres; a wood fire's sparse pops
+  A.hum=AC.createGain();A.hum.gain.value=0;A.hum.connect(Amb.bus);const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.connect(A.hum); // a lift's drive, low and steady
+  for(const [f,ty,g] of[[50,'sawtooth',.05],[100,'sine',.08],[151,'sine',.02]]){const o=AC.createOscillator(),og=AC.createGain();o.type=ty;o.frequency.value=f;og.gain.value=g;o.connect(og);og.connect(lp);o.start()}}
+function clunk(t,vol){ // a chair rolling over a tower's sheaves: a soft double knock
+  const pan=(Math.random()-.5)*.6;for(const o of[0,.11]){const s=AC.createBufferSource(),bp=AC.createBiquadFilter(),g=AC.createGain();s.buffer=noiseBuf;bp.type='bandpass';bp.frequency.value=380;bp.Q.value=3;
+    g.gain.setValueAtTime(vol,t+o);g.gain.exponentialRampToValueAtTime(.0001,t+o+.09);s.connect(bp);bp.connect(g);panTo(g,pan);s.start(t+o,Math.random()*.8);s.stop(t+o+.12)}}
 function seaNearness(){ // 1 on the beach, fading to a faint hush a few hundred metres inland
   const inTownRows=car.piece!=='hwy'&&lotRow(Math.round(car.z/B)),shore=inTownRows?-3*B:roadX(car.z)-60;
   return Math.max(.06,ss(520,40,car.x-shore));
@@ -3076,13 +3153,18 @@ function updateAmbience(){
   if(!want||t-(Amb.lastUpd||0)<.25)return; // adjust levels a few times a second, not every frame
   Amb.lastUpd=t;
   const rw=rwW(car.z),fo=rw*Math.max(groveAt(car.z),ftAtZ(car.z)),ck=rw*ss(260,30,creekAt(car.z)); // redwood country, how deep in the trees, how close the creek
-  const near=seaNearness()*(1-.85*fo),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
+  const al=regW(car.z,isAlp),near=seaNearness()*(1-.85*fo)*(1-al),town=car.piece!=='hwy',spd=clamp(car.v/40,0,1),cliff=car.piece==='hwy'?coastType(car.z):0;
   Amb.sea.gain.setTargetAtTime(near,t,1.5);
-  if(Amb.forestG)Amb.forestG.gain.setTargetAtTime(rw*(.25+.75*fo)*.9,t,2);
+  if(Amb.forestG)Amb.forestG.gain.setTargetAtTime(rw*(.25+.75*fo)*.9*(1-.7*al*(1-treeAt(car.z))),t,2); // (thinning out above the treeline)
   if(Amb.canopyG)Amb.canopyG.gain.setTargetAtTime(fo*(.5+.3*Math.sin(t*.21))*.7,t,1.5);
   Amb.creek.gain.setTargetAtTime(ck*.9,t,1.2);
   if(ck>.02&&!Amb.creekRealG)for(const b of Amb.babble){b.gn.gain.setTargetAtTime(b.g*(.6+Math.random()*.8),t,.08);b.bp.frequency.setTargetAtTime(b.fq*(.8+Math.random()*.45),t,.1)}
-  if(rw>.5&&t>=Amb.nextCall){ // the forest's own voices, mostly in the groves
+  if(rw>.5&&t>=Amb.nextCall&&al>.5){ // the mountains in winter: ravens and jays, a woodpecker now and then, a cabin creaking in a village (no thrush or elk)
+    const r=Math.random(),c=Amb.calls,p=(Math.random()*2-1)*.85;
+    if(r<.38){if(c.raven)callRecorded('raven',t,.4,p,true)}else if(r<.68){if(c.jay)callRecorded('jay',t,.35*(.4+.6*treeAt(car.z)),p,true)}
+    else if(r<.82){if(c.woodpecker&&treeAt(car.z)>.5)callRecorded('woodpecker',t,.3,p,true)}else if(c.creak&&townOfRow(Math.floor(car.z/B)))callRecorded('creak',t,.3,p*.6,false);
+    Amb.nextCall=t+7+Math.random()*10;
+  }else if(rw>.5&&t>=Amb.nextCall){ // the forest's own voices, mostly in the groves
     const r=Math.random(),c=Amb.calls,v=.3+.7*fo;
     if(r<.45){if(c.thrush)callRecorded('thrush',t,.5*v,(Math.random()*2-1)*.8,true);else thrush(t,.03*v)}
     else if(r<.62){if(c.jay)callRecorded('jay',t,.4*v,(Math.random()*2-1)*.8,true)}
@@ -3092,7 +3174,7 @@ function updateAmbience(){
     else if(c.elk&&Math.random()<.4)callRecorded('elk',t,.35,(Math.random()*2-1)*.9,true); // a rare elk bugle
     Amb.nextCall=t+(fo>.4?4:9)+Math.random()*8;
   }
-  if(rw>.5&&t>=Amb.nextHorn){ // fog country: now and then a foghorn far down the coast
+  if(rw>.5&&al<.5&&t>=Amb.nextHorn){ // fog country: now and then a foghorn far down the coast
     const sea=seaNearness();if(sea>.2&&fo<.5){if(Amb.calls.foghorn)callRecorded('foghorn',t,.35*sea,-.5,true);else foghorn(t,.04*sea)}
     Amb.nextHorn=t+50+Math.random()*70;
   }
@@ -3103,7 +3185,11 @@ function updateAmbience(){
   Amb.windBP.frequency.setTargetAtTime(350+spd*700,t,.8);
   if(Amb.realWindG)Amb.realWindG.gain.setTargetAtTime((.3+spd*.45+cliff*.3)*gust*(1-.6*fo)*up,t,.8); // deep in the groves the canopy takes over
   if(Amb.closeG)Amb.closeG.gain.setTargetAtTime(ss(.6,1,near)*.7,t,1.5);
-  if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime(town?(1-near*.5)*.8:.1,t,2);
+  if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime((town?(1-near*.5)*.8:.1)*(1-.75*al),t,2); // (few songbirds up in the snow)
+  if(al>0&&!Amb.alp)initAlpAmb();
+  if(Amb.alp){const A=Amb.alp,lift=al>0?liftNear():0; // the Sierra's own: the crunch follows the speed, fires in the villages (streets or highway), a lift nearby
+    A.crunch.g.gain.setTargetAtTime(al*spd*.35,t,.4);A.crunch.s.playbackRate.setTargetAtTime(.7+spd*.6,t,.5);A.fire.g.gain.setTargetAtTime(al*(townOfRow(Math.floor(car.z/B))?.2:0),t,1.5);A.hum.gain.setTargetAtTime(al*lift*.5,t,.8);
+    if(lift>.05&&t>=A.nextClunk){clunk(t,.25*lift*al);A.nextClunk=t+1.6+Math.random()*1.8}}
   if(!Amb.realSea&&t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
   if(t>=Amb.nextGull){
     if(rw>.5){if(near>.3&&Amb.calls.sealion)for(let q=0;q<1+Math.floor(Math.random()*3);q++)callRecorded('sealion',t+q*(.5+Math.random()*.6),(.2+.25*Math.random())*near,-.4-Math.random()*.5,false)}
@@ -3488,8 +3574,9 @@ STATIONS.fireside={id:'fireside',name:'FIRESIDE',freq:'96.1',tagline:'WARM JAZZ 
   dir:'fireside/',heard:'fs:',songs:FS_SONGS,bits:FS_BITS,kinds:['traffic','sigalert','call','shortcut','ad','place','facts','holiday'],hosts:{V:'VERA',O:'MOOSE',R:'RICK',D:'DANA',J:'MARJ',W:'WALT'}};
 // a handoff's goodbyes by where you're going and its welcomes by where you came from (handoff.to / handoff.from), else the station's usual ones
 const handPool=(h,dir,r)=>(dir==='out'?h.to:h.from)?.[r.id]||h[dir];
-// December bits: only while the holiday decorations are up (December 1 to January 1)
+// the holiday decorations (the High Sierra only): up December 1 to January 1, or always or never by the Settings switch. The December bits follow them
 const holidayOn=()=>{const d=new Date();return d.getMonth()===11||(d.getMonth()===0&&d.getDate()===1)};
+const decoOn=()=>settings.deco==='on'||settings.deco!=='off'&&holidayOn();
 let ST=STATIONS[RG.station]||STATIONS.kjam; // the station on the radio now
 // switch the radio to another station: fresh playlist and segment rotation, its own lyrics and subtitle timings
 // a bit queued for a later break (a reaction, a milestone) was picked from the old station. Both stations reuse clip names
@@ -3547,7 +3634,7 @@ function playLines(lines,tok,done){
 // full segments rotate: every type once per round, shuffled, so none goes missing for long (random picks left callers at about one an hour)
 let kindBag=[];
 function nextKind(){
-  if(!kindBag.length){kindBag=ST.kinds.filter(k=>k!=='holiday'||holidayOn()).sort(()=>Math.random()-.5);if(kindBag[0]===Show.lastKind)kindBag.push(kindBag.shift())}
+  if(!kindBag.length){kindBag=ST.kinds.filter(k=>k!=='holiday'||decoOn()).sort(()=>Math.random()-.5);if(kindBag[0]===Show.lastKind)kindBag.push(kindBag.shift())}
   return kindBag.shift();
 }
 // each song has two intros; play whichever was heard less recently
@@ -3964,16 +4051,28 @@ function composePostcard(shot,info){
   x.drawImage(shot,(shot.width-sw)/2,(shot.height-sh)/2,sw,sh,px,py,pw,ph);
   const vg=x.createRadialGradient(W/2,py+ph*.45,ph*.35,W/2,py+ph*.45,pw*.68);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(1,'rgba(40,18,32,.38)');x.fillStyle=vg;x.fillRect(px,py,pw,ph);
   x.strokeStyle='rgba(60,40,30,.3)';x.lineWidth=2;x.strokeRect(px,py,pw,ph);
-  // "Greetings from" and the town in big sunset letters
+  // "Greetings from" and the town in big sunset letters ("Season's Greetings" in the High Sierra while the holiday decorations are up)
+  const hol=isAlp(RG)&&decoOn();
   x.save();x.translate(px+44,py+ph-58);x.rotate(-.045);x.lineJoin='round';
-  x.font='42px Shrikhand';x.fillStyle='#fff7ec';x.shadowColor='rgba(43,27,74,.85)';x.shadowOffsetX=3;x.shadowOffsetY=3;x.fillText('Greetings from',4,-96);
+  x.font='42px Shrikhand';x.fillStyle='#fff7ec';x.shadowColor='rgba(43,27,74,.85)';x.shadowOffsetX=3;x.shadowOffsetY=3;x.fillText(hol?"Season's Greetings from":'Greetings from',4,-96);
   let fs=110;x.font=fs+'px Shrikhand';while(x.measureText(info.town).width>pw*.8&&fs>48){fs-=4;x.font=fs+'px Shrikhand'}
   x.shadowOffsetX=7;x.shadowOffsetY=7;x.lineWidth=13;x.strokeStyle='#2b1b4a';x.strokeText(info.town,0,0);x.shadowColor='transparent';
   const tg=x.createLinearGradient(0,-fs*.8,0,0);RG.pc.forEach((c,q)=>tg.addColorStop(q/2,c));x.fillStyle=tg;x.fillText(info.town,0,0);x.restore();
-  // the station's stamp, perforated, top right: K-JAM's sunset palm, or the Coffee Cabin under the redwoods (the Fireside borrows the cabin until it has its own)
+  // the station's stamp, perforated, top right: K-JAM's sunset palm, the Coffee Cabin under the redwoods, or the Fireside's A-frame under the peaks
   const st=document.createElement('canvas');st.width=136;st.height=164;const sx=st.getContext('2d');
   sx.fillStyle='#fffaf0';sx.fillRect(0,0,136,164);
-  if(ST.id!=='kjam'){
+  const tri=(a,b,c,col)=>{sx.fillStyle=col;sx.beginPath();sx.moveTo(...a);sx.lineTo(...b);sx.lineTo(...c);sx.fill()};
+  if(ST.id==='fireside'){ // dusk over the peaks with the alpenglow on them, snowy pines, the lodge's lit glass gable and its chimney smoke, snow falling (lights and a wreath for the holidays)
+    const sky=sx.createLinearGradient(0,12,0,104);sky.addColorStop(0,'#2c3a6e');sky.addColorStop(.55,'#8a8fc0');sky.addColorStop(1,'#f2b8b0');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
+    tri([12,96],[44,40],[80,96],'#9aa3c4');tri([50,96],[92,28],[124,80],'#b7bedb');tri([92,28],[124,80],[124,96],'#e9a6b4');tri([80,46],[92,28],[102,44],'#fffaf6');tri([36,54],[44,40],[52,54],'#f2f2fa');
+    sx.fillStyle='#eef2f8';sx.fillRect(12,96,112,20);
+    for(const [x0,y0,s] of[[22,104,1],[33,100,.75],[112,104,1.1],[101,101,.7]])for(let k=0;k<3;k++){const w=(11-k*2.6)*s,y=y0-k*8*s;tri([x0-w,y],[x0,y-12*s],[x0+w,y],'#26453a');tri([x0-w*.55,y-6*s],[x0,y-12*s],[x0+w*.55,y-6*s],'#f2f6fa')}
+    tri([46,108],[68,72],[90,108],'#5a3a28');tri([54,108],[68,84],[82,108],'#ffd27a');sx.fillStyle='#3a2e26';sx.fillRect(66.5,86,3,22);sx.fillRect(58,98,20,2);sx.fillRect(78,74,5,14);
+    sx.fillStyle='rgba(255,255,255,.85)';for(const [x0,y0,r] of [[81,68,4],[85,60,5],[82,50,6]]){sx.beginPath();sx.arc(x0,y0,r,0,7);sx.fill()}
+    sx.fillStyle='#fff';for(let k=0;k<22;k++){sx.beginPath();sx.arc(14+(k*53)%108,15+(k*37)%84,k%3?1:1.6,0,7);sx.fill()}
+    if(hol){const C=['#ff4a3a','#4adf6a','#ffd27a','#5aa8ff'];for(let k=0;k<=8;k++)for(const s of[-1,1]){sx.fillStyle=C[(k+(s>0?2:0))%4];sx.beginPath();sx.arc(68+s*22*(1-k/8),108-36*k/8-1.5,1.9,0,7);sx.fill()}
+      sx.strokeStyle='#2f6b3a';sx.lineWidth=3.5;sx.beginPath();sx.arc(68,78,4.5,0,7);sx.stroke();sx.fillStyle='#c8322d';sx.fillRect(65.5,72,5,3)}
+  }else if(ST.id!=='kjam'){
     const sky=sx.createLinearGradient(0,12,0,116);sky.addColorStop(0,'#b9cbbf');sky.addColorStop(.6,'#dfe3cf');sky.addColorStop(1,'#f2dca6');sx.fillStyle=sky;sx.fillRect(12,12,112,104);
     sx.fillStyle='#9fb5a5';for(const [x0,h] of [[22,46],[40,58],[58,40],[84,52],[104,44],[120,56]]){sx.beginPath();sx.moveTo(x0-11,104);sx.lineTo(x0,104-h);sx.lineTo(x0+11,104);sx.fill()}
     sx.fillStyle='#3e5a3a';sx.fillRect(12,102,112,14);
@@ -3988,7 +4087,7 @@ function composePostcard(shot,info){
     sx.strokeStyle='#2b1b4a';sx.lineWidth=3;sx.beginPath();sx.moveTo(100,116);sx.quadraticCurveTo(96,70,92,44);sx.stroke();
     sx.fillStyle='#2b1b4a';for(let k=0;k<6;k++){const a=-Math.PI*.95+k*.36;sx.beginPath();sx.ellipse(92+Math.cos(a)*13,44+Math.sin(a)*7,15,4,a,0,Math.PI*2);sx.fill()}
   }
-  sx.fillStyle='#2b1b4a';sx.font='28px VT323';sx.textAlign='center';sx.fillText(ST.stamp,68,146);
+  sx.fillStyle='#2b1b4a';let sf=28;sx.font=sf+'px VT323';while(ST.id==='fireside'&&sx.measureText(ST.stamp).width>118&&sf>16){sf-=2;sx.font=sf+'px VT323'}sx.textAlign='center';sx.fillText(ST.stamp,68,146);
   sx.globalCompositeOperation='destination-out';for(let k=0;k<=12;k++){for(const y of[0,164]){sx.beginPath();sx.arc(k*136/12,y,5,0,7);sx.fill()}}for(let k=0;k<=14;k++){for(const xx of[0,136]){sx.beginPath();sx.arc(xx,k*164/14,5,0,7);sx.fill()}}
   x.save();x.translate(px+pw-170,py+22);x.rotate(.05);x.shadowColor='rgba(0,0,0,.35)';x.shadowBlur=8;x.drawImage(st,0,0);x.restore();
   // the postmark: a ring with the place and date, wavy cancel lines running left
@@ -4073,6 +4172,11 @@ let lastTouch=performance.now();
 $('calm').checked=settings.calm;
 $('hq').checked=settings.hq;setQuality(settings.hq);
 $('hq').addEventListener('change',e=>{settings.hq=e.target.checked;saveSettings();setQuality(settings.hq)});
+// the holiday decorations: built with the scenery in their own layer (userData.deco), shown or hidden all at once; checked again each minute for December 1
+let DECO=null;const showDeco=()=>{for(const b of $('decoSeg').children)b.classList.toggle('on',b.dataset.d===settings.deco)};
+function setDeco(){DECO=decoOn();scene.traverse(o=>{if(o.userData.deco)o.visible=DECO})}
+for(const b of $('decoSeg').children)b.addEventListener('click',()=>{settings.deco=b.dataset.d;saveSettings();showDeco();setDeco()});
+showDeco();setDeco();setInterval(()=>{if(decoOn()!==DECO)setDeco()},60000);
 $('calm').addEventListener('change',e=>{settings.calm=e.target.checked;saveSettings();lastTouch=performance.now();hudEl.classList.remove('calm')});
 for(const ev of['pointerdown','keydown','wheel'])addEventListener(ev,()=>{lastTouch=performance.now();hudEl.classList.remove('calm')},true);
 for(const ev of['touchend','click'])addEventListener(ev,()=>{if(AC&&AC.state!=='running'&&!document.hidden&&$('start').hidden)unlockAudio()},true); // any tap wakes stalled sound
@@ -4254,6 +4358,12 @@ function softTex(n,stops){ // a soft round image, [[radius 0..1,[r,g,b,a]],...],
     const [q0,c0]=stops[k],[q1,c1]=stops[k+1],t=clamp((q-q0)/(q1-q0),0,1),i=(y*n+x)*4;for(let c=0;c<4;c++)d[i+c]=Math.round((c0[c]+(c1[c]-c0[c])*t)*(c<3?1:255))}
   const t=new THREE.DataTexture(d,n,n);t.colorSpace=THREE.SRGBColorSpace;t.magFilter=THREE.LinearFilter;t.minFilter=THREE.LinearMipmapLinearFilter;t.generateMipmaps=true;t.needsUpdate=true;return t;
 }
+function cableLoop(m,pts,side,gap,v,o){ // chairs or cabins going round a cable: up one side, down the other
+  const seg=[];let tot=0;for(let q=0;q+1<pts.length;q++){const l=Math.hypot(pts[q+1][0]-pts[q][0],pts[q+1][1]-pts[q][1]);seg.push(l);tot+=l}
+  const n=Math.min(m.instanceMatrix.count,Math.floor(2*tot/gap));m.count=n;
+  for(let q=0;q<n;q++){let d=(clock*v+q*gap)%(2*tot);const up=d<tot;if(!up)d=2*tot-d;let i=0;while(i<seg.length-1&&d>seg[i]){d-=seg[i];i++}
+    const p=pts[i],c=pts[i+1],t=d/seg[i];o.position.set(p[0]+(c[0]-p[0])*t,p[1]+(c[1]-p[1])*t,p[2]+(up?-side:side));o.rotation.set(0,up?Math.PI/2:-Math.PI/2,0);o.updateMatrix();m.setMatrixAt(q,o.matrix)}
+  m.instanceMatrix.needsUpdate=true}
 function initAlpine(){
   const puff=softTex(128,[[0,[255,255,255,.95]],[.5,[255,255,255,.45]],[.97,[255,255,255,0]],[1,[255,255,255,0]]]),r=rng(6300); // one soft puff, for the cloud drifting across the road
   // the sea of cloud below the summit: banks of puffy cloud with gaps down to the lake, lit on top and grey-blue underneath. Solid shapes,
@@ -4329,7 +4439,9 @@ void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.
   RW_STYLE=true;person(sb,0,.87,-.35,0,r,'sit',{1:0x2fb3a8,2:0xf1c9a5,3:0x3a2a20,4:0x2b2b30,5:0x2b2b30,6:0x15151a,7:0xe8505b});RW_STYLE=rs; // and its rider, in goggles
   const sled=new THREE.Mesh(sb.geo(),MAT_PED);sled.castShadow=true;sled.visible=false;scene.add(sled);
   const wq=new URLSearchParams(location.search).get('wx'); // (testing only: ?wx=40 starts the weather 40 s into a snowfall)
-  ALP={banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
+  const liftC=new THREE.InstancedMesh(ch.geo(),new THREE.MeshLambertMaterial({vertexColors:true}),48),lr=rng(6400);liftC.frustumCulled=false;liftC.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // the chairs on the lift over the road
+  for(let q=0;q<48;q++)liftC.setColorAt(q,_c.set(pick(PUFFY,lr)));liftC.visible=false;scene.add(liftC);
+  ALP={liftC,liftG:null,liftK:null,banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
     deer,deerG,deerI,dz:null,dnext:0,ravens,ravenI,sled,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
   for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
 }
@@ -4388,16 +4500,14 @@ function updateAlpine(dt){
   { // the ski hill near a village: cabins and chairs go round their cables, skiers come down the runs in S-turns
     const k=Math.round((car.z/B-2.5)/PER),L=isAlp(regionOf(k))&&Math.abs(car.z-(k*PER+2)*B)<2600?skiLayout(k):null,S=ALP.ski,o=S.o;
     for(const m of[S.cab,S.chair,S.sk])m.visible=!!L;
-    if(L){const loop=(m,pts,side,gap,v)=>{ // up one side of the cable, down the other
-        const seg=[];let tot=0;for(let q=0;q+1<pts.length;q++){const l=Math.hypot(pts[q+1][0]-pts[q][0],pts[q+1][1]-pts[q][1]);seg.push(l);tot+=l}
-        const n=Math.min(m.instanceMatrix.count,Math.floor(2*tot/gap));m.count=n;
-        for(let q=0;q<n;q++){let d=(clock*v+q*gap)%(2*tot);const up=d<tot;if(!up)d=2*tot-d;let i=0;while(i<seg.length-1&&d>seg[i]){d-=seg[i];i++}
-          const p=pts[i],c=pts[i+1],t=d/seg[i];o.position.set(p[0]+(c[0]-p[0])*t,p[1]+(c[1]-p[1])*t,p[2]+(up?-side:side));o.rotation.set(0,up?Math.PI/2:-Math.PI/2,0);o.updateMatrix();m.setMatrixAt(q,o.matrix)}
-        m.instanceMatrix.needsUpdate=true};
-      loop(S.cab,L.gond,2.8,42,4.5);loop(S.chair,L.chair,2.1,22,2.3);
+    if(L){cableLoop(S.cab,L.gond,2.8,42,4.5,o);cableLoop(S.chair,L.chair,2.1,22,2.3,o);
       const span=L.X1-L.X0;for(let q=0;q<30;q++){const R=L.runs[q%3],x=L.X1-(clock*(7+q%5)+q*137)%span,zf=x2=>R.z(x2)+R.w*.32*Math.sin(x2/13+q),z=zf(x);
         o.position.set(x,hillY(x,z),z);o.rotation.set(0,Math.atan2(-1,zf(x-1)-z),0);o.updateMatrix();S.sk.setMatrixAt(q,o.matrix)}
       S.sk.instanceMatrix.needsUpdate=true}}
+  { // the chairlift over the road: built as you come near (within 1.8 km), the chairs going round
+    const k0=Math.floor(car.z/B/PER);let L=null,lk=null;for(const k of[k0,k0-1]){const c=isAlp(regionOf(k))&&liftLayout(k);if(c&&Math.abs(c.z-car.z)<1800&&alpW(c.z)>.999&&(!L||Math.abs(c.z-car.z)<Math.abs(L.z-car.z))){L=c;lk=k}}
+    if(ALP.liftK!==lk){if(ALP.liftG){scene.remove(ALP.liftG);ALP.liftG.traverse(m=>{if(m.geometry)m.geometry.dispose()});ALP.liftG=null}ALP.liftK=lk;if(L){ALP.liftG=buildLift(L);scene.add(ALP.liftG)}}
+    ALP.liftC.visible=!!L;if(L)cableLoop(ALP.liftC,L.pts,2.1,16,2.2,ALP.ski.o)}
   // summit light: the sky a deeper blue overhead and the sun lower (longer shadows) as the camera rises. applyLook sets the sky fresh whenever the look changes, so take the base from there
   if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value]}
   // in a snowfall the sky greys over and the sun dims behind it (the haze takes the horizon's colour, so it greys too) and the alpenglow fades; the sun break brings them back
