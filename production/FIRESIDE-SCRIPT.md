@@ -1,6 +1,6 @@
 # 96.1 The Fireside: radio script (recorded 2026-10-29)
 
-The High Sierra station. All 173 clips were recorded on 2026-10-29. To change a line: edit it here, then `node generate-fireside-voices.js --only <clip> --force` and `node process-fireside-voices.js <clip>`.
+The High Sierra station. All 173 clips were recorded on 2026-10-29. To change a line: edit it here, then `node generate-fireside-voices.js --only <clip> --force`, `node process-fireside-voices.js <clip>` and `node fireside-bits.js` (the game's subtitles).
 Numbers are written as digits here and get spelled out for the voices when recorded ("ninety-six point one"), like the other stations.
 
 **Recording (same as the Cabin's):** Eleven v4 with Auto-tag off, stability 0.75. Every line starts with an audio tag in square brackets, like `[deadpan]` or `[booming, delighted]`. Tags are hints: if one sounds odd, delete it and regenerate.

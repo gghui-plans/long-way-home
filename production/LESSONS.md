@@ -69,4 +69,6 @@ Details and history are in AUDIO-WORKFLOW.md.
 - **A worktree preview shows main's code** (2026-10-27)
   - **Why:** `.claude/launch.json` had absolute paths to the main checkout.
   - **Fix:** use relative paths so each checkout serves itself, and run a worktree on its own port ("winter", 8767) so it doesn't clash with "local".
+- **The preview tool always reads the main checkout's launch.json** (2026-10-30): from a worktree session, "winter" (8767) served main's code, and the worktree-only "winter-phone" wasn't found. Check with `curl -s localhost:<port>/index.html | grep <something new>` before testing. The phone server on 8768, started from the worktree, does serve the branch.
+- **The browser pane only draws when the app window is in front.** Behind other windows its frame count stays at 0 and screenshots time out. Test in headless Edge instead (`production/raw/wt/` tools, or a CDP script like `regress-run.js`).
 - **Python isn't installed.** Use node or PowerShell for scripts.
