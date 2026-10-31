@@ -44,3 +44,7 @@ Backups if one disappoints (not downloaded):
 Avoid:
 - the kyles "campground redwood forest" series (452447–452450): highway traffic in it
 - felix.blume's Chilean sea lions: a different species
+
+## High Sierra (built 2026-10-31, on the winter branch)
+
+No new recordings. The Sierra reuses the Redwood Coast's wind, forest, canopy, creek, creak, jay, raven and woodpecker files above (no thrush, elk, sea lions, foghorn or surf up there). The tyre crunch on snow, the wood fires and the chairlift's hum and clunk are made in code, so they need no credit. If real recordings replace them later, list them here.

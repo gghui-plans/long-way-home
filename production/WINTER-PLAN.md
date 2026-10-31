@@ -110,7 +110,7 @@ Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18)
 
 ## 7. Radio: 96.1 The Fireside (station and hosts decided 2026-10-28)
 
-**Script (2026-10-29):** all 173 clips are drafted in FIRESIDE-SCRIPT.md, waiting for the user's review before recording. Station, hosts and voices are all decided. The station name is final, so the song credits ("The Fireside House Trio") and the `fireside` folder stand.
+**Script:** all 173 clips in FIRESIDE-SCRIPT.md, recorded 2026-10-29 and in the game since build batch 5 (2026-10-30). Station, hosts and voices are all decided. The station name is final, so the song credits ("The Fireside House Trio") and the `fireside` folder stand.
 
 **Station (decided 2026-10-28):** "96.1, The Fireside. Jazz by the fire, skis by the door." LCD tagline: WARM JAZZ & FRESH POWDER (same shape as CLASSIC ROCK & GRIDLOCK and COZY SWEATER & HOT COFFEE). The spoken line is indoors (Vera's); the LCD is outdoors (Moose's). Earlier proposal: "chains on the tires".
 
@@ -175,7 +175,7 @@ Wind through the pines, a soft crunch of tires on snow, the lake lapping at the 
 
 All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.claude/worktrees/winter-35bb4b`); `main` stays what's live. Ship once, when it's all done.
 
-**Status (2026-10-28):** batches 1–3 are built and checked on the phone. Batch 4 (writing) hasn't started. Batch 5 waits on the station and host names. Batches 6 and 7 are to do.
+**Status (2026-10-31):** batches 1–3 are built and checked on the phone. Batch 4 (writing) is done: songs and all clips recorded. Batches 5 and 6 are built (not checked on the phone yet). Batch 7 is to do.
 
 1. **Foundation and altitude test (code):**
    - make the region code work for any number of regions;
@@ -189,9 +189,8 @@ All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.clau
    - station and host names;
    - final song lyrics (drafted) **by November 2**, so you can generate them in Suno on November 3 (done early: all 16 processed by 2026-10-30);
    - the radio script (about 150 clips) by mid-November, then you record them.
-5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station with its 16 songs (processed 2026-10-30, so no need to borrow the Coffee Cabin's). Also: the driver wears a Santa hat in the High Sierra, all year: it goes on as the car enters and comes off as it leaves (decided 2026-10-29; the walkers already swap sun hats for beanies by region, so it follows that code).
-6. **Audio and polish:**
-   - clips dropped in (the songs are already processed and go in with batch 5);
+5. **Map and handoff (code), built 2026-10-30:** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station with its 16 songs (processed 2026-10-30, so no need to borrow the Coffee Cabin's). Also: the driver wears a Santa hat in the High Sierra, all year: it goes on as the car enters and comes off as it leaves (decided 2026-10-29; the walkers already swap sun hats for beanies by region, so it follows that code).
+6. **Audio and polish, built 2026-10-31** (details in STATE.md's build log on the branch):
    - ambient sound;
    - the hero models (snowplow, chairlift);
    - the region's postcard stamp and title;

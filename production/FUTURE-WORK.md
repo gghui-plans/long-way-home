@@ -25,33 +25,15 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 - **Cancel the ElevenLabs and Suno subscriptions** once retakes and region audio are done (37,307 ElevenLabs credits left as of 2026-10-05).
 
 ## Game
+- **High Sierra polish (after it ships):** the snowmobile tracks fade over the slope's brown rock bands (darker grooves, or snow under them); lights on the far-off villages for the holidays.
 - **Regions (map button)**: pick a California region from a fold-out road map. The car drives there: the next open-coast stretch blends into the new region over a minute or two (sky, fog, ground colours, trees, signs). Also offer a quick fade-and-skip.
   - Build it as a `REGION` table: sky palette (SKYC), ground colours (TC), tree and prop builders, coast on or off, town and street names, district mix, outfits, ambient sound, station. Each town and coast cycle carries its own region.
   - **Rollout: build and ship one region at a time**, learning from each. Keep ElevenLabs Starter running through the regions (credits carry over); buy a Suno month only when a region needs songs (one month can cover two regions if they're close together).
     1. **Redwood Coast** (first release, with the shared foundation: region system, station system and SEEK knob, style rule, K-JAM signal-fade handoff). It keeps the ocean, so the shoreline, waves and beaches are reused. It's the biggest visual contrast for the effort (fog, giant trunks, ferns, god rays through the trees). Fog also cuts how far the game draws. Test song: *Fog Line* by the Fogbank Family Band (acoustic folk, female vocal); everything for Suno is in REGION-SONGS.md.
     2. **Big Sur**: the cheapest next step, since the cliffs and coast exist (add an arch bridge and a fog bank). It sits between LA and the redwoods on the real Highway 1, so road trip mode can run LA → Big Sur → Redwoods.
     3. **Desert and Wine Country**, together: both need the land-instead-of-ocean west side, so they share that work. Desert: Joshua trees, boulders, mid-century motels, wind turbines. Wine Country: vines, oaks, golden hills.
-    4. **High Sierra winter** (this replaces the old Tahoe idea; expanded 2026-10-17). **Moved up to next on 2026-10-18, aiming for December 1, 2026; plan in WINTER-PLAN.md, songs in REGION-SONGS.md.** It builds the land-instead-of-ocean work first (the lake reuses the ocean plane).: the snow map. It needs a lake and snow (pines, granite). California's real snow is in the Sierra Nevada (Tahoe, Mammoth), east of the coast and up high, with Mt Shasta in the far north as another option. See the winter map details below.
+    4. **High Sierra winter**: shipped 2026-10-31 (WINTER-PLAN.md). What's left of it is under High Sierra polish above.
     - Big Sur is the least work, but it's not first because it looks too much like what already exists.
-  - **Winter map details** (the full version is in WINTER-PLAN.md): to feel different from the Redwood Coast, the drive itself changes, not just the scenery: you're climbing a mountain instead of following a coast.
-    - **The highway becomes a mountain pass.** Switchbacks and hairpins, guardrails, rock cuts, snow sheds and drop-offs with valley views. It climbs from the foothills (oaks, dry grass) through pine forest, past the snow line, to a summit, then down to a lake. The snow appears gradually as you climb, which is the "wow" moment.
-    - **Towns become lakeside ski villages.** A-frame cabins with chimney smoke, ski and rental shops, a gondola or chairlift, string lights, snowbanks along the curbs. A frozen or icy lake can reuse the shoreline code: the lake takes the ocean's place, and the ice is a material swap.
-    - **Life:** snowfall (GPU points, like the bonfire smoke), skaters on the lake, sledders, snowmen, snowball fights, skiers carrying skis, a snowplow with flashing lights, a chain-control checkpoint, deer in the snow.
-    - **Sky:** keep golden hour, but with pink alpenglow on the peaks and a crisp blue hour. Clear-day or snowing variants.
-    - **Car gag:** the convertible stays top-down and the hosts joke about it, or the top goes up just for this region.
-    - **Station: fireside jazz** (decided 2026-10-17). It sounds nothing like K-JAM's classic rock or the Cabin's acoustic folk, and it gives a cozy, holiday-ish feel without Christmas songs.
-      - Sound: piano trio, upright bass, brushed drums, warm crooner and female jazz vocals; some bossa nova, some swing, a few instrumentals. Original songs (Suno), no standards.
-      - Themes: first snow, the climb to the summit, putting chains on, fogged-up windows, hot cocoa, snow days, snowed in together, skating on the frozen lake, night skiing, the chairlift ride, mountain stars, cold hands and a warm heart.
-      - Host: a ski-bum doing powder reports and chain-control drama (a smooth late-night jazz DJ voice is another option).
-      - In December the map gets its Christmas decorations (see below).
-    - **Big build:** no ocean on the west side, so it shares the land-instead-of-ocean work with Desert and Wine Country. It also needs real elevation for the climb (inlandY and mountain ridges already exist), snow ground colours, and snow-capped pines and roofs.
-    - **Christmas decorations** (2026-10-17; this map only, not LA or the Redwood Coast): visuals only, no Christmas songs; the fireside jazz plays as normal.
-      - On by date, December 1 to January 1, plus a Settings toggle ("Holiday decorations": auto, on, off).
-      - Ski village: string lights on the A-frames and shops, wreaths on doors and lampposts, a big lit tree in the village square, a tree lot, carolers, lit-up sleds, snowmen in scarves and Santa hats.
-      - Pass and lake: lit trees at the chain-control stop and the summit pull-out, a snowplow with lights, skaters in Santa hats, maybe a lit boat or a lit gondola.
-      - Postcards: a "Season's Greetings from <town>" title and a holiday stamp.
-      - Optional: a few holiday host bits, only if wanted.
-      - Timing: it ships with the winter map. For this December, the winter map would have to jump the regions queue (ahead of Big Sur, Desert and Wine Country), so it would be the first region to build the land-instead-of-ocean work.
   - Road trip mode: the destination changes on its own every 20–30 min, so the drive stays hands-free.
   - Postcard title and stamp per region. Ambient sound per region: forest birds, desert wind.
   - No trademarked or named landmark structures (a generic arch bridge is fine; no Golden Gate lookalike).
