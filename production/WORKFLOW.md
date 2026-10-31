@@ -32,10 +32,10 @@ Each region has its own station, and each station has a song file, a voice scrip
 3. **Write.** Claude drafts the lyrics, scripts or plan. The user reviews them and marks what to cut, change or keep. Rules for songs and scripts are below.
 4. **Make the audio.**
    - **Songs:** the user generates them in Suno from the song file and downloads the keepers as **MP3** into Downloads (Suno names them by title, such as "Top Down, Radio Up.mp3"). Claude moves them to `production/raw/music/` (or `raw/music/<station folder>/`), renamed to the song's "Save as" name.
-   - **Voices:** once the user approves a script, Claude generates them through the ElevenLabs API (`generate-voices.ps1` for K-JAM, `generate-coffee-voices.js` for the Cabin). This spends credits, so test a few clips first. Check the balance by asking the user for a dashboard screenshot.
+   - **Voices:** once the user approves a script, Claude generates them through the ElevenLabs API (`generate-voices.ps1` for K-JAM, `generate-coffee-voices.js` for the Cabin, `generate-fireside-voices.js` for the Fireside, which can take `--batch 1-4`). This spends credits (Eleven v4 dialogue bills about 0.4 credits per character), so test a few clips first. Check the balance with `/v1/user/subscription` (the key has User read since 2026-10-29).
 5. **Process.** These turn raw files into game files in `docs/audio/`. `production/raw/` is never committed.
    - Songs: `process-music.ps1` (`-Sub coffee-cabin` for a station folder), then whisper (`production/raw/tools/whisper/run-all.sh`), then `align-lyrics.js` (plus the folder name) for the scrolling lyrics.
-   - Voices: K-JAM uses `process-voices.ps1`, then `time-voices.js` for long bits. The Cabin uses `process-coffee-voices.js <clip>`.
+   - Voices: K-JAM uses `process-voices.ps1`, then `time-voices.js` for long bits. The Cabin uses `process-coffee-voices.js <clip>`, the Fireside `process-fireside-voices.js <clip>` (it reads the script through `fireside-script.js`, the same as its generator).
    - Nature sounds: `process-nature.ps1`.
 6. **Build into the game** (only after the user says "build"). Edit `index.html` with targeted changes: the station's songs (`SONGS`, `CC_SONGS`), voice bits (`VBITS`, `CC_BITS`), regions (`REGIONS`) and stations (`STATIONS`). Big features go on their own branch, and `main` stays live.
 7. **Test.** Preview "local" (port 8765) in the browser pane. Check the console, and check the change with a screenshot or by reading the page. Use "phone" (port 8766) for a test on the user's phone.

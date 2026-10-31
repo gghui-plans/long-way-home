@@ -1,6 +1,6 @@
-# 96.1 The Fireside: radio script (DRAFT, not recorded yet)
+# 96.1 The Fireside: radio script (recorded 2026-10-29)
 
-The High Sierra station. For review: mark lines to cut, rewrite or keep. Nothing goes to ElevenLabs until you approve.
+The High Sierra station. All 173 clips were recorded on 2026-10-29. To change a line: edit it here, then `node generate-fireside-voices.js --only <clip> --force` and `node process-fireside-voices.js <clip>`.
 Numbers are written as digits here and get spelled out for the voices when recorded ("ninety-six point one"), like the other stations.
 
 **Recording (same as the Cabin's):** Eleven v4 with Auto-tag off, stability 0.75. Every line starts with an audio tag in square brackets, like `[deadpan]` or `[booming, delighted]`. Tags are hints: if one sounds odd, delete it and regenerate.
@@ -953,7 +953,7 @@ Small scenes that escalate and end on a twist (about 30–45 s), like the Cabin'
 - MOOSE: [protective, big] She's staying!
 - VERA: [matter-of-fact] I'm staying. The hot tub needs me.
 - LEON: [smooth] Then let me play you something.
-- *(a few flat trumpet notes down the phone, added in processing)*
+- LEON: [earnest, mouth trumpet] Bwaa-da-daaa... bwaaaa.
 - VERA: [hangs up, unbothered] ...He was always flat.
 
 **call-12 · The ranger station** (RANGER JO)
