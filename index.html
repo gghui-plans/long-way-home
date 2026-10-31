@@ -153,7 +153,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--sun);outline-of
 .radio.off .lcd{color:var(--lcd-dim);text-shadow:none}
 
 .sheet{position:fixed;inset:0;z-index:5;background:rgba(15,8,20,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px)}
-.panel{width:100%;max-width:420px;background:#231a26;border:1px solid var(--face-edge);border-radius:18px;padding:18px;display:grid;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+.panel{width:100%;max-width:420px;box-sizing:border-box;max-height:100%;overflow-y:auto;touch-action:pan-y;overscroll-behavior:contain;background:#231a26;border:1px solid var(--face-edge);border-radius:18px;padding:18px;display:grid;gap:14px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
 .panel h2{margin:0;font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--sun)}
 .row{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .lbl{font-weight:600;font-size:15px}
@@ -1738,8 +1738,8 @@ function buildTerrain(j){
     const zm=z0+B/2,c=coastType(zm),rc=roadX(zm),hm=hillMul(zm);
     if(hm>.3&&!(al&&hiAt(zm)>.3)){ // telephone poles on the inland shoulder, wires sagging pole to pole along the highway (not up the Sierra's steep face)
       const pole=z=>{const x=roadX(z)+12.5;return[x,inlandY(x,z),z]};
-      for(const zo of[5,35]){if(al&&(chainOff(z0+zo)>0||fallsNear(z0+zo,14)))continue;const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
-        if(hillMul(z0+zo+30)>.3&&!(al&&(chainOff(z0+zo+30)>0||fallsNear(z0+zo+30,14))))for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
+      for(const zo of[5,35]){if(al&&(chainOff(z0+zo)>0||fallsNear(z0+zo,22)))continue;const [px,py,pz]=pole(z0+zo),[qx,qy,qz]=pole(z0+zo+30);b.add(G.box,0x6b5640,px,py+4.6,pz,.28,9.2,.28);b.add(G.box,0x6b5640,px,py+8.6,pz,2.4,.16,.16);
+        if(hillMul(z0+zo+30)>.3&&!(al&&(chainOff(z0+zo+30)>0||fallsNear(z0+zo+30,22))))for(const o of[-1.05,1.05])wire(b,[px+o,py+8.75,pz],[qx+o,qy+8.75,qz],.6)}
     }
     if(rw)redwoodScenery(b,gb,grp,j,rnd);else{const lk=lookAt(zm,'lake')>0; // lk: a road trip's blend toward the Sierra, the west side dropping to the lake (no beach, no sea stacks)
     if(c<.35&&!lk){
@@ -1802,8 +1802,8 @@ function redwoodScenery(b,gb,grp,j,rnd){
   const sg=secondGrowth(zm)*gv,md=meadowAt(zm),cz=creekNear(zm),tz=dtreeNear(zm); // forest variety: second growth, a meadow, a creek crossing, the drive-through tree
   const at=(dx,z)=>{const x=roadX(z)+dx;return[x,groundAt(x,z),z]};
   const tan=z=>Math.atan2((off(z+1)-off(z-1))/2,1); // the road's heading at z
-  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(spc&&dx>0&&(dx<26&&chainOff(z)>0||dx<50&&fallsNear(z,9)||dx>16&&dx<80&&sledNear(z,105))); // keep the creek, the meadow and the big tree's foot open
-  const inCC=(x,z)=>{if(!spc)return false;const d=x-roadX(z);return d>0&&(d<26&&chainOff(z)>0||d<50&&fallsNear(z,9)||d>16&&d<80&&sledNear(z,105))}; // the High Sierra's chain-control pull-off, frozen waterfall and snowfield, kept clear
+  const clear=(dx,z)=>creekAt(z)<22||(md>.4&&dx>0&&dx<130)||(tz!=null&&Math.abs(z-tz)<24&&Math.abs(dx)<32)||(spc&&dx>0&&(dx<26&&chainOff(z)>0||dx<50&&fallsNear(z,20)||dx>16&&dx<80&&sledNear(z,105))); // keep the creek, the meadow and the big tree's foot open
+  const inCC=(x,z)=>{if(!spc)return false;const d=x-roadX(z);return d>0&&(d<26&&chainOff(z)>0||d<50&&fallsNear(z,20)||d>16&&d<80&&sledNear(z,105))}; // the High Sierra's chain-control pull-off, frozen waterfall and snowfield, kept clear
   const down=dx=>dx<0?dx*2.4-30:dx; // the Sierra: the drop side's trees further down the slope, their tops below the road
   const giant=(dx,z,s)=>{if(clear(dx,z))return;if(al)dx=down(dx);const [x,y]=at(dx,z),k=rnd();if(al){if(rnd()>treeAt(z)||clumpAt(x,z)<-.2)return;b.add(PINES()[k<.7?2:3],null,x,y-.3,z,s,s,s,rnd()*6.28);return}b.add(REDWOODS[k<.3?0:k<.72?1:2],null,x,y-.9,z,s,s,s,rnd()*6.28)};
   const young=(dx,z)=>{if(clear(dx,z))return;if(al){if(rnd()>treeAt(z))return;dx=down(dx)}const [x,y]=at(dx,z),s=.8+rnd()*.5;if(al&&clumpAt(x,z)<-.2)return;b.add(al?PINES()[rnd()<.5?0:1]:pick(FIRS,rnd),null,x,y-.2,z,s,s,s,rnd()*6.28)};
@@ -1861,13 +1861,14 @@ function redwoodScenery(b,gb,grp,j,rnd){
       for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))} // tyre tracks in the gravel
       {const db=new Builder(),dgb=new Builder(),[tx,ty]=at(-29,pz+30);dgb.gain=2.6;xmasTree(db,dgb,tx,ty,pz+30,6.5);grp.add(decoGroup(db,dgb))}} // (the holidays: a lit tree by the sign)
   }
-  if(al&&fallsNear(zm,1)){const fz=zm,rc=roadX(fz),y0=inlandY(rc+15,fz),H=12+5*rnd(),g0=gb.gain;gb.gain=1; // the frozen waterfall: a band of dark granite stepping out of the slope, a curtain of ice
-    // down its face (a faint glow in the thickest columns), icicles along the lip, the ice built up into a cone at its foot
-    for(const [oz,w,h,d] of[[0,11,H+2,3.2],[-8.5,7,H-1.5,2.8],[8,7.5,H-2.5,2.6],[-14,5,H*.6,2.2],[13.5,5,H*.55,2.2]])b.add(G.ball,pick([0x5a5650,0x4f4c47,0x625e57],rnd),rc+16.4+d+(oz?1.6:0),y0+h*.42,fz+oz,d,h*.55,w*.55,(rnd()-.5)*.3,0,(rnd()-.5)*.08);
-    for(let q=-7;q<=7;q++){const z=fz+q*.62+(rnd()-.5)*.25,Lc=H*(.95-Math.abs(q)*.055)*(.75+.25*rnd()),r=.4+rnd()*.32-Math.abs(q)*.015,top=y0+H-.6-Math.abs(q)*.2,core=Math.abs(q)<3;
-      (core?gb:b).add(G.cyl,core?0xa7d0ea:pick([0xe4f1f9,0xd2e6f3,0xc3dcee],rnd),rc+15.9-(core?.25:0)+Math.abs(q)*.06,top-Lc/2,z,r,Lc,r*.8);b.add(G.cone,0xdcecf6,rc+15.9,top-Lc-.35,z,r*.8,.8,r*.7,0,Math.PI)} // the curtain, each column ending in a point
-    for(let k=0;k<10;k++){const z=fz+(rnd()-.5)*14,Lc=.6+rnd()*1.8;b.add(G.cone,pick([0xdbe8f2,0xc9dcea,0xeef5fa],rnd),rc+16.3,y0+H*.9-Lc/2-Math.abs(z-fz)*.25,z,.14,Lc,.14,0,Math.PI)} // icicles along the lip
-    gb.add(G.cone,0xb3d8ee,rc+15.6,y0+1.2,fz,2.4,2.6,2.6);b.add(G.ball,0xd7e7f2,rc+14.6,y0+.3,fz+2.4,1.3,.7,1.5,rnd()*6);b.add(G.ball,0xd7e7f2,rc+14.8,y0+.3,fz-2.6,1.2,.6,1.4,rnd()*6);gb.gain=g0}
+  if(al&&fallsNear(zm,1)){const fz=zm,rc=roadX(fz),y0=inlandY(rc+15,fz),H=12+5*rnd(),g0=gb.gain;gb.gain=1; // the frozen waterfall: a band of dark granite stepping out of the slope and down its face a broad
+    // fall of ice: tiers of it bulging out toward the road (so it reads from down the road, not only from beside it), a curtain of columns (a faint glow in the thickest), icicles along the lip, an apron of ice at its foot
+    for(const [oz,w,h,d] of[[0,16,H+2,3.2],[-11,8,H-1.5,2.8],[11,8.5,H-2.5,2.6],[-18,5,H*.6,2.2],[17.5,5,H*.55,2.2]])b.add(G.ball,pick([0x5a5650,0x4f4c47,0x625e57],rnd),rc+16.4+d+(oz?1.6:0),y0+h*.42,fz+oz,d,h*.55,w*.55,(rnd()-.5)*.3,0,(rnd()-.5)*.08);
+    for(const [t,w,d] of[[.2,13,2.6],[.47,11,2.2],[.74,8.5,1.8]])for(let q=0;q<4;q++){const mid=t===.47&&(q===1||q===2);(mid?gb:b).add(G.sball,mid?0x9ccbe6:pick([0xbcdcf0,0xaed3ea,0xcbe4f3],rnd),rc+15.7-d*.45,y0+H*t,fz+(q-1.5)*w*.24+(rnd()-.5)*1.2,d,H*.21,w*.17,(rnd()-.5)*.3)} // the tiers: tall bulges of blue ice (the middle ones faintly aglow)
+    for(let q=-11;q<=11;q++){const a=Math.abs(q),z=fz+q*.62+(rnd()-.5)*.25,Lc=H*(.95-a*.04)*(.75+.25*rnd()),r=.5+rnd()*.35-a*.012,top=y0+H-.6-a*.15,core=a<4;
+      (core?gb:b).add(G.cyl,core?0xa7d0ea:pick([0xe4f1f9,0xd2e6f3,0xc3dcee],rnd),rc+15.8-r*.5-(core?.25:0)+a*.04,top-Lc/2,z,r*1.5,Lc,r);b.add(G.cone,0xdcecf6,rc+15.8-r*.5,top-Lc-.35,z,r,.8,r*.8,0,Math.PI)} // the curtain, each column ending in a point
+    for(let k=0;k<14;k++){const z=fz+(rnd()-.5)*20,Lc=.6+rnd()*1.8;b.add(G.cone,pick([0xdbe8f2,0xc9dcea,0xeef5fa],rnd),rc+16.3,y0+H*.9-Lc/2-Math.abs(z-fz)*.2,z,.14,Lc,.14,0,Math.PI)} // icicles along the lip
+    gb.add(G.cone,0xb3d8ee,rc+15.2,y0+1.4,fz,3.4,3,4.2);b.add(G.sball,0xd7e7f2,rc+13.9,y0+.3,fz,2.4,.8,7.5,rnd()*.3);b.add(G.ball,0xd7e7f2,rc+14.4,y0+.3,fz+4,1.4,.7,1.6,rnd()*6);b.add(G.ball,0xd7e7f2,rc+14.6,y0+.3,fz-4.2,1.3,.6,1.5,rnd()*6);gb.gain=g0}
   if(al&&sledNear(zm,130)){{const P=sledPath(gapAt(zm).k); // snowmobile tracks across the snowfield: two faint grooves in the snow
     for(let i=0;i+1<P.length;i++){const [xa,za]=P[i],[xb,zb]=P[i+1],zc=(za+zb)/2;if(zc<z0||zc>=z0+B)continue;const L=Math.hypot(xb-xa,zb-za)||1,nx=-(zb-za)/L,nz=(xb-xa)/L;
       for(const o of[-.55,.55]){const E=(x,z,k)=>{const px=x+nx*(o+k),pz=z+nz*(o+k);return[px,landY(px,pz)+.07,pz]};b.quad(E(xa,za,-.16),E(xb,zb,-.16),E(xb,zb,.16),E(xa,za,.16),0x5f6873)}}}}
@@ -4407,28 +4408,28 @@ function initAlpine(){
   // falling snow: flakes in a box that wraps round the camera, worked out on the graphics card from each flake's seed and how far the
   // wind and the fall have carried them (one draw call; how many show follows how hard it snows)
   const NF=5000,fp=new Float32Array(NF*3);for(let i=0;i<NF*3;i++)fp[i]=r();const fg=new THREE.BufferGeometry();fg.setAttribute('position',new THREE.BufferAttribute(fp,3));fg.setDrawRange(0,0);
-  const fallU={uOff:{value:new THREE.Vector3()},uCam:{value:new THREE.Vector3()},uTime:{value:0},uPx:smokeU.uPx,uA:{value:0}};
+  const fallU={uOff:{value:new THREE.Vector3()},uCam:{value:new THREE.Vector3()},uTime:{value:0},uPx:smokeU.uPx,uA:{value:0},uShed:{value:new THREE.Vector4(0,0,-1,0)}}; // uShed: the snow shed (its middle z, the road x there, half its length, the roof's underside), where no flake falls
   const fall=new THREE.Points(fg,new THREE.ShaderMaterial({uniforms:fallU,transparent:true,depthWrite:false,
-    vertexShader:`uniform vec3 uOff,uCam;uniform float uTime,uPx,uA;varying float vA;
+    vertexShader:`uniform vec3 uOff,uCam;uniform vec4 uShed;uniform float uTime,uPx,uA;varying float vA;
 void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.7+s.z*37.3);
   vec3 p=s*bx+vec3(uOff.x*(.8+.4*s.y)+.45*sin(uTime*.9+s.z*50.0),-uOff.y*sp,uOff.z+.45*sin(uTime*.7+s.x*60.0));
   p=uCam+mod(p-uCam+bx*.5,bx)-bx*.5;
   vec4 mv=viewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mv;float d=-mv.z;
-  gl_PointSize=min(.065*uPx/max(d,.5),uPx*.012);vA=uA*smoothstep(.6,2.2,d)*(1.0-smoothstep(13.0,18.0,length(p-uCam)));}`,
+  gl_PointSize=min(.065*uPx/max(d,.5),uPx*.012);vA=uA*smoothstep(.6,2.2,d)*(1.0-smoothstep(13.0,18.0,length(p-uCam)));if(abs(p.z-uShed.x)<uShed.z&&p.y<uShed.w&&abs(p.x-uShed.y-1.3)<16.0)vA=0.0;}`,
     fragmentShader:`varying float vA;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vec3(.9,.92,.96),vA*smoothstep(.5,.12,d));
 #include <tonemapping_fragment>
 #include <colorspace_fragment>
 }`}));fall.frustumCulled=false;fall.visible=false;scene.add(fall);
   // mule deer grazing low down near the villages (grey-brown winter coats, pale rumps), heads coming up as you pass; ravens wheeling over the drop near the summit
   const db=new Builder(),C=0x7d6650,LG=0x5a4a3c;db.add(G.sph,C,0,.98,0,.25,.29,.62);db.add(G.sph,0xcbbba0,0,.84,.05,.2,.16,.48);db.add(G.sph,0xefe8dc,0,1.02,-.56,.19,.2,.1);db.add(G.sph,0x2b2420,0,1.1,-.64,.05,.08,.04); // barrel, belly, the pale rump, the black-tipped tail
-  for(const sx of[-1,1])for(const sz of[-1,1]){db.add(G.cyl,LG,sx*.13,.48,sz*.42,.045,.9,.045);db.add(G.box,0x2b2420,sx*.13,.04,sz*.42+.03,.06,.06,.09)}
+  for(const sx of[-1,1])for(const sz of[-1,1]){db.add(G.cyl,LG,sx*.13,.48,sz*.42,.065,.9,.065);db.add(G.box,0x2b2420,sx*.13,.04,sz*.42+.03,.08,.07,.11)}
   const dh=new Builder(); // pivots at the shoulders
   dh.add(G.cyl,C,0,.15,.17,.1,.42,.12,0,.75);dh.add(G.sph,C,0,.33,.4,.1,.11,.19,0,.5);dh.add(G.sph,0xe8e0d2,0,.2,.3,.07,.08,.07);dh.add(G.box,0x2b2420,0,.25,.56,.07,.07,.07);
   for(const s of[-1,1])dh.add(G.sph,0x6a5442,s*.12,.46,.32,.035,.11,.06,0,0,s*.8); // the big mule-deer ears
   const inst2=(geo,n)=>{const m=new THREE.InstancedMesh(geo,MAT_PED,n);m.frustumCulled=false;m.castShadow=true;m.instanceMatrix.setUsage(THREE.DynamicDrawUsage);m.count=0;m.visible=false;scene.add(m);return m}; // (drawn instanced: two draw calls for the deer, two for the ravens)
   const deerI=[inst2(db.geo(),6),inst2(dh.geo(),6)],deerG=new THREE.Group();deerG.visible=false; // deerG and the groups below are only rigs: their matrices feed the instances
   const deer=[...Array(6)].map((_,k)=>{const g=new THREE.Group(),neck=new THREE.Object3D();
-    neck.position.set(0,1.12,.48);g.add(neck);g.scale.setScalar(k===5?.75:.95+r()*.15);deerG.add(g);return{g,neck,a:0,graze:r()<.6,t:r()*5}});
+    neck.position.set(0,1.12,.48);g.add(neck);g.scale.setScalar(k===5?1:1.25+r()*.15);deerG.add(g);return{g,neck,a:0,graze:r()<.6,t:r()*5}});
   const rb=new Builder();rb.add(BLOB,0x17171c,0,0,0,.17,.15,.5);rb.add(BLOB,0x1b1b21,0,.06,.45,.1,.1,.13);rb.add(G.box,0x2a2a30,0,.04,.6,.05,.05,.15);rb.add(G.box,0x17171c,0,0,-.52,.24,.03,.26); // body, head, the heavy beak, a wedge tail
   const rwg=new Builder();rwg.add(G.box,0x141418,.5,0,0,1,.04,.32);rwg.add(G.box,0x0e0e12,.95,0,-.04,.2,.045,.28); // a long wing, fingered tips
   const ravenI=[inst2(rb.geo(),4),inst2(rwg.geo(),8)],ravens=[...Array(4)].map(()=>{const g=new THREE.Group(),L=new THREE.Object3D(),R=new THREE.Object3D(),rm=new THREE.Object3D();
@@ -4442,7 +4443,7 @@ void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.
   const liftC=new THREE.InstancedMesh(ch.geo(),new THREE.MeshLambertMaterial({vertexColors:true}),48),lr=rng(6400);liftC.frustumCulled=false;liftC.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // the chairs on the lift over the road
   for(let q=0;q<48;q++)liftC.setColorAt(q,_c.set(pick(PUFFY,lr)));liftC.visible=false;scene.add(liftC);
   ALP={liftC,liftG:null,liftK:null,banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
-    deer,deerG,deerI,dz:null,dnext:0,ravens,ravenI,sled,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696)};
+    deer,deerG,deerI,dz:null,dnext:0,ravens,ravenI,sled,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696),hc0:new THREE.Color(),hg0:new THREE.Color(),hcG:new THREE.Color(0xe4e2de),hgG:new THREE.Color(0x6c6a68),oc0:new THREE.Color(),ocG:new THREE.Color(0x2e3a44)};
   for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
 }
 function updateAlpine(dt){
@@ -4459,16 +4460,16 @@ function updateAlpine(dt){
     if(u.z==null||(u.z-car.z)*fwd<-120)u.z=car.z+fwd*(u.z==null?-100+Math.random()*700:350+Math.random()*350);sp.position.set(roadX(u.z)+u.dx,u.y,u.z);
     const d=sp.position.distanceTo(camera.position);sp.material.opacity=near*.6*ss(6,40,d)*ss(700,350,d)*ss(-110,-80,u.dx)*ss(55,5,u.dx);sp.visible=near>0} // drifting in from over the drop, thinning out before the uphill rock
   const windy=ss(.4,.85,hi); // the wind up high
-  {const P=ALP.drift.geometry.attributes.position,a=P.array,cx=camera.position.x,cz=camera.position.z;ALP.drift.visible=windy>0;ALP.drift.material.opacity=windy*.85;
+  {const P=ALP.drift.geometry.attributes.position,a=P.array,cx=camera.position.x,cz=camera.position.z;ALP.drift.visible=windy>0;ALP.drift.material.opacity=windy*.85*(1-shedAt(car.z)); // (thinning out under the snow shed)
     if(windy>0){for(let i=0;i<a.length;i+=3){a[i]-=(14+(i%7))*dt;a[i+1]-=(.6+(i%5)*.3)*dt;if(a[i+1]<0)a[i+1]+=9;a[i+2]+=Math.sin(clock*1.3+i)*.8*dt;if(a[i]<-35)a[i]+=70}
       ALP.drift.position.set(cx,groundAt(cx,camera.position.z)-.2,cz);P.needsUpdate=true}}
-  {const F=ALP.fallU,on=sn>.002&&shedAt(car.z)<1;ALP.fall.visible=on;if(on){ // the flakes: carried west toward the drop on the wind (hard up high, with the blowing grains), falling about a metre and a half a second
+  {const F=ALP.fallU,on=sn>.002;ALP.fall.visible=on;if(on){ // the flakes: carried west toward the drop on the wind (hard up high, with the blowing grains), falling about a metre and a half a second
     F.uOff.value.x-=(.5+11*windy)*dt;F.uOff.value.y+=1.4*dt;F.uOff.value.z+=.3*dt;F.uCam.value.copy(camera.position);F.uTime.value=clock;
-    F.uA.value=.9*Math.min(1,sn*4)*(1-shedAt(car.z));ALP.fall.geometry.setDrawRange(0,Math.round(5000*Math.min(1,sn*1.6)))}}
+    F.uA.value=.9*Math.min(1,sn*4);{const g=gapAt(car.z),sz=g&&rockCutZ(g.k,0);if(sz!=null&&alpW(sz)>.999)F.uShed.value.set(sz,roadX(sz),58.5,6.25);else F.uShed.value.z=-1}ALP.fall.geometry.setDrawRange(0,Math.round(5000*Math.min(1,sn*1.6)))}} // (uShed: none under the snow shed's roof)
   {const on=ALP.wx>.04,f=Math.floor(clock*2.4)&1;for(const l of CC_FL){if(!l.parent||!l.parent.parent){CC_FL.delete(l);continue}l.visible=on&&l.userData.ph===f}} // chain control's lights wig-wag while it snows
   { // deer: a small group on the slope above the road low down near a village, found ahead now and then; heads come up to watch you go by
     if((ALP.dz==null||Math.abs(ALP.dz-car.z)>600)&&clock>ALP.dnext){ALP.dnext=clock+3;const z=car.z+fwd*(260+Math.random()*220),gz=gapAt(z);ALP.deerG.visible=false;ALP.dz=null;
-      if(gz&&alpW(z)>.99&&hiAt(z)<.22&&!chainOff(z)&&creekAt(z)>60){ALP.dz=z;ALP.deerG.visible=true;const cx=roadX(z)+22+Math.random()*26,n=3+Math.floor(Math.random()*4);
+      if(gz&&alpW(z)>.99&&hiAt(z)<.22&&!chainOff(z)&&creekAt(z)>60){ALP.dz=z;ALP.deerG.visible=true;const cx=roadX(z)+20+Math.random()*16,n=3+Math.floor(Math.random()*4);
         ALP.deer.forEach((e,k)=>{e.g.visible=k<n;const x=cx+(Math.random()-.5)*16,zz=z+(Math.random()-.5)*24;e.g.position.set(x,groundAt(x,zz)-.03,zz);e.g.rotation.y=Math.random()*6.28})}}
     if(ALP.deerG.visible)for(const e of ALP.deer){if(!e.g.visible)continue;const d=Math.hypot(e.g.position.x-car.x,e.g.position.z-car.z);e.t-=dt;if(e.t<0){e.graze=!e.graze;e.t=2+Math.random()*5}
       const tg=d<75?-.1:e.graze?1.15:.15;e.a+=(tg-e.a)*Math.min(1,dt*(d<75?4:1.6));e.neck.rotation.x=e.a}
@@ -4509,10 +4510,11 @@ function updateAlpine(dt){
     if(ALP.liftK!==lk){if(ALP.liftG){scene.remove(ALP.liftG);ALP.liftG.traverse(m=>{if(m.geometry)m.geometry.dispose()});ALP.liftG=null}ALP.liftK=lk;if(L){ALP.liftG=buildLift(L);scene.add(ALP.liftG)}}
     ALP.liftC.visible=!!L;if(L)cableLoop(ALP.liftC,L.pts,2.1,16,2.2,ALP.ski.o)}
   // summit light: the sky a deeper blue overhead and the sun lower (longer shadows) as the camera rises. applyLook sets the sky fresh whenever the look changes, so take the base from there
-  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value]}
+  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value,scene.environmentIntensity,ocean.material.envMapIntensity];ALP.hc0.copy(hemi.color);ALP.hg0.copy(hemi.groundColor);ALP.oc0.copy(ocean.material.color)}
   // in a snowfall the sky greys over and the sun dims behind it (the haze takes the horizon's colour, so it greys too) and the alpenglow fades; the sun break brings them back
   const gl=Math.min(1,sn*1.5);for(const k of SKY_WX)SKYL[k].copy(ALP.sk0[k]).lerp(ALP.grey,gl*.75); // (gl: the gloom, already well grey in a light village snowfall)
-  hemi.intensity=ALP.b0[0]*(1+.12*gl);sunLight.intensity=ALP.b0[1]*(1-.6*gl+.12*brk);skySunK.value=ALP.b0[2]*(1-.9*gl);farU.uGlow.value=1-.9*gl;
+  hemi.intensity=ALP.b0[0]*(1+.12*gl);hemi.color.copy(ALP.hc0).lerp(ALP.hcG,gl*.85);hemi.groundColor.copy(ALP.hg0).lerp(ALP.hgG,gl*.85);ocean.material.color.copy(ALP.oc0).lerp(ALP.ocG,gl*.6);scene.environmentIntensity=ALP.b0[3]*(1-.75*gl);ocean.material.envMapIntensity=ALP.b0[4]*(1-.6*gl); // (the reflections are the clear sky's, so they fade in the gloom, and the blue fill light turns grey: the wet road and the lake go grey, not navy)
+  sunLight.intensity=ALP.b0[1]*(1-.6*gl+.12*brk);skySunK.value=ALP.b0[2]*(1-.9*gl);farU.uGlow.value=1-.9*gl;
   const lf=liftAt(car.z);SKYL.zen.copy(ALP.zen0).lerp(ALP.deep,lf*.7).lerp(ALP.grey2,gl*.6);sunTilt=1-.45*lf;sky.material.uniforms.sunDir.value.copy(SUN_VIS);sky.material.uniforms.sunDir.value.y*=sunTilt;
 }
 // ---------- camera, resize, loop

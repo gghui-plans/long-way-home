@@ -25,6 +25,7 @@ Ideas and to-dos for later. Nothing here is scheduled; pick one and say "build".
 - **Cancel the ElevenLabs and Suno subscriptions** once retakes and region audio are done (37,307 ElevenLabs credits left as of 2026-10-05).
 
 ## Game
+- **High Sierra polish (after it ships):** the snowmobile tracks fade over the slope's brown rock bands (darker grooves, or snow under them); lights on the far-off villages for the holidays.
 - **Regions (map button)**: pick a California region from a fold-out road map. The car drives there: the next open-coast stretch blends into the new region over a minute or two (sky, fog, ground colours, trees, signs). Also offer a quick fade-and-skip.
   - Build it as a `REGION` table: sky palette (SKYC), ground colours (TC), tree and prop builders, coast on or off, town and street names, district mix, outfits, ambient sound, station. Each town and coast cycle carries its own region.
   - **Rollout: build and ship one region at a time**, learning from each. Keep ElevenLabs Starter running through the regions (credits carry over); buy a Suno month only when a region needs songs (one month can cover two regions if they're close together).
