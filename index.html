@@ -3132,15 +3132,17 @@ function birdsong(t,vol){ // a quick run of chirps
 }
 // the High Sierra with the radio off: tyres crunching on packed snow, wood fires crackling in the villages, the hum and clunk of a chairlift
 // (made here, the first time you're up there; the wind, pines, creeks, ravens, jays and woodpeckers are the Redwood Coast's recordings)
-function grainBuf(sec,rate,dec){ // noise made of short grains, rate a second, each dying away over about dec seconds
-  const n=Math.floor(AC.sampleRate*sec),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
-  for(let g=0,m=Math.floor(sec*rate);g<m;g++){const i0=Math.floor(Math.random()*n),a=Math.random()**2,L=Math.floor(AC.sampleRate*dec*(.5+Math.random()));for(let i=0;i<L;i++)d[(i0+i)%n]+=(Math.random()*2-1)*a*Math.exp(-5*i/L)}
-  return buf}
-function initAlpAmb(){const A=Amb.alp={nextClunk:0};
-  const loopBuf=(buf,f1,f2)=>{const s=AC.createBufferSource(),h=AC.createBiquadFilter(),l=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;s.loop=true;h.type='highpass';h.frequency.value=f1;l.type='lowpass';l.frequency.value=f2;g.gain.value=0;s.connect(h);h.connect(l);l.connect(g);g.connect(Amb.bus);s.start();return{s,g}};
-  A.crunch=loopBuf(grainBuf(3,260,.012),900,5200);A.fire=loopBuf(grainBuf(4,14,.004),600,7000); // packed snow under the tyres; a wood fire's sparse pops
-  A.hum=AC.createGain();A.hum.gain.value=0;A.hum.connect(Amb.bus);const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.connect(A.hum); // a lift's drive, low and steady
-  for(const [f,ty,g] of[[50,'sawtooth',.05],[100,'sine',.08],[151,'sine',.02]]){const o=AC.createOscillator(),og=AC.createGain();o.type=ty;o.frequency.value=f;og.gain.value=g;o.connect(og);og.connect(lp);o.start()}}
+function* grainBufs(){ // the crunch and the fire: noise made of short grains (rate a second, each dying away over about dec seconds), a few dozen grains a frame
+  const out=[];for(const [sec,rate,dec] of[[3,260,.012],[4,14,.004]]){const n=Math.floor(AC.sampleRate*sec),buf=AC.createBuffer(1,n,AC.sampleRate),d=buf.getChannelData(0);
+    for(let g=0,m=Math.floor(sec*rate);g<m;g++){const i0=Math.floor(Math.random()*n),a=Math.random()**2,L=Math.floor(AC.sampleRate*dec*(.5+Math.random()));for(let i=0;i<L;i++)d[(i0+i)%n]+=(Math.random()*2-1)*a*Math.exp(-5*i/L);if(g%40===39)yield}
+    out.push(buf)}
+  return out}
+function initAlpAmb(){const [cb,fb]=Amb.alpBuf,A=Amb.alp={nextClunk:0,seen:AC.currentTime,src:[],out:[]};
+  const loopBuf=(buf,f1,f2)=>{const s=AC.createBufferSource(),h=AC.createBiquadFilter(),l=AC.createBiquadFilter(),g=AC.createGain();s.buffer=buf;s.loop=true;h.type='highpass';h.frequency.value=f1;l.type='lowpass';l.frequency.value=f2;g.gain.value=0;s.connect(h);h.connect(l);l.connect(g);g.connect(Amb.bus);s.start();A.src.push(s);A.out.push(g);return{s,g}};
+  A.crunch=loopBuf(cb,900,5200);A.fire=loopBuf(fb,600,7000); // packed snow under the tyres; a wood fire's sparse pops
+  A.hum=AC.createGain();A.hum.gain.value=0;A.hum.connect(Amb.bus);A.out.push(A.hum);const lp=AC.createBiquadFilter();lp.type='lowpass';lp.frequency.value=260;lp.connect(A.hum); // a lift's drive, low and steady
+  for(const [f,ty,g] of[[50,'sawtooth',.05],[100,'sine',.08],[151,'sine',.02]]){const o=AC.createOscillator(),og=AC.createGain();o.type=ty;o.frequency.value=f;og.gain.value=g;o.connect(og);og.connect(lp);o.start();A.src.push(o)}}
+function stopAlpAmb(){const A=Amb.alp;for(const s of A.src)try{s.stop()}catch(e){}for(const g of A.out)g.disconnect();Amb.alp=null} // out of the Sierra a while: no sense running them silent (the loops are kept for next time)
 function clunk(t,vol){ // a chair rolling over a tower's sheaves: a soft double knock
   const pan=(Math.random()-.5)*.6;for(const o of[0,.11]){const s=AC.createBufferSource(),bp=AC.createBiquadFilter(),g=AC.createGain();s.buffer=noiseBuf;bp.type='bandpass';bp.frequency.value=380;bp.Q.value=3;
     g.gain.setValueAtTime(vol,t+o);g.gain.exponentialRampToValueAtTime(.0001,t+o+.09);s.connect(bp);bp.connect(g);panTo(g,pan);s.start(t+o,Math.random()*.8);s.stop(t+o+.12)}}
@@ -3153,6 +3155,7 @@ function updateAmbience(){
   const want=!Show.on&&AC.state==='running';
   if(want)initAmbience();
   if(!Amb.bus)return;
+  if(Amb.alpGen){const r=Amb.alpGen.next();if(r.done){Amb.alpBuf=r.value;Amb.alpGen=null}} // (the Sierra's loops, a slice a frame)
   const t=AC.currentTime;
   if(want!==Amb.wanted){Amb.wanted=want;Amb.bus.gain.setTargetAtTime(want?1:0,t,want?1.5:.4)}
   if(!want||t-(Amb.lastUpd||0)<.25)return; // adjust levels a few times a second, not every frame
@@ -3191,8 +3194,9 @@ function updateAmbience(){
   if(Amb.realWindG)Amb.realWindG.gain.setTargetAtTime((.3+spd*.45+cliff*.3)*gust*(1-.6*fo)*up,t,.8); // deep in the groves the canopy takes over
   if(Amb.closeG)Amb.closeG.gain.setTargetAtTime(ss(.6,1,near)*.7,t,1.5);
   if(Amb.birdsG)Amb.birdsG.gain.setTargetAtTime((town?(1-near*.5)*.8:.1)*(1-.75*al),t,2); // (few songbirds up in the snow)
-  if(al>0&&!Amb.alp)initAlpAmb();
-  if(Amb.alp){const A=Amb.alp,lift=al>0?liftNear():0; // the Sierra's own: the crunch follows the speed, fires in the villages (streets or highway), a lift nearby
+  if(al>0&&!Amb.alp){if(Amb.alpBuf)initAlpAmb();else if(!Amb.alpGen)Amb.alpGen=grainBufs()}
+  if(Amb.alp&&al<=0&&t-Amb.alp.seen>15)stopAlpAmb();
+  if(Amb.alp){const A=Amb.alp,lift=al>0?liftNear():0;if(al>0)A.seen=t; // the Sierra's own: the crunch follows the speed, fires in the villages (streets or highway), a lift nearby
     A.crunch.g.gain.setTargetAtTime(al*spd*.35,t,.4);A.crunch.s.playbackRate.setTargetAtTime(.7+spd*.6,t,.5);A.fire.g.gain.setTargetAtTime(al*(townOfRow(Math.floor(car.z/B))?.2:0),t,1.5);A.hum.gain.setTargetAtTime(al*lift*.5,t,.8);
     if(lift>.05&&t>=A.nextClunk){clunk(t,.25*lift*al);A.nextClunk=t+1.6+Math.random()*1.8}}
   if(!Amb.realSea&&t>=Amb.nextWave)Amb.nextWave=t+wave(t,.55+Math.random()*.45)-.6+Math.random()*1.5;
@@ -4451,8 +4455,8 @@ void main(){vec3 bx=vec3(36.0,22.0,36.0),s=position;float sp=.7+.6*fract(s.x*91.
   RW_STYLE=true;person(sb,0,.87,-.35,0,r,'sit',{1:0x2fb3a8,2:0xf1c9a5,3:0x3a2a20,4:0x2b2b30,5:0x2b2b30,6:0x15151a,7:0xe8505b});RW_STYLE=rs; // and its rider, in goggles
   const sled=new THREE.Mesh(sb.geo(),MAT_PED);sled.castShadow=true;sled.visible=false;scene.add(sled);
   const wq=new URLSearchParams(location.search).get('wx'); // (testing only: ?wx=40 starts the weather 40 s into a snowfall)
-  const liftC=new THREE.InstancedMesh(ch.geo(),new THREE.MeshLambertMaterial({vertexColors:true}),48),lr=rng(6400);liftC.frustumCulled=false;liftC.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // the chairs on the lift over the road
-  for(let q=0;q<48;q++)liftC.setColorAt(q,_c.set(pick(PUFFY,lr)));liftC.visible=false;scene.add(liftC);
+  const liftC=new THREE.InstancedMesh(ch.geo(),new THREE.MeshLambertMaterial({vertexColors:true}),64),lr=rng(6400);liftC.frustumCulled=false;liftC.instanceMatrix.setUsage(THREE.DynamicDrawUsage); // the chairs on the lift over the road
+  for(let q=0;q<64;q++)liftC.setColorAt(q,_c.set(pick(PUFFY,lr)));liftC.visible=false;scene.add(liftC);
   ALP={liftC,liftG:null,liftK:null,banks,isl,bk:null,wisps,vg,vk:null,cars,drift,plumes,lk:'',zen0:new THREE.Color(),deep:new THREE.Color(0x27437c),ski,
     deer,deerG,deerI,dz:null,dnext:0,ravens,ravenI,sled,fall,fallU,wx0:wq==null?120:+wq,wx:0,snow:0,b0:[0,0,0],sk0:{},grey:new THREE.Color(0xaab1bd),grey2:new THREE.Color(0x7d8696),hc0:new THREE.Color(),hg0:new THREE.Color(),hcG:new THREE.Color(0xe4e2de),hgG:new THREE.Color(0x6c6a68),oc0:new THREE.Color(),ocG:new THREE.Color(0x2e3a44)};
   for(const k of SKY_WX)ALP.sk0[k]=new THREE.Color();
@@ -4521,12 +4525,15 @@ function updateAlpine(dt){
     if(ALP.liftK!==lk){if(ALP.liftG){scene.remove(ALP.liftG);ALP.liftG.traverse(m=>{if(m.geometry)m.geometry.dispose()});ALP.liftG=null}ALP.liftK=lk;if(L){ALP.liftG=buildLift(L);scene.add(ALP.liftG)}}
     ALP.liftC.visible=!!L;if(L)cableLoop(ALP.liftC,L.pts,2.1,16,2.2,ALP.ski.o)}
   // summit light: the sky a deeper blue overhead and the sun lower (longer shadows) as the camera rises. applyLook sets the sky fresh whenever the look changes, so take the base from there
-  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value,scene.environmentIntensity,ocean.material.envMapIntensity];ALP.hc0.copy(hemi.color);ALP.hg0.copy(hemi.groundColor);ALP.oc0.copy(ocean.material.color)}
+  if(ALP.lk!==lookKey){ALP.lk=lookKey;ALP.zen0.copy(SKYL.zen);for(const k of SKY_WX)ALP.sk0[k].copy(SKYL[k]);ALP.b0=[hemi.intensity,sunLight.intensity,skySunK.value];ALP.hc0.copy(hemi.color);ALP.hg0.copy(hemi.groundColor);ALP.oc0.copy(ocean.material.color)}
   // in a snowfall the sky greys over and the sun dims behind it (the haze takes the horizon's colour, so it greys too) and the alpenglow fades; the sun break brings them back
   const gl=Math.min(1,sn*1.5);for(const k of SKY_WX)SKYL[k].copy(ALP.sk0[k]).lerp(ALP.grey,gl*.75); // (gl: the gloom, already well grey in a light village snowfall)
-  hemi.intensity=ALP.b0[0]*(1+.12*gl);hemi.color.copy(ALP.hc0).lerp(ALP.hcG,gl*.85);hemi.groundColor.copy(ALP.hg0).lerp(ALP.hgG,gl*.85);ocean.material.color.copy(ALP.oc0).lerp(ALP.ocG,gl*.6);scene.environmentIntensity=ALP.b0[3]*(1-.75*gl);ocean.material.envMapIntensity=ALP.b0[4]*(1-.6*gl); // (the reflections are the clear sky's, so they fade in the gloom, and the blue fill light turns grey: the wet road and the lake go grey, not navy)
+  hemi.intensity=ALP.b0[0]*(1+.12*gl);hemi.color.copy(ALP.hc0).lerp(ALP.hcG,gl*.85);hemi.groundColor.copy(ALP.hg0).lerp(ALP.hgG,gl*.85);ocean.material.color.copy(ALP.oc0).lerp(ALP.ocG,gl*.6); // (the blue fill light turns grey and the lake greys: the wet road and the lake aren't navy in the snow)
   sunLight.intensity=ALP.b0[1]*(1-.6*gl+.12*brk);skySunK.value=ALP.b0[2]*(1-.9*gl);farU.uGlow.value=1-.9*gl;
   const lf=liftAt(car.z);SKYL.zen.copy(ALP.zen0).lerp(ALP.deep,lf*.7).lerp(ALP.grey2,gl*.6);sunTilt=1-.45*lf;sky.material.uniforms.sunDir.value.copy(SUN_VIS);sky.material.uniforms.sunDir.value.y*=sunTilt;
+  // the reflections are taken again from the greyed sky as the gloom comes and goes, in quarter steps (like a road trip's blend), so the wet road and the cars
+  // reflect grey cloud, not the clear blue sky. A blend's own retake (envT) uses the clear sky, so the gloom's is redone after it
+  if(ALP.envT!==envT){ALP.envT=envT;ALP.envG=0}const eg=Math.round(gl*4)/4;if(eg!==ALP.envG){ALP.envG=eg;rebuildEnv()}
 }
 // ---------- camera, resize, loop
 const camPos=new THREE.Vector3(),camLook=new THREE.Vector3(),_t=new THREE.Vector3();
