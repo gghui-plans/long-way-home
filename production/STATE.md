@@ -2,7 +2,7 @@
 
 Only work that has started and isn't finished. The backlog is FUTURE-WORK.md, and finished work is in git. Update this file before every commit. When a task ships, shrink it to one line under "Recently finished".
 
-Last updated: 2026-10-30
+Last updated: 2026-10-31
 
 ## Active
 
@@ -28,7 +28,7 @@ Last updated: 2026-10-30
   - Code: the `claude/winter-35bb4b` branch, checked out in the worktree `.claude/worktrees/winter-35bb4b`. Not merged and not pushed. Don't push or merge it without the user's word.
   - Build log: the branch's own STATE.md, under High Sierra. Its other sections are older than this file, so trust this file for everything else.
   - Plan: WINTER-PLAN.md. Songs: REGION-SONGS.md, High Sierra section.
-- **Done:** code batches 1–3 (the foundation, the world, and life and weather), plus fixes for hitches and for floating things in the blends. The user checked them on the phone on 2026-10-27 and 28 ("looks good"). Batch 5 (the Fireside on the radio, tagged handoffs, the Santa hat) built 2026-10-30, not checked on the phone yet. LA and the Redwood Coast stay pixel-identical after every change.
+- **Done:** code batches 1–3 (the foundation, the world, and life and weather), plus fixes for hitches and for floating things in the blends. The user checked them on the phone on 2026-10-27 and 28 ("looks good"). Batch 5 (the Fireside on the radio, tagged handoffs, the Santa hat) built 2026-10-30, and batch 6 (mountain sounds, the chairlift over the road, the Fireside's postcard stamp, the holiday decorations) built 2026-10-31; neither checked on the phone yet. LA and the Redwood Coast stay pixel-identical after every change.
 - **Decided:**
   - fireside jazz, with no Christmas songs; decorations switch on by date;
   - the climb is an illusion: the road stays level and the drop to the lake grows toward the summit;
@@ -41,7 +41,8 @@ Last updated: 2026-10-30
      - **Decided 2026-10-29:** the top stays down in the snow; Velvet keeps her name; the callers reuse K-JAM caller voices (cast in the generator from their library labels); Leon's trumpet is a mouth trumpet (no sound effect to splice in).
      - **Credits:** Eleven v4 dialogue billed about 0.4 credits per character, not 1 (the 37,500-character script cost about 15,500). 11,745 left; resets Nov 3 at 10:42 pm Eastern.
   4. **Build batch 5: built 2026-10-30** on the winter branch (the user said "build"). The Sierra plays 96.1 The Fireside: its 16 songs and all 173 recorded clips, with subtitles. Goodbyes and welcomes now follow where you're going and where you came from, so all six trips between the three regions get their own handoff. The driver wears a Santa hat in the Sierra. Details in the branch's build log. **Not checked yet:** on the phone, and the user hasn't heard the clips.
-  5. Batch 6 (audio and polish: ambient sound, the hero models, the Sierra's postcard stamp and title, the Christmas decorations), then batch 7 (phone test and ship).
+  5. **Build batch 6: built 2026-10-31** on the winter branch (the user said "build next batch"). Mountain sounds with the radio off, a chairlift over the road before each village, the Fireside's own postcard stamp, and the holiday decorations (Settings: Holiday decorations, Auto / On / Off; Auto is December 1 to January 1). Details in the branch's build log. **Not checked yet:** on the phone (frame rate with the lights on: set it to On to see them before December).
+  6. Batch 7: a long phone drive (warmth and frame rate, snow and lights), then merge and ship by December 1.
 - **Behind schedule:** the writing (WINTER-PLAN batch 4) started 2026-10-28 with the handoffs. The plan had the station and hosts confirmed in the week of Oct 19–25.
 - **Open:** the snowfall pattern (built as cycles, about 3 min clear then 2 min snowing); the loop order (built as LA → Redwood Coast → High Sierra → LA); how glossy the wet road is.
 - **Known weak spots** (batch 3): the frozen waterfall is a thin pillar from the chase cam, the snowmobile tracks fade over brown rock, a few flakes show under the snow shed's ends, the deer are small, and the road goes dark navy in snow.
