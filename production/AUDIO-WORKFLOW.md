@@ -39,6 +39,15 @@ Decided 2026-10-03. The planned fix for picking up iPhone Premium voices is drop
 
 ## Log
 
+- 2026-10-29 and 30: the 16 Fireside songs (High Sierra) processed into docs/audio/music/fireside: `process-music.ps1 -Sub fireside`, whisper `run-all.sh fireside` (Lodge Fire and Fresh Tracks skipped as instrumentals), `align-lyrics.js fireside`. 93–99% of words matched on every vocal song. Two aligner fixes came out of it (duet tags, smeared first lines; see LESSONS.md). Committed as 5e4c230 and df5214d.
+- 2026-10-27: K-JAM set 2 (14 songs) processed. Whisper trouble and fixes:
+  - Couples Skate and Rooftop at Dusk (dreamy Postcard sound) came back as nothing but "[MUSIC]". Adding `-sns` (suppress non-speech tokens) fixed it.
+  - When the intro and the first verse share whisper's first 30-second window, it either skips the verse (Top Down, Radio Up) or spreads the opening words evenly from 0:00 (One-Hour Sailboat). `-ot 8000` (start 8 s in) fixed both.
+  - `--prompt` with the lyrics also smears the opening words across the intro, so don't use it for timing.
+  - Check each song's first line in align-lyrics' report. It should start after the intro (about 0:15–0:22), never at 0.
+- 2026-10-27: set 2 story intros. In the first Couples Skate take, Rick's pitch was right (88–105 Hz) but flat (±6–8 Hz, against ±9–16 on his old intros), because his lines were tagged dry, deadpan and flat back to back. With feeling-based directions at the same stability (0.75), he moved ±16–23 Hz, and the user picked that take. **Rule for Rick:** say what he feels ("dry, a little proud", "deadpan, impressed despite himself"), not just "dry" or "flat", and use `[pause]` inside the line rather than as the direction. The user preferred it to the same directions at stability 0.5.
+- 2026-10-27: process-voices.ps1 used to rebuild timings.json from scratch, which dropped the K-JAM handoff clips (made by the Cabin pipeline). It now keeps the entries it doesn't make.
+
 - 2026-10-05: radio expansion. 44 new bits generated with Eleven v4 at -Stability 0.75 (about 8,200 credits; about 5,500 left): Fast Lane Facts 01-16, a second intro per song (introb-*), clock-morning/midday/evening/late, steer-01/02, speed-fast/slow, postcard-01/02, pier-01/02. Pitch check: Rick 71-143 Hz, Dana 211-340 Hz, no retakes. Songs now play in full (about 2:30). Traffic-scopes were written but skipped.
 
 - 2026-10-04: focus-drive clips added (focus-20, focus-30, focus-end, focus-back) for the pomodoro mode. About 498 credits; the pitch check is clean.

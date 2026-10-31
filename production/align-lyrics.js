@@ -12,7 +12,7 @@ const md=fs.readFileSync(path.join(here,SUB?'REGION-SONGS.md':'LYRICS.md'),'utf8
 for(const part of md.split('**Save as:** ').slice(1)){ // only the block inside each song's own section (instrumentals have none)
   const id=part.slice(0,part.indexOf('.mp3')),m=part.split(/\n#{2,3} /)[0].match(/```\n([\s\S]*?)```/);if(m)blocks[id]=m[1];
 }
-const lyricLines=b=>b.split('\n').map(s=>s.trim()).filter(s=>s&&!/^\[.*\]$/.test(s));
+const lyricLines=b=>b.split('\n').map(s=>s.trim()).filter(s=>s&&!/^\[.*\]$/.test(s)).map(s=>s.replace(/^\[[^\]]*\]\s*/,'')); // a duet's [Male] / [Female] tag isn't sung or shown
 
 // whisper writes numbers as digits ("60"); the lyrics spell them out ("sixty"), so spell the digits out before matching
 const ONES=['zero','one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'],TENS=['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
@@ -47,6 +47,10 @@ for(const f of fs.readdirSync(dir).filter(f=>f.endsWith('.mp3'))){
   // a line starts at its first matched word (pulled back by the words before it); unmatched lines are spread between their neighbours
   const start=lines.map((_,li)=>{const k=L.findIndex((x,q)=>x.li===li&&hit[q]!=null);if(k<0)return null;return Math.max(0,hit[k]-L[k].wi*.4)});
   const lastHeard=Math.max(...hit.filter(t=>t!=null));
+  { // whisper smears a song's first words back across the instrumental intro ("The" at 0.2 s, "day" at 1.6, the rest from 11): start the first line where its words come thick and fast
+    const f=start.findIndex(t=>t!=null);if(f>=0){const ts=L.map((x,q)=>x.li===f&&hit[q]!=null?[hit[q],x.wi]:null).filter(Boolean);
+      if(ts.length>=3&&ts[ts.length-1][0]-ts[0][0]>8){let k=ts.length-1;while(k>0&&ts[k][0]-ts[k-1][0]<1.6)k--;if(k>0)start[f]=Math.max(0,ts[k][0]-ts[k][1]*.4)}}
+  }
   for(let li=0;li<lines.length;li++)if(start[li]==null){
     let a=li-1;while(a>=0&&start[a]==null)a--;let b=li+1;while(b<lines.length&&start[b]==null)b++;
     if(a>=0&&b<lines.length){const step=(start[b]-start[a])/(b-a);if(step>=1.2)start[li]=start[a]+step*(li-a)} // squeezed tighter than that, Suno skipped them: leave them out

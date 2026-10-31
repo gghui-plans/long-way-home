@@ -537,7 +537,7 @@ The long way home
 
 Sixteen more songs, written 2026-10-18 (see FUTURE-WORK.md, "16 more songs per station"). Each song is a snapshot of one place and moment in a single LA summer, in order from the first day of summer to the last night. They use everyday places, not named landmarks, and tie into the in-game postcards.
 
-- Same settings as set 1 (top of this file). Save into `docs/audio/music/`, then run `process-music.ps1`.
+- Same settings as set 1 (top of this file). Claude moves the downloads into `production/raw/music/` under their "Save as" names, then runs `process-music.ps1` (see WORKFLOW.md).
 - Five songs have the Postcard from the Pier sound: 80s new wave, chorus guitars, synth pads and dreamy female vocals. The rest keep set 1's classic-rock palette (no Motown, disco or jazz), with two instrumentals and one duet.
 - Rewritten 2026-10-19 after the first takes: an [Intro] and a fast first chorus on every song, and each chorus has its own shape (listed per song) so they don't all follow one formula. Couples Skate and Ice Cream Truck keep their v2 lyrics.
 - Bands: K-JAM's existing bands plus five new ones (Cruise Control, Hazard Lights, The Parking Meters, The Fender Benders, Heat Index). The names are for the radio intros only, so change them freely.
@@ -547,22 +547,22 @@ Sixteen more songs, written 2026-10-18 (see FUTURE-WORK.md, "16 more songs per s
 
 | # | Song | Band | Sound | Vocal | Status |
 |---|---|---|---|---|---|
-| 17 | Top Down, Radio Up | Rush Hour Rebels | 80s heartland rock | M | written, not generated |
-| 18 | Ice Cream Truck | The Carpoolers | 70s boogie rock | M | written, not generated |
-| 19 | Couples Skate | The Turn Signals | 80s new wave (Postcard sound) | F | written, not generated |
-| 20 | Motel Pool | Tailgate Thunder | 70s soft rock | M | written, not generated |
-| 21 | Salt Air Stomp | The Offramps | 60s surf with organ and sax | Instrumental | written, not generated |
-| 22 | Drive-In Double Feature | Cruise Control | 80s new wave (Postcard sound) | F | written, not generated |
-| 23 | Taco Truck Moon | The Parking Meters | 70s Latin rock | M | written, not generated |
-| 24 | High Score | Hazard Lights | 80s arena rock | F | written, not generated |
-| 25 | Laundromat Love | Dana's Cousin Kevin | 60s garage rock | M | written, not generated |
-| 26 | Fireworks on the Water | The Fender Benders | 70s piano rock anthem | M | written, not generated |
-| 27 | Photo Booth | The Turn Signals | 80s jangle new wave (Postcard sound) | F | written, not generated |
-| 28 | Block Party | Gridlock Prophets | 70s funk rock with horns | M + group | written, not generated |
-| 29 | One-Hour Sailboat | Valet Overdrive | 70s yacht rock | Duet | written, not generated |
-| 30 | Heat Shimmer | Heat Index | 70s southern rock | Instrumental | written, not generated |
-| 31 | Rooftop at Dusk | Cruise Control | 80s new wave ballad (Postcard sound) | F | written, not generated |
-| 32 | Last Night of Summer | The Turn Signals | 80s new wave (Postcard sound) | F | written, not generated |
+| 17 | Top Down, Radio Up | Rush Hour Rebels | 80s heartland rock | M | processed 2026-10-26 |
+| 18 | Ice Cream Truck | The Carpoolers | 70s boogie rock | M | processed 2026-10-26 |
+| 19 | Couples Skate | The Turn Signals | 80s new wave (Postcard sound) | F | processed 2026-10-26 |
+| 20 | Motel Pool | Tailgate Thunder | 70s soft rock | M | processed 2026-10-26 |
+| 21 | Salt Air Stomp | The Offramps | 60s surf with organ and sax | Instrumental | later (FUTURE-WORK) |
+| 22 | Drive-In Double Feature | Cruise Control | 80s new wave (Postcard sound) | F | processed 2026-10-26 |
+| 23 | Taco Truck Moon | The Parking Meters | 70s Latin rock | M | processed 2026-10-26 |
+| 24 | High Score | Hazard Lights | 80s arena rock | F | processed 2026-10-26 |
+| 25 | Laundromat Love | Dana's Cousin Kevin | 60s garage rock | M | processed 2026-10-26 |
+| 26 | Fireworks on the Water | The Fender Benders | 70s piano rock anthem | M | processed 2026-10-26 |
+| 27 | Photo Booth | The Turn Signals | 80s jangle new wave (Postcard sound) | F | processed 2026-10-26 |
+| 28 | Block Party | Gridlock Prophets | 70s funk rock with horns | M + group | processed 2026-10-26 |
+| 29 | One-Hour Sailboat | Valet Overdrive | 70s yacht rock | Duet | processed 2026-10-26 |
+| 30 | Heat Shimmer | Heat Index | 70s southern rock | Instrumental | later (FUTURE-WORK) |
+| 31 | Rooftop at Dusk | Cruise Control | 80s new wave ballad (Postcard sound) | F | processed 2026-10-26 |
+| 32 | Last Night of Summer | The Turn Signals | 80s new wave (Postcard sound) | F | processed 2026-10-27 |
 
 ---
 

@@ -9,6 +9,7 @@ The big picture: where work starts, who does what, and how the files hand off to
 | FUTURE-WORK.md | Everything not started: ideas, requests, decisions for later | When an idea comes up or ships |
 | STATE.md | Only what's in progress: what was done, decided (and why) and what's left, with dates | Every work session |
 | Git history | What's done | Every commit |
+| LESSONS.md | Bugs and traps that came back, with their fixes | When something bites twice or costs real time |
 | Plan files (REDWOOD-PLAN.md, WINTER-PLAN.md) | The design for one big feature, such as a region | While it's being planned and built |
 | Content files (LYRICS.md, REGION-SONGS.md, PRODUCTION-PACK.md, COFFEE-CABIN-SCRIPT.md) | The words that become audio | While writing, then frozen once recorded |
 
@@ -22,7 +23,7 @@ Each region has its own station, and each station has a song file, a voice scrip
 |---|---|---|---|---|---|
 | LA | K-JAM 101.1, classic rock | Rick and Dana | LYRICS.md | PRODUCTION-PACK.md | `docs/audio/music/`, `docs/audio/voice/` |
 | Redwood Coast | 89.3 The Coffee Cabin, acoustic folk | Marj and Walt | REGION-SONGS.md | COFFEE-CABIN-SCRIPT.md | `.../coffee-cabin/` |
-| High Sierra | 96.1 The Fireside (name not final), fireside jazz | not chosen | REGION-SONGS.md | not written | `.../fireside/` |
+| High Sierra | 96.1 The Fireside, fireside jazz | Vera and Moose | REGION-SONGS.md | FIRESIDE-SCRIPT.md | `.../fireside/` |
 
 ## The steps
 
@@ -30,17 +31,17 @@ Each region has its own station, and each station has a song file, a voice scrip
 2. **Plan.** When the user picks something up, it gets a section in STATE.md. A big feature, such as a region, also gets its own plan file.
 3. **Write.** Claude drafts the lyrics, scripts or plan. The user reviews them and marks what to cut, change or keep. Rules for songs and scripts are below.
 4. **Make the audio.**
-   - **Songs:** the user generates them in Suno from the song file and downloads the keepers as **MP3**, named by the song's "Save as" name, into Downloads. Claude moves them to `production/raw/music/` (or `raw/music/<station folder>/`).
-   - **Voices:** once the user approves a script, Claude generates them through the ElevenLabs API (`generate-voices.ps1` for K-JAM, `generate-coffee-voices.js` for the Cabin). This spends credits, so test a few clips first. Check the balance by asking the user for a dashboard screenshot.
+   - **Songs:** the user generates them in Suno from the song file and downloads the keepers as **MP3** into Downloads (Suno names them by title, such as "Top Down, Radio Up.mp3"). Claude moves them to `production/raw/music/` (or `raw/music/<station folder>/`), renamed to the song's "Save as" name.
+   - **Voices:** once the user approves a script, Claude generates them through the ElevenLabs API (`generate-voices.ps1` for K-JAM, `generate-coffee-voices.js` for the Cabin, `generate-fireside-voices.js` for the Fireside, which can take `--batch 1-4`). This spends credits (Eleven v4 dialogue bills about 0.4 credits per character), so test a few clips first. Check the balance with `/v1/user/subscription` (the key has User read since 2026-10-29).
 5. **Process.** These turn raw files into game files in `docs/audio/`. `production/raw/` is never committed.
    - Songs: `process-music.ps1` (`-Sub coffee-cabin` for a station folder), then whisper (`production/raw/tools/whisper/run-all.sh`), then `align-lyrics.js` (plus the folder name) for the scrolling lyrics.
-   - Voices: K-JAM uses `process-voices.ps1`, then `time-voices.js` for long bits. The Cabin uses `process-coffee-voices.js <clip>`.
+   - Voices: K-JAM uses `process-voices.ps1`, then `time-voices.js` for long bits. The Cabin uses `process-coffee-voices.js <clip>`, the Fireside `process-fireside-voices.js <clip>` (it reads the script through `fireside-script.js`, the same as its generator).
    - Nature sounds: `process-nature.ps1`.
 6. **Build into the game** (only after the user says "build"). Edit `index.html` with targeted changes: the station's songs (`SONGS`, `CC_SONGS`), voice bits (`VBITS`, `CC_BITS`), regions (`REGIONS`) and stations (`STATIONS`). Big features go on their own branch, and `main` stays live.
 7. **Test.** Preview "local" (port 8765) in the browser pane. Check the console, and check the change with a screenshot or by reading the page. Use "phone" (port 8766) for a test on the user's phone.
 8. **Ship.** Run `build.ps1`, commit and push. GitHub Pages updates the live site in about a minute.
    - The private Claude artifact copy is optional and lags behind (it can't serve some model files).
-9. **Close out.** Remove the item from FUTURE-WORK.md, shrink its STATE.md section to one dated line, and note anything learned in this file.
+9. **Close out.** Remove the item from FUTURE-WORK.md, shrink its STATE.md section to one dated line, note any change to how the work flows in this file, and add bugs or traps worth remembering to LESSONS.md.
 
 ## Song rules
 
