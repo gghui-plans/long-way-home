@@ -45,7 +45,7 @@ Last updated: 2026-10-31
   6. Batch 7: a long phone drive (warmth and frame rate, snow and lights), then merge and ship by December 1.
 - **Behind schedule:** the writing (WINTER-PLAN batch 4) started 2026-10-28 with the handoffs. The plan had the station and hosts confirmed in the week of Oct 19–25.
 - **Open:** the snowfall pattern (built as cycles, about 3 min clear then 2 min snowing); the loop order (built as LA → Redwood Coast → High Sierra → LA); how glossy the wet road is.
-- **Known weak spots** (batch 3): the frozen waterfall is a thin pillar from the chase cam, the snowmobile tracks fade over brown rock, a few flakes show under the snow shed's ends, the deer are small, and the road goes dark navy in snow.
+- **Known weak spots:** the snowmobile tracks fade over brown rock (left for later, in FUTURE-WORK). The waterfall, the shed's flakes, the deer and the navy road were fixed 2026-10-31.
 - **Phone preview:** from the worktree, `node production/serve.js . 8768 0.0.0.0` serves it to the wifi at http://192.168.2.13:8768/#sierra (add `?wx=40` to start snowing). Its launch.json entry ("winter-phone") is only in the worktree.
 
 ## Waiting for "build"
