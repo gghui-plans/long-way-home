@@ -54,6 +54,11 @@ Details and history are in AUDIO-WORKFLOW.md.
   - **Fix:** `-ot 8000` (start 8 s in).
 - **Whisper drifts a few seconds early** in bridges and last choruses.
   - **Fix:** spot-check the timings and re-time by hand (`b581f14`, `266d67f`).
+- **A duet's `[Male]` / `[Female]` tags showed up in the scrolling lyrics** (Cocoa for Two, 2026-10-29). The tags sit at the start of a lyric line, not on a line of their own, so the aligner's "skip bracket lines" rule missed them.
+  - **Fix:** `align-lyrics.js` strips a leading `[...]` tag from every line (`lyricLines`).
+- **Whisper smears a song's first words back across the intro** even with `-ot 8000` (Snowed In: "The" at 0.2 s, "day" at 1.6, the rest from 11 s), so the first lyric line showed at 0:00 (2026-10-29).
+  - **Fix:** `align-lyrics.js` now starts the first line where its words come thick and fast (the last gap over 1.6 s within a line that spans more than 8 s). It changed nothing in the K-JAM or Cabin files. Still check each first line in the report.
+- **`process-music.ps1` redoes the whole station folder.** That's safe: ffmpeg's output is byte-identical, so re-running it for one new song leaves the committed ones untouched (checked 2026-10-30 with `git status`).
 
 - **ElevenLabs API key permissions** (2026-10-28, cost an hour): the key made on 2026-10-03 could only generate speech, so the voice library search answered 401 "missing the permission voices_read". Keys can't be edited, so a new one is needed, and the dashboard afterwards shows the key's **ID**, not the key (the API says "API key ID used as API key"). The secret starts with `sk_` and is only shown at creation.
   - **Rule:** make one key with Text to Speech, Voices (read and write) and User (read), copy the `sk_` value at creation, and save it over `production/elevenlabs-key.txt`. The library search, adding voices, the dialogue calls and the credit balance all need it.

@@ -106,7 +106,7 @@ Like the other stations: 7 male, 5 female, 2 duets, 2 instrumentals. Everything 
 | 15 | Lodge Fire | Piano trio | Instrumental | Late night, embers |
 | 16 | Fresh Tracks | Upbeat bossa | Instrumental | First run through untouched snow |
 
-Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18), so these 16 songs and the 32 new K-JAM and Coffee Cabin songs don't compete for downloads. The lyrics still need to be final by Nov 2.
+Suno Pro allows far more than 20 downloads a month (the user's word, 2026-10-18), so these 16 songs and the 32 new K-JAM and Coffee Cabin songs don't compete for downloads. **Done 2026-10-30:** all 16 generated, downloaded and processed (levelled, lyrics timed) into docs/audio/music/fireside, four days ahead of the Nov 3 plan.
 
 ## 7. Radio: 96.1 The Fireside (station and hosts decided 2026-10-28)
 
@@ -187,11 +187,11 @@ All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.clau
 3. **Life and weather (code):** snowfall cycles, skaters, sledders, skiers, snowmen, deer, snowplows, the chain-control stop, the summit pull-out, the snow shed, the switchbacks below.
 4. **Writing (runs alongside 1–3):**
    - station and host names;
-   - final song lyrics (drafted) **by November 2**, so you can generate them in Suno on November 3;
+   - final song lyrics (drafted) **by November 2**, so you can generate them in Suno on November 3 (done early: all 16 processed by 2026-10-30);
    - the radio script (about 150 clips) by mid-November, then you record them.
-5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station (borrowing the Coffee Cabin's songs until its own exist). Also: the driver wears a Santa hat in the High Sierra, all year: it goes on as the car enters and comes off as it leaves (decided 2026-10-29; the walkers already swap sun hats for beanies by region, so it follows that code).
+5. **Map and handoff (code):** the three-region map, the road trip loop, and the new handoff clips (device voices stand in until the recordings arrive). The map buttons and the loop are already in. Left: tag each goodbye and welcome by where you're going or coming from, and give the Sierra its own station with its 16 songs (processed 2026-10-30, so no need to borrow the Coffee Cabin's). Also: the driver wears a Santa hat in the High Sierra, all year: it goes on as the car enters and comes off as it leaves (decided 2026-10-29; the walkers already swap sun hats for beanies by region, so it follows that code).
 6. **Audio and polish:**
-   - songs and clips dropped in (music and voice scripts, whisper for the lyrics);
+   - clips dropped in (the songs are already processed and go in with batch 5);
    - ambient sound;
    - the hero models (snowplow, chairlift);
    - the region's postcard stamp and title;
@@ -204,7 +204,7 @@ All work goes on a winter branch (`claude/winter-35bb4b`, in the worktree `.clau
 |---|---|---|
 | Oct 27–28 | Batches 1–3 (done) | |
 | Oct 28–Nov 2 | | Confirm the station and hosts; the user reviews the 16 lyrics; Claude writes the handoff lines |
-| Nov 2–8 | Batch 5 | **Nov 3: generate the 16 songs in Suno**; Claude drafts the radio script |
+| Nov 2–8 | Batch 5 | ~~Nov 3: generate the 16 songs in Suno~~ (done Oct 29–30); ~~Claude drafts the radio script~~ (drafted and recorded Oct 29) |
 | Nov 9–15 | Batch 6 (songs dropped in) | Review the script, record the clips (ElevenLabs) |
 | Nov 16–22 | Batch 6 | Retakes |
 | Nov 23–30 | Batch 7 | |

@@ -39,6 +39,7 @@ Decided 2026-10-03. The planned fix for picking up iPhone Premium voices is drop
 
 ## Log
 
+- 2026-10-29 and 30: the 16 Fireside songs (High Sierra) processed into docs/audio/music/fireside: `process-music.ps1 -Sub fireside`, whisper `run-all.sh fireside` (Lodge Fire and Fresh Tracks skipped as instrumentals), `align-lyrics.js fireside`. 93–99% of words matched on every vocal song. Two aligner fixes came out of it (duet tags, smeared first lines; see LESSONS.md). Committed as 5e4c230 and df5214d.
 - 2026-10-27: K-JAM set 2 (14 songs) processed. Whisper trouble and fixes:
   - Couples Skate and Rooftop at Dusk (dreamy Postcard sound) came back as nothing but "[MUSIC]". Adding `-sns` (suppress non-speech tokens) fixed it.
   - When the intro and the first verse share whisper's first 30-second window, it either skips the verse (Top Down, Radio Up) or spreads the opening words evenly from 0:00 (One-Hour Sailboat). `-ot 8000` (start 8 s in) fixed both.
