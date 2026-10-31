@@ -1121,7 +1121,7 @@ function xmasTree(b,gb,x,y,z,h){ // tiers of fir, lights wound round it, a star 
   const n=Math.round(h*7),bs=.1+h*.012;for(let q=0;q<n;q++){const t=q/n,a=t*h*2.3,R=h*.31*(1-t)+.12;gb.add(G.box,HOLC[q%HOLC.length],x+Math.cos(a)*R,y+h*(.1+.82*t),z+Math.sin(a)*R,bs,bs,bs)}
   gb.add(G.ball,0xffe08a,x,y+h*.97,z,h*.05,h*.05,h*.025);
 }
-function decoGroup(db,dgb){const g=new THREE.Group();g.userData.deco=1;g.visible=decoOn();if(!db.empty)g.add(db.mesh());if(!dgb.empty)g.add(dgb.mesh(MAT_GLOW,false));return g}
+function decoGroup(db,dgb){const g=new THREE.Group();g.userData.deco=1;if(!db.empty)g.add(db.mesh());if(!dgb.empty)g.add(dgb.mesh(MAT_GLOW,false));return g}
 function skiCarrier(b,x,y,z,ry,r){stander(b,x,y,z,ry,r,false); // someone with their skis over a shoulder
   const c=pick(SKIC,r),sx=Math.cos(ry),sz=-Math.sin(ry);for(const o of[.17,.27])b.add(G.box,c,x+sx*o,y+1.62,z+sz*o,.07,.03,1.75,ry,-.55)}
 const VICTC=[0xc4655a,0x5f8fa3,0xd9b45c,0x7a9a6a,0xefe6d4,0x8a6aa0,0x3f6f7a,0xe8a87c],HYDRANGEA=[0x6a8fd6,0x8a7ad8,0xd88ab8,0xe0a0c8];
@@ -1200,8 +1200,8 @@ function buildBlock(i,j,d){
     put(G.trunk,0x7a5a40,u,1.7*s,v,.25*s,2.8*s,.25*s);put(BLOB,rnd()<.22?pick(JACARANDA,rnd):pick([0x5f8f3e,0x6e9a45,0x4f7f3a],rnd),u,3.9*s,v,2.2*s,1.9*s,2.2*s,rnd()*6)}; // some are purple jacarandas
   const parkedL=[],gb=new Builder();gb.gain=2.6; // parked model cars (drawn by the traffic system) and glowing parts
   const gput=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);gb.add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)};
-  // the holiday decorations (the Sierra): their own layer with its own random numbers, so the village is the same with them up or down
-  const dk=al?[new Builder(),new Builder()]:null,drnd=al?rng(Math.floor(hash(i,j,19)*4294967296)):null;if(dk)dk[1].gain=2.6;
+  // the holiday decorations (the Sierra): their own layer with its own random numbers, so the village is the same with them up or down (setDeco adds or removes the layer)
+  const dk=al&&decoOn()?[new Builder(),new Builder()]:null,drnd=dk?rng(Math.floor(hash(i,j,19)*4294967296)):null;if(dk)dk[1].gain=2.6; // (only while they're up: hidden they'd be over a quarter of a village's shapes)
   const dput=(g,col,u,y,v,sx,sy,sz,ry=0,rx=0,rz=0)=>{const p=P(u,v);dk[0].add(g,col,p[0],y,p[1],sx,sy,sz,ry+rot*Math.PI/2,rx,rz)},dgput=(col,u,y,v,s=.17)=>{const p=P(u,v);dk[1].add(G.box,col,p[0],y,p[1],s,s,s)};
   const slope=(u,y0,v,hw,rise,n)=>{for(const s2 of[-1,1])for(let q=0;q<=n;q++){const t=q/n;dgput(HOLC[(q+(s2>0?2:0))%5],u+s2*hw*(1-t),y0+rise*t,v)}}; // bulbs up both edges of a gable end
   const wreath=(u,y,v,s=1)=>{dput(G.donut,0x2f6b3a,u,y,v,.3*s,.3*s,.3*s);dput(G.box,0xc8322d,u,y+.3*s,v,.26*s,.16*s,.08)}; // facing along v, with a red bow
@@ -1319,10 +1319,10 @@ function buildBlock(i,j,d){
       for(const s2 of[-1,1])put(G.box,0x7a5a3a,S/2+s2*10,.75,S-6.5,3,.12,.6);
       for(let q=0,m=1+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(S/2-13+rnd()*26,S-7.5);stander(b,px,.33,pz,rot*Math.PI/2+Math.PI+(rnd()-.5),rnd,false)} // watching from the side
       const [rx0,rz0]=P(S/2,S/2-2);
-      for(const [R0,n,v0] of[[9.5,7,.3],[5,3,-.42]]){const sb=new Builder(),sg=new THREE.Group(),hb=new Builder(); // two rings of skaters, the inner one the other way round (in Santa hats for the holidays)
-        for(let q=0;q<n;q++){const a=q/n*6.28+rnd()*.5,x=R0*Math.cos(a),z=R0*Math.sin(a);person(sb,x,.45,z,v0>0?Math.atan2(z,-x):Math.atan2(-z,x),rnd,'stand');santa(hb,x,.45,z)}
-        sg.add(sb.mesh());const hm=hb.mesh();hm.userData.deco=1;hm.visible=decoOn();sg.add(hm);sg.position.set(rx0,0,rz0);sg.userData.v=v0;grp.add(sg);turners.add(sg)}
-      xmasTree(dk[0],dk[1],rx0,.45,rz0,10); // the village tree, in the middle of the ice
+      for(const [R0,n,v0] of[[9.5,7,.3],[5,3,-.42]]){const sb=new Builder(),sg=new THREE.Group(); // two rings of skaters in Santa hats (all year, like the driver), the inner one the other way round
+        for(let q=0;q<n;q++){const a=q/n*6.28+rnd()*.5,x=R0*Math.cos(a),z=R0*Math.sin(a);person(sb,x,.45,z,v0>0?Math.atan2(z,-x):Math.atan2(-z,x),rnd,'stand');santa(sb,x,.45,z)}
+        sg.add(sb.mesh());sg.position.set(rx0,0,rz0);sg.userData.v=v0;grp.add(sg);turners.add(sg)}
+      if(dk)xmasTree(dk[0],dk[1],rx0,.45,rz0,10); // (the holidays: the village tree, in the middle of the ice)
     }else if(spot==='sled'){ // the sledding hill on the edge of town: sleds coming down, someone towing one back up, a fence at the bottom
       const hx=S/2+7,hz=S/2,HX=19,HY=7.5,HZ=17,hy=(u,v)=>{const q=1-((u-hx)/HX)**2-((v-hz)/HZ)**2;return q>0?.3+HY*Math.sqrt(q):.3};
       put(G.sph,0xeef2f6,hx,.3,hz,HX,HY,HZ);
@@ -1331,16 +1331,16 @@ function buildBlock(i,j,d){
       for(let q=0;q<2;q++){const u=hx-2+rnd()*4,v=hz+(rnd()-.5)*6,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rnd()*6.28,rnd,false)} // at the top
       {const u=hx-9,v=hz+9,[x,z]=P(u,v);stander(b,x,hy(u,v),z,rot*Math.PI/2+Math.PI/2,rnd,false);put(G.box,0xe8505b,u-1.4,hy(u-1.4,v)+.12,v,1.2,.14,.6)} // towing a sled back up
       put(G.box,0xc8322d,3,.75,S/2,.12,.45,S-10);for(let v=6;v<S-4;v+=4)put(G.box,0x7a5a3a,3,.6,v,.14,1.2,.14); // the fence at the bottom
-      for(let v=6,q=0;v<=S-5;v+=1.2,q++)dgput(HOLC[q%5],3,1.2+.1*Math.sin(v*.9),v,.15); // (the holidays: lights along it, and a lit sleigh piled with presents)
+      if(dk){for(let v=6,q=0;v<=S-5;v+=1.2,q++)dgput(HOLC[q%5],3,1.2+.1*Math.sin(v*.9),v,.15); // (the holidays: lights along it, and a lit sleigh piled with presents)
       dput(G.box,0xa8322d,8,1,S-8,1.7,.9,2.6);dput(G.box,0xa8322d,8,1.55,S-6.8,1.7,1,.35,0,.35);dput(G.box,0x7a2420,8,1.3,S-9.2,1.7,.5,.25);for(const s2 of[-.75,.75]){dput(G.box,0xd9b45c,8+s2,.42,S-8,.09,.09,3.4);for(let q=0;q<7;q++)dgput(HOLC[(q+(s2>0?2:0))%5],8+s2*1.1,1.5,S-9.3+q*.42,.13)}
-      for(const [du,dv,c] of[[-.35,-.4,0x2fb3a8],[.35,-.2,0xf2c230],[0,.4,0xe8505b]])dput(G.box,c,8+du,1.7,S-8+dv,.55,.45,.55,du);
+      for(const [du,dv,c] of[[-.35,-.4,0x2fb3a8],[.35,-.2,0xf2c230],[0,.4,0xe8505b]])dput(G.box,c,8+du,1.7,S-8+dv,.55,.45,.55,du)}
       for(const [u,v] of[[S-3,4],[S-4,S-5],[S-2,S/2]])put(PINES()[1+Math.floor(rnd()*2)],null,u,.3,v,1,1,1,rnd()*6.28);
     }else if(d==='mill'&&al){ // the ski area's lot (where the mill would be): parked cars, a shuttle bus, ski racks, people heading for the hill
       for(const v of[12,30]){for(let u=6;u<S-8;u+=3.2)put(G.box,0xe8e4da,u,.34,v,.15,.02,5);for(let k=0;k<9;k++)if(rnd()<.55)parked(7.6+k*3.2,v,0)}
       put(G.box,0x2f5d8a,S-5,1.9,21,2.6,2.7,11);put(G.box,0x1f2a36,S-5,2.5,21,2.66,.9,10.2);put(G.box,0xf2efe6,S-5,3.3,21,2.5,.14,10.8);put(G.box,0xf2c230,S-5,1.3,21,2.64,.2,11.02); // the shuttle bus
       put(G.box,0x2b2b30,3.5,1.1,40,.14,1.4,9);for(let q=0;q<11;q++)put(G.box,pick(SKIC,rnd),3.65,1.05,36+q*.8,.04,1.85,.09,0,0,.14); // a ski rack
       for(let q=0,m=2+Math.floor(rnd()*3);q<m;q++){const [px,pz]=P(8+rnd()*(S-18),21+(rnd()-.5)*4);skiCarrier(b,px,.33,pz,rot*Math.PI/2+Math.PI/2+(rnd()-.5),rnd)}
-      if(townOfRow(j)&&j===townOfRow(j).a+2){ // the holidays: a tree lot out back, rows of cut firs, a rail, lights strung overhead, a little booth
+      if(dk&&townOfRow(j)&&j===townOfRow(j).a+2){ // the holidays: a tree lot out back, rows of cut firs, a rail, lights strung overhead, a little booth
         for(let r2=0;r2<3;r2++)for(let c=0;c<7;c++){const h=1.8+drnd()*.8;dput(G.scone,pick([0x1f4a2e,0x26553a,0x2f5d3a],drnd),10+c*3.3+(drnd()-.5)*.6,.35+h/2,37.4+r2*2.4,.55+drnd()*.15,h,.55+drnd()*.15,drnd()*6);dput(G.box,0x7a5a3a,10+c*3.3,.4,37.4+r2*2.4,.5,.12,.5)}
         dput(G.box,0x7a5a3a,21,.9,35.6,26,.1,.1);dput(G.box,0x7a5a3a,21,.5,35.6,26,.1,.1);for(let u=8.5;u<=34;u+=3.2)dput(G.box,0x6b4f38,u,.6,35.6,.14,1.2,.14);
         for(const u of[8.5,33.5])dput(G.box,0x2b2b30,u,1.9,35.6,.12,3.8,.12);for(let q=0;q<=24;q++){const t=q/24;dgput(HOLC[q%5],8.5+25*t,3.7-.7*Math.sin(Math.PI*t),35.6,.15)}
@@ -1796,6 +1796,11 @@ function buildTerrain(j){
 // spruce, scrub and wildflowers on the hills, driftwood on the beaches, sea stacks with sea lions hauled out on them
 function westY(z,dx){const pr=westProfile(z);if(dx<=pr[0][0])return pr[0][1];for(let k=0;k+1<pr.length;k++){const [d0,y0]=pr[k],[d1,y1]=pr[k+1];if(dx<=d1)return y0+(y1-y0)*(dx-d0)/(d1-d0)}return 0}
 function groundAt(x,z){const dx=x-roadX(z);return dx<-9.5?westY(z,dx):dx>9.5?inlandY(x,z):0}
+function passDeco(j){ // the holidays on the pass: a lit tree on the summit pull-out by the sign, and one on the chain-control pull-off (whichever stand in strip j)
+  const z0=j*B,zm=z0+B/2,g=gapAt(zm);if(!g||!isAlp(regionAtZ(zm)))return null;const db=new Builder(),dgb=new Builder(),tree=(dx,z,h)=>{const x=roadX(z)+dx;xmasTree(db,dgb,x,groundAt(x,z),z,h)};dgb.gain=2.6;
+  if(pulloutAt(zm)>0&&Math.abs(pulloutZ(g.k)-zm)<B/2)tree(-29,pulloutZ(g.k)+30,6.5);
+  const cz=alpW(zm)>.999?chainZ(g.k):null;if(cz!=null&&cz-36>=z0&&cz-36<z0+B)tree(19.5,cz-36,5.5);
+  return db.empty?null:decoGroup(db,dgb)}
 function redwoodScenery(b,gb,grp,j,rnd){
   const z0=j*B,zm=z0+B/2,gv=Math.max(groveAt(zm),ftAtZ(zm)),c=coastType(zm),hm=hillMul(zm),T=regionAtZ(zm).tc,beams=[],al=isAlp(regionAtZ(zm)); // al: the High Sierra
   const spc=al&&(chainNear(zm)>0||fallsNear(zm,40)||sledNear(zm,140)); // the High Sierra: chain control, the frozen waterfall or the snowfield somewhere in this stretch
@@ -1858,8 +1863,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
       m.position.set(sx,sy+3.6,pz+38);m.rotation.y=Math.PI/2;grp.add(m);for(const s2 of[-1,1])b.add(G.box,0x8f8f96,sx-.1,sy+1.7,pz+38+s2*2.6,.2,4.6,.2);
       const pk=grp.userData.parked=[];for(let q=0;q<3;q++)if(rnd()<.8){const [x]=at(-20-rnd()*4,pz-18+q*9);pk.push({type:pick(PARKT,rnd),x,z:pz-18+q*9,ry:Math.PI/2,col:new THREE.Color(pick(CARCOL,rnd))})}
       for(let q=0;q<5;q++){const z=pz-20+rnd()*40,[x]=at(-36.5-rnd()*1.5,z);stander(b,x,0,z,Math.PI/2+(rnd()-.5)*.8,rnd,false)}
-      for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))} // tyre tracks in the gravel
-      {const db=new Builder(),dgb=new Builder(),[tx,ty]=at(-29,pz+30);dgb.gain=2.6;xmasTree(db,dgb,tx,ty,pz+30,6.5);grp.add(decoGroup(db,dgb))}} // (the holidays: a lit tree by the sign)
+      for(let z=pz-24;z<pz+24;z+=5.5)for(const dx of[-14.2,-16.8]){const [x]=at(dx,z+2.75);b.add(G.box,0x343436,x,.1,z+2.75,.45,.02,5.6,tan(z+2.75))}} // tyre tracks in the gravel
   }
   if(al&&fallsNear(zm,1)){const fz=zm,rc=roadX(fz),y0=inlandY(rc+15,fz),H=12+5*rnd(),g0=gb.gain;gb.gain=1; // the frozen waterfall: a band of dark granite stepping out of the slope and down its face a broad
     // fall of ice: tiers of it bulging out toward the road (so it reads from down the road, not only from beside it), a curtain of columns (a faint glow in the thickest), icicles along the lip, an apron of ice at its foot
@@ -1890,7 +1894,6 @@ function redwoodScenery(b,gb,grp,j,rnd){
         for(const s of[-1,1]){b.add(G.box,0x2b2b30,x+s*2.25,y+5.2,z,.62,.62,.2);b.add(G.cyl,0x8a5a1e,x+s*2.25,y+5.2,z+.12,.22,.08,.22,0,Math.PI/2); // the lamp housings, unlit
           const l=new THREE.Mesh(CCL.geo,CCL.mat);l.position.set(x+s*2.25,y+5.2,z+.14);l.scale.set(1,1,.45);l.userData.ph=s>0?1:0;l.visible=false;grp.add(l);CC_FL.add(l)}}};
     sign((Math.floor((cz+170)/B)+.2)*B,13.2,'CHAINS REQUIRED','NEXT 9 MILES','#f2efe6',true);sign(cz+58,23,'CHAIN CONTROL','PULL OFF HERE','#f2c230',false);
-    if(inS(cz-36)){const db=new Builder(),dgb=new Builder(),[tx,ty]=at(19.5,cz-36);dgb.gain=2.6;xmasTree(db,dgb,tx,ty,cz-36,5.5);grp.add(decoGroup(db,dgb))} // (the holidays: a lit tree on the pull-off)
   }
   if(al){ // the road in winter: plowed snowbanks along both edges, snow poles to find it by, and a guardrail on the drop side (not where the street runs into town)
     for(const side of[-1,1])for(let z=z0+rnd()*4;z<z0+B;z+=4+rnd()*3){const [x,y]=at(side*(side<0?11.4:10.7)+(rnd()-.5)*.6,z);if(hillMul(z)>.05&&!(side<0&&pulloutAt(z)>.2)&&!(side>0&&chainOff(z)>.2)){ // a plow berm: lumps of varied size, a dirty chunk toward the road now and then
@@ -1941,6 +1944,7 @@ function redwoodScenery(b,gb,grp,j,rnd){
     }
   }
   if(beams.length)grp.add(beamMesh(beams));
+  if(al&&decoOn()){const d=passDeco(j);if(d)grp.add(d)}
 }
 // ---------- streaming: build blocks near the car, recycle far ones
 const blocks=new Map(),parkedCars=new Set();let queue=[],lastCi=1e9,lastCj=1e9;
@@ -4173,9 +4177,16 @@ let lastTouch=performance.now();
 $('calm').checked=settings.calm;
 $('hq').checked=settings.hq;setQuality(settings.hq);
 $('hq').addEventListener('change',e=>{settings.hq=e.target.checked;saveSettings();setQuality(settings.hq)});
-// the holiday decorations: built with the scenery in their own layer (userData.deco), shown or hidden all at once; checked again each minute for December 1
+// the holiday decorations: built with the scenery while they're up, in their own layer (userData.deco). Switched on (or December 1 comes, checked each
+// minute), the villages and pull-outs already built get theirs: each block is built again with its pieces only noted (LAZY), its decoration layer moved over
+// and baked a few ms a frame like any new scenery, the rest thrown away. Switched off, the layers go
 let DECO=null;const showDeco=()=>{for(const b of $('decoSeg').children)b.classList.toggle('on',b.dataset.d===settings.deco)};
-function setDeco(){DECO=decoOn();scene.traverse(o=>{if(o.userData.deco)o.visible=DECO})}
+function setDeco(){const was=DECO;DECO=decoOn();if(was===null||was===DECO)return;
+  const old=[];scene.traverse(o=>{if(o.userData.deco)old.push(o)});for(const o of old){o.parent.remove(o);o.traverse(m=>{if(m.geometry)m.geometry.dispose()})}
+  if(!DECO)return;const lz=LAZY;LAZY=true;
+  for(const g of blocks.values()){const [i,j]=g.userData.ij;if(!isAlp(regionOf(Math.floor(j/PER))))continue;for(const c of[...buildBlock(i,j,cellKind(i,j)).children])if(c.userData.deco)g.add(c)}
+  for(const [j,g] of terr){const d=passDeco(j);if(d)g.add(d)}
+  LAZY=lz}
 for(const b of $('decoSeg').children)b.addEventListener('click',()=>{settings.deco=b.dataset.d;saveSettings();showDeco();setDeco()});
 showDeco();setDeco();setInterval(()=>{if(decoOn()!==DECO)setDeco()},60000);
 $('calm').addEventListener('change',e=>{settings.calm=e.target.checked;saveSettings();lastTouch=performance.now();hudEl.classList.remove('calm')});
