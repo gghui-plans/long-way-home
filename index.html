@@ -2849,15 +2849,16 @@ const car={i:XMIN,j:PER,d:0,bi:0,bj:0,piece:'straight',s:0,len:0,t:0,v:22,user:n
   sx:0,sz:0,hz:0,ze:0,P:[],x:0,z:0,yaw:Math.PI,yawRate:0,visiting:false,townStart:0,townDur:60,travelDir:0,doneTown:null,townCued:false};
 const rel=(d,c)=>c==='L'?(d+3)%4:c==='R'?(d+1)%4:d;
 const canGo=c=>legExists(car.bi,car.bj,rel(car.d,c));
+const onTrip=()=>PLAN&&RG!==PLAN.to; // heading for another region, not there yet
 function autoPick(){
   const opts=['S','L','R'].filter(canGo);if(!opts.length)return'S';
   const t=townOfRow(car.bj),d=car.d;
   if(car.bi===XMIN&&d%2===0){ // cruising PCH through a town: about a third of towns get a visit
     const inland=d===0?'R':'L';
-    if(!car.visiting&&t&&car.doneTown!==t.k&&opts.includes(inland)&&Math.random()<1-Math.pow(2/3,1/(t.TL+1)))return inland;
+    if(!car.visiting&&!onTrip()&&t&&car.doneTown!==t.k&&opts.includes(inland)&&Math.random()<1-Math.pow(2/3,1/(t.TL+1)))return inland;
     if(opts.includes('S'))return'S';
   }
-  if(car.visiting&&clock-car.townStart>car.townDur){ // time to head back to the coast: go west, then rejoin PCH
+  if(car.visiting&&(clock-car.townStart>car.townDur||onTrip())){ // time to head back to the coast (or a road trip's on): go west, then rejoin PCH
     if(d===3&&car.bi===XMIN){const want=car.travelDir===2?2:0;for(const c of opts)if(rel(d,c)===want)return c}
     for(const c of opts)if(rel(d,c)===3)return c;
     if(opts.includes('S'))return'S';
@@ -3613,12 +3614,15 @@ function pickBit(key,pool,inOrder){
 }
 
 // ---------- the show: talk, then a song, repeat. Red lights can cue the next bit early.
-const Show={on:false,phase:'off',token:0,lastKind:'',queue:[]};
+const Show={on:false,phase:'off',token:0,lastKind:'',queue:[],guard:0,keep:false,townWait:''};
+// the hosts fading a song early (a town, a pier, a milestone, a red light) with more than 30 s of it left: the next two songs play to the end
+function cutSong(then){const left=M.real&&isFinite(songEl.duration)?songEl.duration-songEl.currentTime:Infinity;if(left>30)Show.guard=2;
+  Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)then()})}
 // queue a special bit for the next break; if a song has been on a while, fade it now (like a red light)
 function onAirSoon(bit){
   if(!Show.on||settings.musicMode)return;
   Show.queue.push(bit);
-  if(Show.phase==='song'&&AC&&AC.currentTime-M.start>20){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk(nextKind())})}
+  if(Show.phase==='song'&&!Show.keep&&AC&&AC.currentTime-M.start>20)cutSong(()=>talk(nextKind()))
 }
 const keepAlive=[];
 let setLCD=()=>{};
@@ -3654,7 +3658,7 @@ const reactFresh=()=>React.bit&&performance.now()<React.until;
 function react(kind,bit,ttl,cool,urgent){
   const now=performance.now();if(!Show.on||settings.musicMode||now<(React.last[kind]??-1e12)+cool*1000)return;
   React.last[kind]=now;React.bit=bit;React.until=now+ttl*1000;
-  if(urgent&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('short')})}
+  if(urgent&&Show.phase==='song'&&!Show.keep&&AC&&AC.currentTime-M.start>30)cutSong(()=>talk('short'))
 }
 function clockBit(){const h=new Date().getHours(),c=ST.bits.clock;return h>=5&&h<11?c.morning:h>=11&&h<14?c.midday:h>=17&&h<21?c.evening:h>=21||h<5?c.late:null}
 // not every song gets a full segment: sometimes two songs in a row, sometimes just a quick ID, so the talk doesn't wear thin
@@ -3662,7 +3666,9 @@ let lastBreak='';
 function nextBreak(){
   const r=Math.random();
   if(settings.musicMode)return talk('short'); // no breaks: talk() goes straight to the song
+  const tw=Show.townWait;Show.townWait='';
   if(Show.queue.length)lastBreak='full';
+  else if(tw&&tw===currentTown()){lastBreak='full';return talk('town')} // a town that came up during a protected song, if the car's still there
   else if(reactFresh()){lastBreak='short';return talk('short')} // the reaction, then the song
   else if(r<.2&&lastBreak!=='music'){lastBreak='music';return backToBack()}
   else if(r<.45&&lastBreak!=='short'){lastBreak='short';return talk('short')}
@@ -3703,7 +3709,7 @@ if('mediaSession' in navigator){
   on('play',()=>{if(settings.muted)toggleMute();if(AC)AC.resume();if(!Show.on)power(true);try{navigator.mediaSession.playbackState='playing'}catch(e){}});
 }
 function startSong(tok,song){
-  Show.phase='song';
+  Show.phase='song';Show.keep=Show.guard>0;if(Show.keep)Show.guard--; // (a protected song: nothing fades it early)
   const show=s=>setLCD('STEREO','♪ '+s.title.toUpperCase()+' · '+s.band.toUpperCase());
   const onEnd=()=>{if(tok===Show.token&&Show.on)nextBreak()};
   const synth=()=>{const fb=makeSong();setLCD('STEREO','♪ '+ST.live);playSong(fb,onEnd)}; // the old synth band covers for a song that can't load
@@ -3798,10 +3804,12 @@ function talk(kind){
 let lastRed=-1e12;
 onRedStop=()=>{ // a red light only cuts in on a song's last 40 s (in place of its fade-out), and at most every 10 minutes
   const left=M.real&&isFinite(songEl.duration)?songEl.duration-songEl.currentTime:Infinity;
-  if(Show.on&&!settings.musicMode&&Show.phase==='song'&&AC&&left<40&&performance.now()-lastRed>600000){lastRed=performance.now();Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('red')})}
+  if(Show.on&&!settings.musicMode&&Show.phase==='song'&&!Show.keep&&AC&&left<40&&performance.now()-lastRed>600000){lastRed=performance.now();cutSong(()=>talk('red'))}
 };
 onTownCue=()=>{ // approaching a town on Highway 1
-  if(Show.on&&!settings.musicMode&&Show.phase==='song'&&AC&&AC.currentTime-M.start>30){Show.phase='fading';const tk=Show.token;stopSong(2.5,()=>{if(Show.token===tk)talk('town')})}
+  if(!Show.on||settings.musicMode||Show.phase!=='song'||!AC||AC.currentTime-M.start<=30)return;
+  if(Show.keep)Show.townWait=currentTown(); // a protected song plays on: the town waits for the next break
+  else cutSong(()=>talk('town'))
 };
 function seek(){
   if(!Show.on)return;
@@ -4295,7 +4303,7 @@ function requestRegion(id,auto){
   if(PLAN){if(to===PLAN.to)return;if(RG===BASE){PLAN=null;flushFar()}else commitPlan()} // changed course before (or after) the handover
   trip.due=false;
   if(to===BASE){refreshRegionUI();return}
-  setRegionPlan(to);trip.t=0;refreshRegionUI();
+  setRegionPlan(to);trip.t=0;refreshRegionUI();if(car.piece!=='turn')car.auto=autoPick(); // (the next corner too: no turning into town)
   Object.assign(tripInfo,{auto:!!auto,mile:false,welcome:''});if(auto)wakeHud(); // picked in the map: closing the map wakes it
   toast(auto?'Road trip: heading for '+to.label+'.':'Heading for '+to.label+'. It starts past the next stretch of open coast.');
 }

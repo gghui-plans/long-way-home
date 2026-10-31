@@ -200,6 +200,7 @@ These are decided but not built. Details are in FUTURE-WORK.md.
 
 ## Recently finished
 
+- 2026-10-31: radio and road trip fixes live: a song the hosts fade early (more than 30 s left) protects the next 2 songs (a town waits for the next break, a pier is dropped); on a road trip the autopilot skips towns and leaves one straight away until the handover. All three maps.
 - 2026-10-28: LA's pelicans fly again (a mid-line comment had frozen them since 18b0540; found by the winter batch 3 work).
 - 2026-10-27: LESSONS.md started (bugs and traps with fixes), linked from CLAUDE.md and WORKFLOW.md.
 - 2026-10-27: K-JAM set 2 is live: 14 "Postcards from one summer" songs (30 in all), each with a short intro and a two-host story intro. Salt Air Stomp and Heat Shimmer are in FUTURE-WORK.
