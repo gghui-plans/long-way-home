@@ -1795,7 +1795,7 @@ Suno won't accept artist names, so each Style of Music describes the sound inste
 | 13 | Alpenglow | Vivian & Ray | Duet | downloaded and processed 2026-10-29 (docs/audio/music/fireside) |
 | 14 | Mittens | Eddie Brooks | M | downloaded and processed 2026-10-29 (docs/audio/music/fireside) |
 | 15 | Lodge Fire | The Fireside House Trio | Instrumental | downloaded and processed 2026-10-29 (docs/audio/music/fireside) |
-| 16 | Fresh Tracks | The Fireside House Trio | Instrumental | written, not generated |
+| 16 | Fresh Tracks | The Fireside House Trio | Instrumental | downloaded and processed 2026-10-30 (docs/audio/music/fireside) |
 
 ### 1. First Snow
 
