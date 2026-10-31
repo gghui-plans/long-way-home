@@ -4258,10 +4258,10 @@ function initAlpine(){
   const puff=softTex(128,[[0,[255,255,255,.95]],[.5,[255,255,255,.45]],[.97,[255,255,255,0]],[1,[255,255,255,0]]]),r=rng(6300); // one soft puff, for the cloud drifting across the road
   // the sea of cloud below the summit: banks of puffy cloud with gaps down to the lake, lit on top and grey-blue underneath. Solid shapes,
   // so they read as clouds from the road; placed around each summit, they rise out of the lake as you climb and sink back into it
-  const cb=new Builder(); // wide, low, lumpy banks: many overlapping puffs of varied size, so no single dome stands out; a few gaps down to the lake
+  const cb=new Builder(); // wide, low banks: many overlapping flat puffs of varied size, so the tops roll into one blanket instead of a pile of domes; a few gaps down to the lake
   for(let k=0;k<60;k++){const x=-240-Math.pow(r(),.8)*1500,z=(r()-.5)*3400,w=220+r()*380,d=160+r()*260,by=(r()-.5)*50; // each bank at its own height
     for(let q=0,n=9+Math.floor(r()*8);q<n;q++){const a=r()*6.28,e=Math.sqrt(r()),sz=(28+r()*46)*(1.25-e*.6); // big soft lumps, smaller toward the edges, the tallest in the middle
-      cb.add(G.sph,[0xffffff,0xf6f2f6,0xfbf5ef,0xeeeaf0][q%4],x+Math.cos(a)*w*.42*e,by+sz*.1+r()*12*(1-e),z+Math.sin(a)*d*.42*e,sz*1.25,sz*(.5+r()*.3),sz*1.1,r()*6)}}
+      cb.add(G.sph,[0xffffff,0xf6f2f6,0xfbf5ef,0xeeeaf0][q%4],x+Math.cos(a)*w*.42*e,by+r()*14*(1-e),z+Math.sin(a)*d*.42*e,sz*1.5,sz*(.32+r()*.14),sz*1.35,r()*6)}}
   const banks=new THREE.Mesh(cb.geo(),new THREE.MeshLambertMaterial({vertexColors:true}));banks.visible=false;scene.add(banks);
   // two snowy islands out in the lake (they ride the lake's level like the village)
   const ib=new Builder();for(const [ix,iz,iw] of[[-900,-520,1],[-640,430,.7]]){ib.add(G.ball,0xe4e9ef,ix,-2,iz,70*iw,9,52*iw,r()*3);
@@ -4269,7 +4269,7 @@ function initAlpine(){
     for(let q=0;q<14*iw;q++){const a=r()*6.28,e=Math.sqrt(r());farPine(ib,ix+Math.cos(a)*55*iw*e,2,iz+Math.sin(a)*40*iw*e,26+r()*14,r,0x262c29)}}
   const isl=ib.mesh();isl.visible=false;scene.add(isl);
   const wisps=[...Array(14)].map(()=>{const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:puff,color:0xfdf6f4,transparent:true,opacity:0,depthWrite:false}));
-    sp.userData={dx:-90+r()*180,z:null,y:2+r()*16,w:50+r()*70,v:2+r()*3};sp.scale.set(sp.userData.w,sp.userData.w*.42,1);scene.add(sp);return sp});
+    const w=50+r()*70;sp.userData={dx:-90+r()*180,z:null,y:w*.21+1+r()*8,w,v:2+r()*3};sp.scale.set(sp.userData.w,sp.userData.w*.42,1);scene.add(sp);return sp}); // each puff's bottom clears the road, so the road can't cut it off in a straight line
   // the village far below: a snowy point out in the lake, a dozen houses and a church, windows lit
   const b=new Builder(),gb=new Builder(),vg=new THREE.Group();gb.gain=2.2;
   for(let k=0;k<7;k++)b.add(G.cyl,0xd9dee6,-60+k*28+r()*20,-.6,-40+r()*80,70+r()*50,1.4,60+r()*50); // the point it sits on
@@ -4341,11 +4341,11 @@ function updateAlpine(dt){
   const wt=clock+ALP.wx0,ph=wt%300,rw=regW(car.z,isAlp);ALP.wx=(.6+.4*hash(Math.floor(wt/300),3,97))*ss(0,20,ph)*ss(120,100,ph);
   const sn=ALP.snow=ALP.wx*(.45*rw+.55*hi),brk=rw*ss(100,125,ph)*ss(175,135,ph);
   {const g=gapAt(car.z),m=ALP.banks;m.visible=top>0&&!!g;if(m.visible){if(ALP.bk!==g.k){ALP.bk=g.k;const zs=pulloutZ(g.k);m.position.x=roadX(zs);m.position.z=zs}
-    m.position.y=SEA-dr+(dr*.62+40)*top-40;m.position.x+=dt*1.2}} // fixed over each summit (so they slide past as you drive), drifting slowly on the wind
+    m.position.y=SEA-dr-40+(dr-30)*top;m.position.x+=dt*1.2}} // fixed over each summit (so they slide past as you drive), drifting slowly on the wind
   const fwd=Math.cos(car.yaw)>=0?1:-1;
   for(const sp of ALP.wisps){const u=sp.userData;u.dx+=u.v*dt;if(u.dx>110)u.dx-=220; // drifting across the road on the wind; recycled ahead once passed
     if(u.z==null||(u.z-car.z)*fwd<-120)u.z=car.z+fwd*(u.z==null?-100+Math.random()*700:350+Math.random()*350);sp.position.set(roadX(u.z)+u.dx,u.y,u.z);
-    const d=sp.position.distanceTo(camera.position);sp.material.opacity=near*.6*ss(6,40,d)*ss(700,350,d);sp.visible=near>0}
+    const d=sp.position.distanceTo(camera.position);sp.material.opacity=near*.6*ss(6,40,d)*ss(700,350,d)*ss(-110,-80,u.dx)*ss(55,5,u.dx);sp.visible=near>0} // drifting in from over the drop, thinning out before the uphill rock
   const windy=ss(.4,.85,hi); // the wind up high
   {const P=ALP.drift.geometry.attributes.position,a=P.array,cx=camera.position.x,cz=camera.position.z;ALP.drift.visible=windy>0;ALP.drift.material.opacity=windy*.85;
     if(windy>0){for(let i=0;i<a.length;i+=3){a[i]-=(14+(i%7))*dt;a[i+1]-=(.6+(i%5)*.3)*dt;if(a[i+1]<0)a[i+1]+=9;a[i+2]+=Math.sin(clock*1.3+i)*.8*dt;if(a[i]<-35)a[i]+=70}
